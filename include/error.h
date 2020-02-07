@@ -1,0 +1,21 @@
+// error.h
+
+#ifndef _ERROR_H
+#define _ERROR_H
+
+enum Error_codes {
+	NO_ERR = 0,
+	ERR,
+	PARSE_ERR,
+	LEX_ERR,
+	ALLOC_ERR,
+	REALLOC_ERR,
+};
+
+int is_error();
+
+void error(const char* format, ...);
+
+int get_error();
+
+#endif
