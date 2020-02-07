@@ -11,10 +11,7 @@
 #define E_TOKEN (struct Token) {}
 
 int si_exec(int argc, char** argv) {
-	{
-		char input[] = "5 + 5 * 3";
-		parser_parse(input);
-	}
-
+	char input[] = "5 + 2 + 12 * 2 + (2 + 3)";
+	parser_parse(input);
 	return NO_ERR;
 }

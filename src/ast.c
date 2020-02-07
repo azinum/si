@@ -24,6 +24,7 @@ struct Node* create_node(struct Token value) {
 
 	node->value = value;
 	node->child_count = 0;
+	node->children = NULL;
 
 	return node;
 }
@@ -61,7 +62,7 @@ int add_ast_node(Ast* ast, struct Token value) {
 		(*ast)->children = malloc(sizeof(struct Node));
 	}
 	else {
-		struct Node** tmp = realloc((*ast)->children, (*ast)->child_count + 1);
+		struct Node** tmp = realloc((*ast)->children, (sizeof(struct Node*)) * (*ast)->child_count + 1);
 		if (!tmp) return REALLOC_ERR;
 		(*ast)->children = tmp;
 	}
@@ -81,6 +82,7 @@ void print_ast(const Ast ast) {
 }
 
 void free_ast(Ast* ast) {
+	assert(ast != NULL);
 	if (is_empty(*ast)) return;
 
 	for (unsigned long i = 0; i < (*ast)->child_count; i++)
@@ -88,6 +90,7 @@ void free_ast(Ast* ast) {
 
 	free((*ast)->children);
 	(*ast)->children = NULL;
+	(*ast)->child_count = 0;
 	free(*ast);
 	*ast = NULL;
 	assert(is_empty(*ast));

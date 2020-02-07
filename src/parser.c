@@ -16,7 +16,7 @@
 
 struct Parser {
 	struct Lexer* lexer;
-	Ast ast;
+	Ast* ast;
 };
 
 struct Operator {
@@ -112,12 +112,12 @@ int simple_expr(struct Parser* p) {
 	switch (token.type) {
 		case T_NUMBER:
 			next_token(p->lexer);
-			add_ast_node(&p->ast, token);
+			add_ast_node(p->ast, token);
 			break;
 
 		case T_IDENTIFIER:
 			next_token(p->lexer);
-			add_ast_node(&p->ast, token);
+			add_ast_node(p->ast, token);
 			break;
 
 		case T_OPENPAREN: {
@@ -150,7 +150,7 @@ int expr(struct Parser* p, int priority) {
 	if (uop != T_NOUNOP) {
 		next_token(p->lexer);	// Skip operator token
 		expr(p, UNARY_PRIORITY);
-		add_ast_node(&p->ast, uop_token);
+		add_ast_node(p->ast, uop_token);
 	}
 	else {
 		simple_expr(p);
@@ -164,7 +164,7 @@ int expr(struct Parser* p, int priority) {
 		token = get_token(p->lexer);
 		next_token(p->lexer);
 		next_op = expr(p, op_priority[op].right);
-		add_ast_node(&p->ast, token);
+		add_ast_node(p->ast, token);
 		op = next_op;
 	}
 	return op;
@@ -181,11 +181,10 @@ int parser_parse(char* input) {
 	};
 	struct Parser parser = {
 		.lexer = &lexer,
-		.ast = ast
+		.ast = &ast
 	};
-	printf("%p\n", parser.ast);
 	next_token(parser.lexer);
 	statements(&parser);
-	free_ast(&parser.ast);
+	free_ast(parser.ast);
 	return NO_ERR;
 }
