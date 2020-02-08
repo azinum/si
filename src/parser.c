@@ -23,21 +23,6 @@ struct Operator {
 	int left, right;
 };
 
-/*
-op_priority[]
-index		token/operator
-1				T_PLUS,
-2				T_MINUS,
-3				T_MULT,
-4				T_DIV,
-5				T_LT,
-6				T_GT,
-7				T_EQ,
-8				T_LEQ,
-9				T_GEQ,
-10			T_NEQ,
-*/
-
 // Warning: Order is reserved. DO NOT CHANGE.
 static const struct Operator op_priority[] = {
 	{0, 0},	// T_UNKNOWN
@@ -170,9 +155,7 @@ int expr(struct Parser* p, int priority) {
 	return op;
 }
 
-int parser_parse(char* input) {
-	Ast ast = create_ast();
-
+int parser_parse(char* input, Ast* ast) {
 	struct Lexer lexer = {
 		.index = input,
 		.line = 1,
@@ -181,11 +164,9 @@ int parser_parse(char* input) {
 	};
 	struct Parser parser = {
 		.lexer = &lexer,
-		.ast = &ast
+		.ast = ast
 	};
 	next_token(parser.lexer);
 	statements(&parser);
-	print_ast(ast);
-	free_ast(parser.ast);
 	return NO_ERR;
 }

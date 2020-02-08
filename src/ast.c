@@ -35,6 +35,7 @@ int print_tree(const Ast ast, int level) {
 	for (int i = 0; i < level; i++) {
 		printf(" ");
 	}
+
 	printf("%.*s\n", ast->value.length, ast->value.string);
 
 	for (unsigned long i = 0; i < ast->child_count; i++) {

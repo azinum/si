@@ -18,4 +18,6 @@
 #define COLOR_NUMBER C_BLUE
 #define COLOR_NONE C_NONE
 
+#define INPUT_MAX 128
+
 #endif
