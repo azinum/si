@@ -11,6 +11,7 @@
 
 int compile_from_tree(struct VM_state* vm, Ast* ast, int level) {
 	assert(ast != NULL);
+	assert(vm != NULL);
 	if (ast_is_empty(*ast)) return NO_ERR;
 	return NO_ERR;
 }

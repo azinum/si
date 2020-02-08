@@ -17,6 +17,7 @@
 struct Parser {
 	struct Lexer* lexer;
 	Ast* ast;
+	int status;
 };
 
 struct Operator {
@@ -86,9 +87,8 @@ int statement(struct Parser* p) {
 }
 
 int statements(struct Parser* p) {
-	int status = NO_ERR;
-	while (!eof(p)) status = statement(p);
-	return status;
+	while (!eof(p)) p->status = statement(p);
+	return p->status;
 }
 
 int simple_expr(struct Parser* p) {
@@ -109,12 +109,12 @@ int simple_expr(struct Parser* p) {
 			next_token(p->lexer);	// Skip '('
 			if (expression_end(p)) {
 				parseerror("Expression can't be empty\n");
-				return PARSE_ERR;
+				return (p->status = PARSE_ERR);
 			}
 			statement(p);
 			if (!expression_end(p)) {
 				parseerror("Missing ')' closing parenthesis in expression\n");
-				return PARSE_ERR;
+				return (p->status = PARSE_ERR);
 			}
 			next_token(p->lexer);	// Skip ')'
 		}
@@ -138,7 +138,7 @@ int expr(struct Parser* p, int priority) {
 		add_ast_node(p->ast, uop_token);
 	}
 	else {
-		simple_expr(p);
+		p->status = simple_expr(p);
 	}
 
 	struct Token token = get_token(p->lexer);
@@ -164,9 +164,10 @@ int parser_parse(char* input, Ast* ast) {
 	};
 	struct Parser parser = {
 		.lexer = &lexer,
-		.ast = ast
+		.ast = ast,
+		.status = NO_ERR
 	};
 	next_token(parser.lexer);
 	statements(&parser);
-	return NO_ERR;
+	return parser.status;
 }

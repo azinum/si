@@ -15,11 +15,14 @@ struct VM_state {
 
 int vm_exec(char* input) {
 	assert(input != NULL);
+	struct VM_state vm = {};
+	int status = NO_ERR;
 
 	Ast ast = create_ast();
-	parser_parse(input, &ast);
-	print_ast(ast);
+	status = parser_parse(input, &ast);
+	if (status == NO_ERR) {
+		status = compile_from_tree(&vm, &ast, 0);
+	}
 	free_ast(&ast);
-
-	return NO_ERR;
+	return status;
 }
