@@ -83,7 +83,7 @@ int statement(struct Parser* p) {
 			break;
 	}
 
-	return NO_ERR;
+	return p->status;
 }
 
 int statements(struct Parser* p) {
@@ -124,7 +124,7 @@ int simple_expr(struct Parser* p) {
 			next_token(p->lexer);
 			break;
 	}
-	return NO_ERR;
+	return p->status;
 }
 
 // Arithmetic operation on expressions

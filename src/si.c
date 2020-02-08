@@ -16,7 +16,6 @@ int user_input() {
     printf("> ");
     if (fgets(input, INPUT_MAX, stdin) != NULL) {
       status = vm_exec(input);
-      printf(COLOR_MESSAGE "%i\n" COLOR_NONE, status);
       if (status != NO_ERR) return status;
     }
     else is_running = 0;
