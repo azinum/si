@@ -23,6 +23,11 @@ enum VM_instructions {
 	I_EXIT
 };
 
+struct Ins_seq {
+	int* sequence;
+	int count;
+};
+
 int vm_exec(char* input);
 
 #endif
