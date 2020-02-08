@@ -7,11 +7,15 @@
 #include "token.h"
 #include "ast.h"
 #include "parser.h"
-
-#define E_TOKEN (struct Token) {}
+#include "file.h"
 
 int si_exec(int argc, char** argv) {
-	char input[] = "5 + 2 + 12 * 2 + (2 + 3)";
-	parser_parse(input);
+	{
+		char* input = read_file("scripts/test.lang");
+		if (input) {
+			parser_parse(input);
+			free(input);
+		}
+	}
 	return NO_ERR;
 }

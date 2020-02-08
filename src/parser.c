@@ -185,6 +185,7 @@ int parser_parse(char* input) {
 	};
 	next_token(parser.lexer);
 	statements(&parser);
+	print_ast(ast);
 	free_ast(parser.ast);
 	return NO_ERR;
 }
