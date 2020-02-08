@@ -5,19 +5,21 @@
 
 #include "token.h"
 
+typedef struct Token Value;
+
 struct Node {
 	struct Node** children;
 	int child_count;
-	struct Token value;
+	Value value;
 };
 
 typedef struct Node* Ast;
 
 Ast create_ast();
 
-int add_ast_node(Ast* ast, struct Token value);
+int add_ast_node(Ast* ast, Value value);
 
-int add_ast_node_at(Ast* ast, int index, struct Token value);
+int add_ast_node_at(Ast* ast, int index, Value value);
 
 void print_ast(const Ast ast);
 

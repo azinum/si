@@ -8,14 +8,14 @@
 #include "ast.h"
 
 static int is_empty(const Ast ast);
-static struct Node* create_node(struct Token value);
+static struct Node* create_node(Value value);
 static int print_tree(const Ast ast, int level);
 
 int is_empty(const Ast ast) {
 	return ast == NULL;
 }
 
-struct Node* create_node(struct Token value) {
+struct Node* create_node(Value value) {
 	struct Node* node = malloc(sizeof(struct Node));
 	if (!node) {
 		error("Failed to allocate new AST node\n");
@@ -48,7 +48,7 @@ Ast create_ast() {
 	return NULL;
 }
 
-int add_ast_node(Ast* ast, struct Token value) {
+int add_ast_node(Ast* ast, Value value) {
 	struct Node* new_node = create_node(value);
 	if (!new_node)
 		return ALLOC_ERR;
@@ -70,7 +70,7 @@ int add_ast_node(Ast* ast, struct Token value) {
 	return NO_ERR;
 }
 
-int add_ast_node_at(Ast* ast, int index, struct Token value) {
+int add_ast_node_at(Ast* ast, int index, Value value) {
 	assert(!is_empty(*ast));
 	assert(index < (*ast)->child_count);
 	return add_ast_node(&(*ast)->children[index], value);
