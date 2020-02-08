@@ -49,6 +49,10 @@ Ast create_ast() {
 	return NULL;
 }
 
+int ast_is_empty(const Ast ast) {
+	return is_empty(ast);
+}
+
 int add_ast_node(Ast* ast, Value value) {
 	struct Node* new_node = create_node(value);
 	if (!new_node)
