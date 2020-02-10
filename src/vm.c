@@ -30,15 +30,21 @@ int vm_exec(char* input) {
 	int status = NO_ERR;
 	vm_init(&vm);
 
-	unsigned int size = 347;
+	unsigned int size = 22;
 	Htable table = ht_create(size);
 	ht_insert_element(&table, "a", 12);
-	ht_insert_element(&table, "a", 14);
-	ht_insert_element(&table, "a1", 20);
-	ht_remove_element(&table, "a1");
-	ht_insert_element(&table, "a1", 30);
+	ht_insert_element(&table, "b", 14);
+	ht_insert_element(&table, "c", 20);
+	ht_insert_element(&table, "q", 30);
+	ht_insert_element(&table, "w", 112);
+	ht_insert_element(&table, "e", 114);
+	ht_insert_element(&table, "r", 120);
+	ht_insert_element(&table, "t", 130);
+	printf("num of elements: %i\n", ht_num_elements(&table));
 	ht_remove_element(&table, "a");
-	printf("%i\n", ht_num_elements(&table));
+	ht_remove_element(&table, "b");
+	ht_remove_element(&table, "c");
+	printf("num of elements: %i\n", ht_num_elements(&table));
 	ht_free(&table);
 
 	// Ast ast = create_ast();

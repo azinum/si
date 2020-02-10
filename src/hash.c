@@ -20,6 +20,7 @@ struct Item {
 static unsigned long hash(const Hkey key, unsigned long tablesize);
 static int linear_probe(const Htable* table, const Hkey key, unsigned int* collision_count);
 static int key_compare(const Hkey a, const Hkey b);
+static Htable resize_table(Htable* table, unsigned int new_size);
 
 unsigned long hash(const Hkey key, unsigned long tablesize) {
 	unsigned long hash_number = 5381;
@@ -56,7 +57,30 @@ int key_compare(const Hkey a, const Hkey b) {
 	return strcmp(a, b) == 0;
 }
 
+Htable resize_table(Htable* table, unsigned int new_size) {
+	assert(table != NULL);
+
+	if (ht_num_elements(table) > new_size)
+		return *table;
+
+	Htable new_table = ht_create(new_size);
+	if (ht_get_size(&new_table) != new_size)
+		return *table;	// Allocation failed
+
+	struct Item item;
+	for (int i = 0; i < ht_get_size(table); i++) {
+		item = table->items[i];
+		if (item.used_slot != UNUSED_SLOT) {
+			ht_insert_element(&new_table, item.key, item.value);
+		}
+	}
+	ht_free(table);
+	return new_table;
+}
+
 Htable ht_create(unsigned int size) {
+	if (!size) size = 1;
+
 	Htable table = {
 		.items = calloc(sizeof(struct Item), size),
 		.count = 0,
@@ -69,7 +93,11 @@ Htable ht_create(unsigned int size) {
 
 unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value) {
 	assert(table != NULL);
-	// TODO: if not can insert then resize the table!
+	if (ht_num_elements(table) > (ht_get_size(table) / 2)) {
+		unsigned int old_size = ht_get_size(table);
+		*table = resize_table(table, table->size * 2);
+	}
+
 	unsigned int collisions = 0;
 	int index = linear_probe(table, key, &collisions);
 	if (index >= 0 && index < ht_get_size(table)) {
@@ -77,9 +105,6 @@ unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value
 		strcpy(item.key, key);
 		table->items[index] = item;
 		table->count++;
-	}
-	else {
-		return collisions;
 	}
 	assert(ht_lookup(table, key) != NULL);
 	return collisions;
@@ -106,6 +131,11 @@ int ht_element_exists(const Htable* table, const Hkey key) {
 
 void ht_remove_element(Htable* table, const Hkey key) {
 	assert(table != NULL);
+	if (ht_num_elements(table) < (ht_get_size(table) / 4)) {
+		unsigned int old_size = ht_get_size(table);
+		*table = resize_table(table, table->size / 2);
+	}
+
 	unsigned int collisions = 0;
 	int index = linear_probe(table, key, &collisions);
 	if (index >= 0 && index < ht_get_size(table)) {
@@ -119,7 +149,8 @@ void ht_remove_element(Htable* table, const Hkey key) {
 			item = table->items[++index];
 			if (item.used_slot != UNUSED_SLOT) {
 				table->items[index].used_slot = UNUSED_SLOT;
-				ht_insert_element(table, item.key, item.value);
+				table->count--;	// We are just moving this slot, not adding a new one
+				ht_insert_element(table, item.key, item.value);	// This function will add count + 1
 			}
 			if (item.used_slot == UNUSED_SLOT)
 				break;
