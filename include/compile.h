@@ -4,8 +4,8 @@
 #define _COMPILE_H
 
 typedef struct Node* Ast;
-struct Ins_seq;	// vm.h
+struct VM_state;
 
-int compile_from_tree(struct Ins_seq* seq, Ast* ast, int level);
+int compile_from_tree(struct VM_state* vm, Ast* ast, int level);
 
 #endif

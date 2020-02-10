@@ -3,6 +3,8 @@
 #ifndef _VM_H
 #define _VM_H
 
+#include "hash.h"
+
 enum VM_instructions {
 	I_ADD = 1,
 	I_SUB,
@@ -26,6 +28,12 @@ enum VM_instructions {
 struct Ins_seq {
 	int* sequence;
 	int count;
+};
+
+struct VM_state {
+	int status;
+	struct Ins_seq seq;
+	Htable variables;
 };
 
 int vm_exec(char* input);

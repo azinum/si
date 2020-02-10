@@ -19,10 +19,10 @@ int seq_init(struct Ins_seq* seq) {
 	return NO_ERR;
 }
 
-int compile_from_tree(struct Ins_seq* seq, Ast* ast, int level) {
+int compile_from_tree(struct VM_state* vm, Ast* ast, int level) {
 	assert(ast != NULL);
-	assert(seq != NULL);
-	seq_init(seq);
+	assert(vm != NULL);
+	seq_init(&vm->seq);
 	if (ast_is_empty(*ast)) return NO_ERR;
 
 	return NO_ERR;

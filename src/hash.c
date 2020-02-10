@@ -149,8 +149,8 @@ void ht_remove_element(Htable* table, const Hkey key) {
 			item = table->items[++index];
 			if (item.used_slot != UNUSED_SLOT) {
 				table->items[index].used_slot = UNUSED_SLOT;
-				table->count--;	// We are just moving this slot, not adding a new one
-				ht_insert_element(table, item.key, item.value);	// This function will add count + 1
+				table->count--;	// We are just moving this slot, not adding a new one, so decrement the count
+				ht_insert_element(table, item.key, item.value);	// This function will increment count by 1
 			}
 			if (item.used_slot == UNUSED_SLOT)
 				break;
