@@ -1,20 +1,6 @@
 # Makefile - simple interpreter
 
-CC=tcc
-
-PROGRAM_NAME=si
-
-SOURCE_DIR=src
-
-BUILD_DIR=build
-
-FLAGS=-o $(BUILD_DIR)/$(PROGRAM_NAME) $(SOURCE_DIR)/*.c -Iinclude -Wall
-
-FLAGS_DEBUG=-g
-
-FLAGS_LOCAL=-O2
-
-FLAGS_RELEASE=-O2 -Werror
+include config.mk
 
 all: prepare local run
 
