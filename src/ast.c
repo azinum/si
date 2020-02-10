@@ -7,6 +7,12 @@
 #include "error.h"
 #include "ast.h"
 
+struct Node {
+	struct Node** children;
+	int child_count;
+	Value value;
+};
+
 static int is_empty(const Ast ast);
 static struct Node* create_node(Value value);
 static int print_tree(const Ast ast, int level);

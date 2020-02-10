@@ -7,12 +7,6 @@
 
 typedef struct Token Value;
 
-struct Node {
-	struct Node** children;
-	int child_count;
-	Value value;
-};
-
 typedef struct Node* Ast;
 
 Ast create_ast();
