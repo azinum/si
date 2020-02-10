@@ -15,4 +15,5 @@ FLAGS_LOCAL=-O2
 FLAGS_RELEASE=-O2 -Werror
 
 # Compiler and linker
-CC=tcc
+#CC=gcc
+CC_DEV=tcc

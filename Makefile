@@ -13,7 +13,7 @@ prepare:
 	fi \
 
 local:
-	$(CC) $(FLAGS) $(FLAGS_LOCAL)
+	$(CC_DEV) $(FLAGS) $(FLAGS_LOCAL)
 
 install:
 	$(CC) $(FLAGS) $(FLAGS_RELEASE)
