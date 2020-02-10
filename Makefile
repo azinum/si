@@ -1,6 +1,6 @@
 # Makefile - simple interpreter
 
-CC=gcc
+CC=tcc
 
 PROGRAM_NAME=si
 
@@ -12,7 +12,9 @@ FLAGS=-o $(BUILD_DIR)/$(PROGRAM_NAME) $(SOURCE_DIR)/*.c -Iinclude -Wall
 
 FLAGS_DEBUG=-g
 
-FLAGS_RELEASE=-O2
+FLAGS_LOCAL=-O2
+
+FLAGS_RELEASE=-O2 -Werror
 
 all: prepare local run
 
@@ -25,7 +27,7 @@ prepare:
 	fi \
 
 local:
-	$(CC) $(FLAGS) $(FLAGS_RELEASE)
+	$(CC) $(FLAGS) $(FLAGS_LOCAL)
 
 install:
 	$(CC) $(FLAGS) $(FLAGS_RELEASE)
