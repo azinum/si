@@ -94,7 +94,6 @@ Htable ht_create(unsigned int size) {
 unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value) {
 	assert(table != NULL);
 	if (ht_num_elements(table) > (ht_get_size(table) / 2)) {
-		unsigned int old_size = ht_get_size(table);
 		*table = resize_table(table, table->size * 2);
 	}
 
@@ -132,7 +131,6 @@ int ht_element_exists(const Htable* table, const Hkey key) {
 void ht_remove_element(Htable* table, const Hkey key) {
 	assert(table != NULL);
 	if (ht_num_elements(table) < (ht_get_size(table) / 4)) {
-		unsigned int old_size = ht_get_size(table);
 		*table = resize_table(table, table->size / 2);
 	}
 

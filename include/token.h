@@ -43,4 +43,6 @@ struct Token {
 	enum Token_types type;
 };
 
+void print_token(const struct Token token);
+
 #endif

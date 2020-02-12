@@ -138,6 +138,7 @@ struct Token next_token(struct Lexer* lexer) {
 		case '\n':
 		case '\r':
 			lexer->line++;
+			lexer->count = 1;
 			token.type = T_NEWLINE;
 			break;
 
@@ -147,10 +148,12 @@ struct Token next_token(struct Lexer* lexer) {
 
 		default: {
 			if (is_alpha(ch) || ch == '_') {
-				while (
-						is_alpha(lexer->index[0]) ||
-						is_number(lexer->index[0] ||
-						lexer->index[0] == '_')) lexer->index++;
+				do {
+					lexer->index++;
+				} while (
+						(is_alpha(lexer->index[0]) ||
+						is_number(lexer->index[0]) ||
+						lexer->index[0] == '_'));
 				
 				token.type = T_IDENTIFIER;
 				token.length = lexer->index - token.string;
@@ -184,9 +187,4 @@ struct Token next_token(struct Lexer* lexer) {
 struct Token get_token(struct Lexer* lexer) {
 	assert(lexer != NULL);
 	return lexer->token;
-}
-
-void print_token(const struct Token token) {
-	if (token.length > 0)
-		printf("%.*s\n", token.length, token.string);
 }

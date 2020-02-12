@@ -16,4 +16,4 @@ FLAGS_RELEASE=-O2 -Werror
 
 # Compiler and linker
 #CC=gcc
-CC_DEV=tcc
+CC_DEV=gcc

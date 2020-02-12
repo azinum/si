@@ -9,16 +9,20 @@ typedef struct Token Value;
 
 typedef struct Node* Ast;
 
-Ast create_ast();
+Ast ast_create();
 
 int ast_is_empty(const Ast ast);
 
-int add_ast_node(Ast* ast, Value value);
+int ast_add_node(Ast* ast, Value value);
 
-int add_ast_node_at(Ast* ast, int index, Value value);
+int ast_add_node_at(Ast* ast, int index, Value value);
 
-void print_ast(const Ast ast);
+int ast_child_count(Ast* ast);
 
-void free_ast(Ast* ast);
+Value* ast_get_node(Ast* ast, int index);
+
+void ast_print(const Ast ast);
+
+void ast_free(Ast* ast);
 
 #endif

@@ -15,6 +15,4 @@ struct Token next_token(struct Lexer* lexer);
 
 struct Token get_token(struct Lexer* lexer);
 
-void print_token(const struct Token token);
-
 #endif

@@ -13,10 +13,34 @@
 
 static int vm_init(struct VM_state* vm);
 
+inline int stack_push(struct VM_state* vm, struct Object object);
+inline int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant);
+inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
+
 int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
+	vm->stack_top = 0;
 	vm->status = NO_ERR;
+	vm->program = NULL;
+	vm->program_size = 0;
 	return vm->status;
+}
+
+int stack_push(struct VM_state* vm, struct Object object) {
+	return NO_ERR;
+}
+
+int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant) {
+	return NO_ERR;
+}
+
+int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
+	return NO_ERR;
+}
+
+int vm_dispatch(struct VM_state* vm) {
+	printf("%s()\n", __FUNCTION__);
+	return NO_ERR;
 }
 
 int vm_exec(char* input) {
@@ -25,12 +49,13 @@ int vm_exec(char* input) {
 	int status = NO_ERR;
 	vm_init(&vm);
 
-	Ast ast = create_ast();
+	Ast ast = ast_create();
 	status = parser_parse(input, &ast);
 	if (status == NO_ERR) {
-		status = compile_from_tree(&vm.seq, &ast, 0);
+		status = compile_from_tree(&vm, &ast, 0);
+		if (status == NO_ERR) vm_dispatch(&vm);
 	}
-	print_ast(ast);
-	free_ast(&ast);
+	ast_print(ast);
+	ast_free(&ast);
 	return vm.status;
 }

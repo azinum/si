@@ -4,8 +4,12 @@
 #define _VM_H
 
 #include "hash.h"
+#include "object.h"
+
+#define STACK_SIZE 128
 
 enum VM_instructions {
+	I_UNKNOWN,
 	I_ADD = 1,
 	I_SUB,
 	I_MULT,
@@ -18,22 +22,20 @@ enum VM_instructions {
 	I_NEQ,
 
 	I_ASSIGN,
-	I_PUSH,
+	I_PUSHK,
 	I_POP,
 	I_PUSH_VAR,
 
 	I_EXIT
 };
 
-struct Ins_seq {
-	int* sequence;
-	int count;
-};
-
 struct VM_state {
+	struct Scope global_scope;
+	struct Object stack[STACK_SIZE];
+	int stack_top;
 	int status;
-	struct Ins_seq seq;
-	Htable variables;
+	int* program;
+	int program_size;
 };
 
 int vm_exec(char* input);

@@ -38,11 +38,14 @@ struct Node* create_node(Value value) {
 int print_tree(const Ast ast, int level) {
 	if (is_empty(ast))
 		return NO_ERR;
-	for (int i = 0; i < level; i++) {
-		printf(" ");
-	}
+	// for (int i = 0; i < level; i++) {
+	// 	printf(" ");
+	// }
 
-	printf("%.*s\n", ast->value.length, ast->value.string);
+	if (level < 1)
+		printf("%.*s\n", ast->value.length, ast->value.string);
+	else
+		printf("%.*s ", ast->value.length, ast->value.string);
 
 	for (unsigned long i = 0; i < ast->child_count; i++) {
 		print_tree(ast->children[i], level + 1);
@@ -51,7 +54,7 @@ int print_tree(const Ast ast, int level) {
 	return NO_ERR;
 }
 
-Ast create_ast() {
+Ast ast_create() {
 	return NULL;
 }
 
@@ -59,7 +62,7 @@ int ast_is_empty(const Ast ast) {
 	return is_empty(ast);
 }
 
-int add_ast_node(Ast* ast, Value value) {
+int ast_add_node(Ast* ast, Value value) {
 	struct Node* new_node = create_node(value);
 	if (!new_node)
 		return ALLOC_ERR;
@@ -81,23 +84,38 @@ int add_ast_node(Ast* ast, Value value) {
 	return NO_ERR;
 }
 
-int add_ast_node_at(Ast* ast, int index, Value value) {
+int ast_add_node_at(Ast* ast, int index, Value value) {
 	assert(!is_empty(*ast));
 	assert(index < (*ast)->child_count);
-	return add_ast_node(&(*ast)->children[index], value);
+	return ast_add_node(&(*ast)->children[index], value);
 }
 
-void print_ast(const Ast ast) {
+int ast_child_count(Ast* ast) {
+	assert(ast != NULL);
+	return (*ast)->child_count;
+}
+
+Value* ast_get_node(Ast* ast, int index) {
+	assert(ast != NULL);
+	if (index < ast_child_count(ast)) {
+		struct Node* node = (*ast)->children[index];
+		return &node->value;
+	}
+	return NULL;
+}
+
+void ast_print(const Ast ast) {
 	if (is_empty(ast)) return;
 	print_tree(ast, 0);
+	printf("\n");
 }
 
-void free_ast(Ast* ast) {
+void ast_free(Ast* ast) {
 	assert(ast != NULL);
 	if (is_empty(*ast)) return;
 
 	for (unsigned long i = 0; i < (*ast)->child_count; i++)
-		free_ast(&(*ast)->children[i]);
+		ast_free(&(*ast)->children[i]);
 
 	free((*ast)->children);
 	(*ast)->children = NULL;
