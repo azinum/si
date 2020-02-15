@@ -15,8 +15,11 @@ void* list_init(const unsigned int size, const unsigned int count) {
 	return tmp;
 }
 
-int list_push(void* list, const unsigned int size, unsigned int* count) {
-	assert(list != NULL);
-	
-	return NO_ERR;
+int list_free(void* list, unsigned int* size) {
+	if (list != NULL) {
+		free(list);
+		*size = 0;
+		return NO_ERR;
+	}
+	return ERR;
 }

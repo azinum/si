@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "list.h"
 #include "ast.h"
 #include "hash.h"
 #include "parser.h"
@@ -19,6 +20,8 @@ inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
 
 int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
+	scope_init(&vm->global_scope, NULL);
+	vm->variables = NULL;
 	vm->stack_top = 0;
 	vm->status = NO_ERR;
 	vm->program = NULL;

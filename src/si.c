@@ -30,6 +30,6 @@ int si_exec(int argc, char** argv) {
 		vm_exec(input);
 		free(input);
 	}
-	// user_input();
+	user_input();
 	return NO_ERR;
 }

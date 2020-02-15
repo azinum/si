@@ -8,21 +8,14 @@
 enum Object_type {
 	OBJ_UNKNOWN = 0,
 	OBJ_NUMBER,
+	OBJ_FUNC,
 };
 
 struct Scope {
 	int constants_count;
 	struct Object* constants;
 	Htable var_locations;
-	struct Object* variables;
 	struct Scope* parent;
-};
-
-struct Object {
-	union value {
-		double number;
-	} value;
-	enum Object_type type;
 };
 
 struct Func_state {
@@ -30,6 +23,14 @@ struct Func_state {
 	int stack_offset;
 	enum Object_type return_type;
 	struct Scope scope;
+};
+
+struct Object {
+	union value {
+		double number;
+		struct Func_state function;
+	} value;
+	enum Object_type type;
 };
 
 #endif

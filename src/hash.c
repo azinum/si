@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "config.h"
 #include "hash.h"
 
 #define UNUSED_SLOT 0
@@ -17,10 +18,16 @@ struct Item {
 	int used_slot;
 };
 
+static int is_empty(const Htable* table);
 static unsigned long hash(const Hkey key, unsigned long tablesize);
 static int linear_probe(const Htable* table, const Hkey key, unsigned int* collision_count);
 static int key_compare(const Hkey a, const Hkey b);
 static Htable resize_table(Htable* table, unsigned int new_size);
+
+int is_empty(const Htable* table) {
+	assert(table != NULL);
+	return table->items == NULL;
+}
 
 unsigned long hash(const Hkey key, unsigned long tablesize) {
 	unsigned long hash_number = 5381;
@@ -91,8 +98,24 @@ Htable ht_create(unsigned int size) {
 	return table;
 }
 
+Htable ht_create_empty() {
+	Htable table = {
+		.items = NULL,
+		.count = 0,
+		.size = 0
+	};
+	return table;
+}
+
 unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value) {
 	assert(table != NULL);
+	if (is_empty(table)) {
+		Htable new_table = ht_create(HASH_TABLE_INIT_SIZE);
+		if (ht_get_size(&new_table) == HASH_TABLE_INIT_SIZE) {
+			*table = new_table;
+		}
+		else return 0;
+	}
 	if (ht_num_elements(table) > (ht_get_size(table) / 2)) {
 		*table = resize_table(table, table->size * 2);
 	}

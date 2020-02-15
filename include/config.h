@@ -20,4 +20,6 @@
 
 #define INPUT_MAX 128
 
+#define HASH_TABLE_INIT_SIZE 3
+
 #endif

@@ -20,6 +20,8 @@ typedef struct {
 // This will result in less key collisions
 Htable ht_create(unsigned int size);
 
+Htable ht_create_empty();
+
 unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value);
 
 const Hvalue* ht_lookup(const Htable* table, const Hkey key);

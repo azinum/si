@@ -148,12 +148,12 @@ struct Token next_token(struct Lexer* lexer) {
 
 		default: {
 			if (is_alpha(ch) || ch == '_') {
-				do {
-					lexer->index++;
-				} while (
-						(is_alpha(lexer->index[0]) ||
-						is_number(lexer->index[0]) ||
-						lexer->index[0] == '_'));
+				while (
+					(is_alpha(lexer->index[0]) ||
+					is_number(lexer->index[0]) ||
+					lexer->index[0] == '_')) {
+						lexer->index++;
+				}
 				
 				token.type = T_IDENTIFIER;
 				token.length = lexer->index - token.string;

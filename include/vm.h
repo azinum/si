@@ -31,6 +31,8 @@ enum VM_instructions {
 
 struct VM_state {
 	struct Scope global_scope;
+	struct Object* variables;
+	int variables_count;
 	struct Object stack[STACK_SIZE];
 	int stack_top;
 	int status;

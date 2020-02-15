@@ -12,6 +12,15 @@
 #include "token.h"
 #include "compile.h"
 
+int scope_init(struct Scope* scope, struct Scope* parent) {
+	assert(scope != NULL);
+	scope->constants_count = 0;
+	scope->constants = NULL;
+	scope->var_locations = ht_create_empty();
+	scope->parent = parent;
+	return NO_ERR;
+}
+
 int compile_from_tree(struct VM_state* vm, Ast* ast, int level) {
 	assert(ast != NULL);
 	assert(vm != NULL);
@@ -20,7 +29,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast, int level) {
 	for (int i = 0; i < ast_child_count(ast); i++) {
 		Value* value = ast_get_node(ast, i);
 		if (value) {
-			print_token(*value);
+			(void)value;
 		}
 	}
 
