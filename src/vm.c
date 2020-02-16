@@ -42,7 +42,6 @@ int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
 }
 
 int vm_dispatch(struct VM_state* vm) {
-	printf("%s()\n", __FUNCTION__);
 	return NO_ERR;
 }
 

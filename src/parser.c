@@ -120,8 +120,11 @@ int simple_expr(struct Parser* p) {
 		}
 			break;
 
-		default:
+		default: {
+			parseerror("Invalid token in expression\n");
 			next_token(p->lexer);
+			return (p->status = PARSE_ERR);
+		}
 			break;
 	}
 	return p->status;
