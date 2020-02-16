@@ -16,6 +16,7 @@ static int is_number(char ch);
 static int is_whitespace(char ch);
 static int is_endofline(char ch);
 static int remove_whitespaces(struct Lexer* lexer);
+static int remove_newlines(struct Lexer* lexer);
 
 int is_alpha(char ch) {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
@@ -41,10 +42,20 @@ int remove_whitespaces(struct Lexer* lexer) {
 	return NO_ERR;
 }
 
+int remove_newlines(struct Lexer* lexer) {
+	while (is_endofline(lexer->index[0])) {
+		lexer->index++;
+		lexer->count++;
+		lexer->line++;
+	}
+	return NO_ERR;
+}
+
 // Jump to next token
 struct Token next_token(struct Lexer* lexer) {
 	(void)is_endofline;
 	assert(lexer != NULL);
+	remove_newlines(lexer);
 	remove_whitespaces(lexer);
 	struct Token token = {1, lexer->index, T_UNKNOWN};
 
@@ -137,9 +148,7 @@ struct Token next_token(struct Lexer* lexer) {
 
 		case '\n':
 		case '\r':
-			lexer->line++;
-			lexer->count = 1;
-			token.type = T_NEWLINE;
+			assert(0);
 			break;
 
 		case '\0':

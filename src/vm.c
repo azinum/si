@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "config.h"
 #include "list.h"
 #include "ast.h"
 #include "hash.h"
@@ -53,11 +54,12 @@ int vm_exec(char* input) {
 
 	Ast ast = ast_create();
 	status = parser_parse(input, &ast);
+	printf(COLOR_MESSAGE "(parser)" COLOR_NONE " status code: %i\n", status);
 	if (status == NO_ERR) {
-		status = compile_from_tree(&vm, &ast, 0);
-		if (status == NO_ERR) vm_dispatch(&vm);
+		if (compile_from_tree(&vm, &ast, 0) == NO_ERR)
+			vm_dispatch(&vm);
+		ast_print(ast);
 	}
-	ast_print(ast);
 	ast_free(&ast);
 	return vm.status;
 }
