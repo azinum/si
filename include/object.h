@@ -5,6 +5,8 @@
 
 #include "hash.h"
 
+#define MAX_ARGC 12
+
 enum Object_type {
 	OBJ_UNKNOWN = 0,
 	OBJ_NUMBER,
@@ -18,17 +20,24 @@ struct Scope {
 	struct Scope* parent;
 };
 
-struct Func_state {
-	int argc;
+struct Function {
+	int addr;
 	int stack_offset;
-	enum Object_type return_type;
 	struct Scope scope;
+};
+
+// Compile-time function state
+struct Func_state {
+	struct Function func;
+	int argc;
+	enum Object_type arg_types[MAX_ARGC];
+	enum Object_type return_type;
 };
 
 struct Object {
 	union value {
 		double number;
-		struct Func_state function;
+		struct Function func;
 	} value;
 	enum Object_type type;
 };

@@ -13,22 +13,12 @@
 #include "compile.h"
 #include "vm.h"
 
-static int vm_init(struct VM_state* vm);
-
 inline int stack_push(struct VM_state* vm, struct Object object);
 inline int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant);
 inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
 
-int vm_init(struct VM_state* vm) {
-	assert(vm != NULL);
-	scope_init(&vm->global_scope, NULL);
-	vm->variables = NULL;
-	vm->stack_top = 0;
-	vm->status = NO_ERR;
-	vm->program = NULL;
-	vm->program_size = 0;
-	return vm->status;
-}
+static int vm_init(struct VM_state* vm);
+static int vm_dispatch(struct VM_state* vm, struct Function* func);
 
 int stack_push(struct VM_state* vm, struct Object object) {
 	return NO_ERR;
@@ -42,7 +32,18 @@ int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
 	return NO_ERR;
 }
 
-int vm_dispatch(struct VM_state* vm) {
+int vm_init(struct VM_state* vm) {
+	assert(vm != NULL);
+	scope_init(&vm->global.scope, NULL);
+	vm->variables = NULL;
+	vm->stack_top = 0;
+	vm->status = NO_ERR;
+	vm->program = NULL;
+	vm->program_size = 0;
+	return vm->status;
+}
+
+int vm_dispatch(struct VM_state* vm, struct Function* func) {
 	return NO_ERR;
 }
 
@@ -57,7 +58,7 @@ int vm_exec(char* input) {
 	printf(COLOR_MESSAGE "(parser)" COLOR_NONE " status code: %i\n", status);
 	if (status == NO_ERR) {
 		if (compile_from_tree(&vm, &ast, 0) == NO_ERR)
-			vm_dispatch(&vm);
+			vm_dispatch(&vm, &vm.global);
 		ast_print(ast);
 	}
 	ast_free(&ast);
