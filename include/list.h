@@ -18,6 +18,13 @@ void* list_init(const unsigned int size, const unsigned int count);
 	} \
 } \
 
+#define list_assign(list, size, index, value) { \
+	assert(list != NULL); \
+	if (index < size) { \
+		list[index] = value; \
+	} \
+} \
+
 int list_free(void* list, unsigned int* size);
 
 #endif
