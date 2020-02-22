@@ -11,6 +11,7 @@ enum Object_type {
 	OBJ_UNKNOWN = 0,
 	OBJ_NUMBER,
 	OBJ_FUNC,
+	OBJ_VOID,
 };
 
 struct Scope {
@@ -41,5 +42,9 @@ struct Object {
 	} value;
 	enum Object_type type;
 };
+
+int scope_init(struct Scope* scope, struct Scope* parent);
+
+int func_state_init(struct Func_state* state);
 
 #endif
