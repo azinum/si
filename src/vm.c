@@ -18,11 +18,11 @@
 
 #define OP_ARITH(OP) { \
 	if (vm->stack_top > 1) { \
-	  struct Object left, right; \
-	  left = vm->stack[vm->stack_top - 2]; \
-	  right = vm->stack[vm->stack_top - 1]; \
-	  if (OP_SAMETYPE(left, right, T_NUMBER)) { \
-	    vm->stack[vm->stack_top - 2].value.number = left.value.number OP right.value.number; \
+	  struct Object* left = stack_get(vm, 1); \
+	  const struct Object* right = stack_gettop(vm); \
+	  assert((left != NULL) && (right != NULL)); \
+	  if (OP_SAMETYPE((*left), (*right), T_NUMBER)) { \
+	    left->value.number = left->value.number OP right->value.number; \
 	    vm->stack_top--; \
 	  } \
 	  else vmerror("Invalid types in binary arithmetic operation\n"); \
@@ -31,9 +31,10 @@
 
 #define UNOP_ARITH(UOP) { \
 	if (vm->stack_top > 0) { \
-	  struct Object object = vm->stack[vm->stack_top - 1]; \
-	  if (object.type == T_NUMBER) { \
-	    vm->stack[vm->stack_top - 1].value.number = UOP(object.value.number); \
+	  struct Object* top = stack_gettop(vm); \
+	  assert(top != NULL); \
+	  if (top->type == T_NUMBER) { \
+	    top->value.number = UOP(top->value.number); \
 	  } \
 	  else vmerror("Invalid types in unary arithmetic operation\n"); \
 	} \
@@ -46,6 +47,8 @@ inline int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant);
 inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
 inline int stack_reset(struct VM_state* vm);
 inline int stack_print_top(struct VM_state* vm);
+inline struct Object* stack_gettop(struct VM_state* vm);
+inline struct Object* stack_get(struct VM_state* vm, int offset);
 
 static int vm_init(struct VM_state* vm);
 static int vm_dispatch(struct VM_state* vm, struct Function* func);
@@ -75,11 +78,22 @@ int stack_reset(struct VM_state* vm) {
 }
 
 int stack_print_top(struct VM_state* vm) {
-	if (vm->stack_top > 0)
-		object_print(vm->stack[vm->stack_top - 1]);
+	struct Object* top = stack_gettop(vm);
+	if (top)
+		object_print(*top);
 	else
 		printf("{}\n");
 	return NO_ERR;
+}
+
+struct Object* stack_gettop(struct VM_state* vm) {
+	return stack_get(vm, 0);
+}
+
+struct Object* stack_get(struct VM_state* vm, int offset) {
+	int index = vm->stack_top - (offset + 1);	// offset 0 is top of stack
+	if (index >= 0) return &vm->stack[index];
+	return NULL;
 }
 
 int vm_init(struct VM_state* vm) {
@@ -97,7 +111,7 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 	// Normal dispatch for now
 	// TODO: convert this to a jumptable
 	int instruction = I_UNKNOWN;
-	for (int i = 0; i < vm->program_size; i++) {
+	for (int i = func->addr; i < vm->program_size; i++) {
 		instruction = vm->program[i];
 		switch (instruction) {
 			case I_PUSHK: {
