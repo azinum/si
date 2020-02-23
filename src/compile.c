@@ -19,14 +19,33 @@
 	error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* func);
-static int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token* constant);
+static int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant);
+static int token_to_op(struct Token token);
 
-int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token* constant) {
+int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant) {
 	list_push(vm->program, vm->program_size, I_PUSHK);
 	int location = -1;
 	store_constant(func, constant, &location);
 	list_push(vm->program, vm->program_size, location);
 	return NO_ERR;
+}
+
+int token_to_op(struct Token token) {
+	switch (token.type) {
+		case T_ADD: return I_ADD;
+		case T_SUB: return I_SUB;
+		case T_MULT: return I_MULT;
+		case T_DIV: return I_DIV;
+		case T_LT: return I_LT;
+		case T_GT: return I_GT;
+		case T_EQ: return I_EQ;
+		case T_LEQ: return I_LEQ;
+		case T_GEQ: return I_GEQ;
+		case T_NEQ: return I_NEQ;
+		default: break;
+	}
+	assert(0);	// TEMP
+	return I_UNKNOWN;
 }
 
 int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
@@ -37,8 +56,22 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 		token = ast_get_node(ast, i);
 		if (token) {
 			switch (token->type) {
-				case T_NUMBER: {
-					compile_pushk(vm, func, token);
+				case T_NUMBER:
+					compile_pushk(vm, func, *token);
+					break;
+
+				case T_ADD:
+				case T_SUB:
+				case T_MULT:
+				case T_DIV:
+				case T_LT:
+				case T_GT:
+				case T_EQ:
+				case T_LEQ:
+				case T_GEQ:
+				case T_NEQ: {
+					int op = token_to_op(*token);
+					list_push(vm->program, vm->program_size, op);
 				}
 					break;
 

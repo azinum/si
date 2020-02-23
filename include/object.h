@@ -49,6 +49,6 @@ int scope_init(struct Scope* scope, struct Scope* parent);
 
 int func_state_init(struct Func_state* state);
 
-int store_constant(struct Func_state* state, struct Token* constant, int* location);
+int store_constant(struct Func_state* state, struct Token constant, int* location);
 
 #endif

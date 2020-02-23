@@ -27,7 +27,7 @@ struct Operator {
 // Warning: Order is reserved. DO NOT CHANGE.
 static const struct Operator op_priority[] = {
 	{0, 0},	// T_UNKNOWN
-	{10, 10}, {10, 10},	// T_PLUS, T_MINUS
+	{10, 10}, {10, 10},	// T_ADD, T_SUB
 	{11, 11}, {11, 11},	// T_MULT, T_DIV
 	{3, 3},		{3, 3},		// T_LT, T_GT
 	{3, 3},		{3, 3},		// T_EQ, T_LEQ
@@ -52,7 +52,7 @@ int get_binop(struct Token token) {
 }
 
 int get_uop(struct Token token) {
-	if ((token.type > T_NOBINOP && token.type < T_NOUNOP) || token.type == T_MINUS)
+	if ((token.type > T_NOBINOP && token.type < T_NOUNOP) || token.type == T_SUB)
 		return token.type;
 	return T_NOUNOP;	// This is not a unary operator
 }

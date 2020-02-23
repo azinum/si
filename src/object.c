@@ -5,11 +5,13 @@
 
 #include "error.h"
 #include "list.h"
+#include "vm.h"
+#include "token.h"
 #include "str.h"
 #include "object.h"
 
 static int func_init(struct Function* func);
-static struct Object token_to_object(struct Token* token);
+static struct Object token_to_object(struct Token token);
 
 int func_init(struct Function* func) {
 	assert(func != NULL);
@@ -19,13 +21,12 @@ int func_init(struct Function* func) {
 	return NO_ERR;
 }
 
-struct Object token_to_object(struct Token* token) {
-	assert(token != NULL);
-	struct Object object = { .type = token->type };
-	switch (token->type) {
+struct Object token_to_object(struct Token token) {
+	struct Object object = { .type = token.type };
+	switch (token.type) {
 		case T_NUMBER: {
 			obj_number number;
-			char* num_string = string_new_copy(token->string, token->length);
+			char* num_string = string_new_copy(token.string, token.length);
 			string_to_number(num_string, &number);
 			string_free(num_string);
 			object.value.number = number;
@@ -56,7 +57,7 @@ int func_state_init(struct Func_state* state) {
 	return NO_ERR;
 }
 
-int store_constant(struct Func_state* state, struct Token* constant, int* location) {
+int store_constant(struct Func_state* state, struct Token constant, int* location) {
 	assert(location != NULL);
 	struct Scope* scope = &state->func.scope;
 	*location = scope->constants_count;

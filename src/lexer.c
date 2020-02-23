@@ -63,11 +63,11 @@ struct Token next_token(struct Lexer* lexer) {
 	lexer->index++;
 	switch (ch) {
 		case '+':
-			token.type = T_PLUS;
+			token.type = T_ADD;
 			break;
 
 		case '-':
-			token.type = T_MINUS;
+			token.type = T_SUB;
 			break;
 
 		case '*':
