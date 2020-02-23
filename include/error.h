@@ -10,6 +10,7 @@ enum Error_codes {
 	LEX_ERR,
 	ALLOC_ERR,
 	REALLOC_ERR,
+	COMPILE_ERR,
 };
 
 int is_error();

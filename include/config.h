@@ -22,4 +22,6 @@
 
 #define HASH_TABLE_INIT_SIZE 3
 
+typedef double obj_number;
+
 #endif

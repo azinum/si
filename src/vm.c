@@ -57,7 +57,7 @@ int vm_exec(char* input) {
 	status = parser_parse(input, &ast);
 	printf(COLOR_MESSAGE "(parser)" COLOR_NONE " status code: %i\n", status);
 	if (status == NO_ERR) {
-		if (compile_from_tree(&vm, &ast, 0) == NO_ERR)
+		if (compile_from_tree(&vm, &ast) == NO_ERR)
 			vm_dispatch(&vm, &vm.global);
 		ast_print(ast);
 	}

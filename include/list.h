@@ -7,12 +7,14 @@
 #include <stdlib.h>
 
 #define list_push(list, size, value) { \
-	assert(list != NULL); \
-	typeof(*list)* new_list = realloc(list, (1 + size) * (sizeof(*list))); \
-	if (new_list) { \
-		list = new_list; \
-		list[size++] = value; \
-	} \
+	do { \
+		if (list == NULL) { list = list_init(sizeof(value), 1); } \
+		typeof(value)* new_list = realloc(list, (1 + size) * (sizeof(value))); \
+		if (new_list) { \
+			list = new_list; \
+			list[size++] = value; \
+		} \
+	} while (0); \
 } \
 
 #define list_realloc(list, size, new_size) { \
@@ -32,7 +34,7 @@
 } \
 
 // size of type, count of elements to allocate
-int list_init(void* list, const unsigned int size, unsigned int* count);
+void* list_init(const unsigned int size, unsigned int count);
 
 
 int list_free(void* list, unsigned int* size);

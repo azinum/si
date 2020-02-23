@@ -4,6 +4,8 @@
 #define _OBJECT_H
 
 #include "hash.h"
+#include "config.h"
+#include "token.h"
 
 #define MAX_ARGC 12
 
@@ -15,7 +17,7 @@ enum Object_type {
 };
 
 struct Scope {
-	int constants_count;
+	unsigned int constants_count;
 	struct Object* constants;
 	Htable var_locations;
 	struct Scope* parent;
@@ -37,7 +39,7 @@ struct Func_state {
 
 struct Object {
 	union value {
-		double number;
+		obj_number number;
 		struct Function func;
 	} value;
 	enum Object_type type;
@@ -46,5 +48,7 @@ struct Object {
 int scope_init(struct Scope* scope, struct Scope* parent);
 
 int func_state_init(struct Func_state* state);
+
+int store_constant(struct Func_state* state, struct Token* constant, int* location);
 
 #endif

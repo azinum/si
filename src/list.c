@@ -6,15 +6,13 @@
 #include "error.h"
 #include "list.h"
 
-int list_init(void* list, const unsigned int size, unsigned int* count) {
-	void* tmp = calloc(size, *count);
-	if (!tmp) {
+void* list_init(const unsigned int size, unsigned int count) {
+	void* list = calloc(size, count);
+	if (!list) {
 		error("Failed to allocate memory for list\n");
-		*count = 0;
-		return ALLOC_ERR;
+		return NULL;
 	}
-	list = tmp;
-	return NO_ERR;
+	return list;
 }
 
 int list_free(void* list, unsigned int* size) {
