@@ -97,7 +97,7 @@ int ast_child_count(Ast* ast) {
 
 Value* ast_get_node(Ast* ast, int index) {
 	assert(ast != NULL);
-	if (index < ast_child_count(ast)) {
+	if (index >= 0 && index < ast_child_count(ast)) {
 		struct Node* node = (*ast)->children[index];
 		return &node->value;
 	}

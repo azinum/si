@@ -15,6 +15,9 @@
 #include "token.h"
 #include "compile.h"
 
+// TODO: Add more useful information when printing errors.
+// i.e. add info about where the error occured e.t.c.
+// Just like we did in the lexer and parser.
 #define compile_error(fmt, ...) \
 	error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
@@ -50,6 +53,7 @@ int token_to_op(struct Token token) {
 	return I_UNKNOWN;
 }
 
+// TODO: Compare between constants and variables (when implemented)
 int equal_type(const struct Token* left, const struct Token* right) {
 	assert(left != NULL && right != NULL);
 	return left->type == right->type;
@@ -67,6 +71,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 					compile_pushk(vm, func, *token);
 					break;
 
+				// All of these require two operands {opr_a, opr_b, op}
 				case T_ADD:
 				case T_SUB:
 				case T_MULT:
@@ -88,6 +93,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 				}
 					break;
 
+				// These only require one operand {opr, uop}
 				case T_NOT: {
 					int op = token_to_op(*token);
 					list_push(vm->program, vm->program_size, op);
