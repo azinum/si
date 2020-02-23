@@ -21,6 +21,7 @@
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* func);
 static int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant);
 static int token_to_op(struct Token token);
+static int equal_type(const struct Token* left, const struct Token* right);
 
 int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant) {
 	list_push(vm->program, vm->program_size, I_PUSHK);
@@ -49,6 +50,11 @@ int token_to_op(struct Token token) {
 	return I_UNKNOWN;
 }
 
+int equal_type(const struct Token* left, const struct Token* right) {
+	assert(left != NULL && right != NULL);
+	return left->type == right->type;
+}
+
 int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 	assert(vm != NULL);
 	assert(func != NULL);
@@ -70,7 +76,18 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 				case T_EQ:
 				case T_LEQ:
 				case T_GEQ:
-				case T_NEQ:
+				case T_NEQ: {
+					struct Token* left = ast_get_node(ast, i - 2);
+					struct Token* right = ast_get_node(ast, i - 1);
+					if (!equal_type(left, right)) {
+						compile_error("%s\n", "Expected equal types");
+						return COMPILE_ERR;
+					}
+					int op = token_to_op(*token);
+					list_push(vm->program, vm->program_size, op);
+				}
+					break;
+
 				case T_NOT: {
 					int op = token_to_op(*token);
 					list_push(vm->program, vm->program_size, op);
@@ -78,7 +95,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 					break;
 
 				default:
-					compile_error("%s\n", "Unknown error");
+					compile_error("%s\n", "Invalid instruction");
 					return COMPILE_ERR;
 			}
 		}
