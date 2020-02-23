@@ -33,6 +33,7 @@ struct Object token_to_object(struct Token* token) {
 			break;
 
 		default:
+			error("Invalid token type\n");
 			break;
 	}
 	return object;

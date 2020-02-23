@@ -25,7 +25,6 @@ int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token* co
 	list_push(vm->program, vm->program_size, I_PUSHK);
 	int location = -1;
 	store_constant(func, constant, &location);
-	printf("%i\n", location);
 	list_push(vm->program, vm->program_size, location);
 	return NO_ERR;
 }

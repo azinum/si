@@ -11,6 +11,7 @@ enum Error_codes {
 	ALLOC_ERR,
 	REALLOC_ERR,
 	COMPILE_ERR,
+	STACK_ERR
 };
 
 int is_error();

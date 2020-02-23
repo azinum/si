@@ -13,22 +13,38 @@
 #include "compile.h"
 #include "vm.h"
 
+#define vmerror(fmt, ...) \
+	error(COLOR_ERROR "vm-error: " COLOR_NONE fmt, ##__VA_ARGS__)
+
 inline int stack_push(struct VM_state* vm, struct Object object);
 inline int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant);
 inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
+inline int stack_reset(struct VM_state* vm);
 
 static int vm_init(struct VM_state* vm);
 static int vm_dispatch(struct VM_state* vm, struct Function* func);
 
 int stack_push(struct VM_state* vm, struct Object object) {
+	if (vm->stack_top >= STACK_SIZE) {
+		vmerror("Stack overflow!\n");
+		return vm->status = STACK_ERR;
+	}
+	vm->stack[vm->stack_top++] = object;
 	return NO_ERR;
 }
 
 int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant) {
-	return NO_ERR;
+	assert(scope->constants_count > constant);
+	struct Object object = scope->constants[constant];
+	return stack_push(vm, object);
 }
 
 int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
+	return NO_ERR;
+}
+
+int stack_reset(struct VM_state* vm) {
+	vm->stack_top = 0;
 	return NO_ERR;
 }
 
@@ -44,6 +60,20 @@ int vm_init(struct VM_state* vm) {
 }
 
 int vm_dispatch(struct VM_state* vm, struct Function* func) {
+	// Normal dispatch for now
+	for (int i = 0; i < vm->program_size; i++) {
+		int instruction = vm->program[i++];
+		switch (instruction) {
+			case I_PUSHK: {
+				int constant = vm->program[i];
+				stack_pushk(vm, &func->scope, constant);
+				++i;
+			}
+				break;
+			default:
+				break;
+		}
+	}
 	return NO_ERR;
 }
 
