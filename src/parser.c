@@ -126,6 +126,7 @@ int simple_expr(struct Parser* p) {
 			}
 			token.type = decl_type;
 			ast_add_node(p->ast, token);	// Add identifier to ast
+			next_token(p->lexer);	// Skip identifier
 		}
 			break;
 

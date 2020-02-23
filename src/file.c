@@ -22,7 +22,7 @@ char* read_file(const char* path) {
 
 	rewind(file);
 
-	char* buffer = (char*)malloc(sizeof(char) * buffer_size);
+	char* buffer = (char*)malloc(sizeof(char) * (buffer_size + 1));
 
 	read_size = fread(buffer, sizeof(char), buffer_size, file);
 	buffer[read_size] = '\0';

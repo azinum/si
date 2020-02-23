@@ -39,10 +39,9 @@ int compile_declvar(struct VM_state* vm, struct Func_state* func, struct Token v
 	int location = -1;
 	int err = store_variable(vm, func, variable, &location);
 	if (err != NO_ERR) {
-		compile_error("Variable already exists");
+		compile_error("Variable '%.*s' already exists\n", variable.length, variable.string);
 		return err;
 	}
-	printf("Stored variable at: %i\n", location);
 	return NO_ERR;
 }
 
@@ -86,9 +85,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 
 				// {decl, identifier}
 				case T_DECL_VOID:
-				case T_DECL_NUMBER: {
+				case T_DECL_NUMBER:
 					compile_declvar(vm, func, *token);
-				}
 					break;
 
 				// All of these require two operands {opr_a, opr_b, op}
@@ -102,12 +100,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 				case T_LEQ:
 				case T_GEQ:
 				case T_NEQ: {
-					struct Token* left = ast_get_node(ast, i - 2);
-					struct Token* right = ast_get_node(ast, i - 1);
-					if (!equal_type(left, right)) {
-						compile_error("%s\n", "Expected equal types");
-						return COMPILE_ERR;
-					}
+					(void)equal_type;	// Silence warning
 					int op = token_to_op(*token);
 					list_push(vm->program, vm->program_size, op);
 				}

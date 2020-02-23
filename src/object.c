@@ -16,7 +16,7 @@ static struct Object token_to_object(struct Token token);
 
 int func_init(struct Function* func) {
 	assert(func != NULL);
-	func->addr = -1;
+	func->addr = 0;
 	func->stack_offset = 0;
 	scope_init(&func->scope, NULL);
 	return NO_ERR;
