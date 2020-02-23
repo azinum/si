@@ -9,13 +9,6 @@
 
 #define MAX_ARGC 12
 
-enum Object_type {
-	OBJ_UNKNOWN = 0,
-	OBJ_NUMBER,
-	OBJ_FUNC,
-	OBJ_VOID,
-};
-
 struct Scope {
 	unsigned int constants_count;
 	struct Object* constants;
@@ -33,8 +26,8 @@ struct Function {
 struct Func_state {
 	struct Function func;
 	int argc;
-	enum Object_type arg_types[MAX_ARGC];
-	enum Object_type return_type;
+	int arg_types[MAX_ARGC];
+	int return_type;
 };
 
 struct Object {
@@ -42,7 +35,7 @@ struct Object {
 		obj_number number;
 		struct Function func;
 	} value;
-	enum Object_type type;
+	int type;
 };
 
 int scope_init(struct Scope* scope, struct Scope* parent);
@@ -50,5 +43,7 @@ int scope_init(struct Scope* scope, struct Scope* parent);
 int func_state_init(struct Func_state* state);
 
 int store_constant(struct Func_state* state, struct Token constant, int* location);
+
+void object_print(struct Object object);
 
 #endif

@@ -31,6 +31,7 @@ enum Token_types {
 
 	T_IDENTIFIER,
 	T_NUMBER,
+	T_VOID,
 	T_NEWLINE,
 	T_EOF,
 

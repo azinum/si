@@ -20,6 +20,7 @@ enum VM_instructions {
 	I_LEQ,
 	I_GEQ,
 	I_NEQ,
+	I_NOT,
 
 	I_ASSIGN,
 	I_PUSHK,

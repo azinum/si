@@ -42,6 +42,7 @@ int token_to_op(struct Token token) {
 		case T_LEQ: return I_LEQ;
 		case T_GEQ: return I_GEQ;
 		case T_NEQ: return I_NEQ;
+		case T_NOT: return I_NOT;
 		default: break;
 	}
 	assert(0);	// TEMP
@@ -69,7 +70,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 				case T_EQ:
 				case T_LEQ:
 				case T_GEQ:
-				case T_NEQ: {
+				case T_NEQ:
+				case T_NOT: {
 					int op = token_to_op(*token);
 					list_push(vm->program, vm->program_size, op);
 				}

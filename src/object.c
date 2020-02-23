@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "error.h"
 #include "list.h"
@@ -52,7 +53,7 @@ int scope_init(struct Scope* scope, struct Scope* parent) {
 int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
 	state->argc = 0;
-	state->return_type = OBJ_UNKNOWN;
+	state->return_type = T_UNKNOWN;
 	func_init(&state->func);
 	return NO_ERR;
 }
@@ -64,4 +65,14 @@ int store_constant(struct Func_state* state, struct Token constant, int* locatio
 	struct Object object = token_to_object(constant);
 	list_push(scope->constants, scope->constants_count, object);
 	return NO_ERR;
+}
+
+void object_print(struct Object object) {
+	switch (object.type) {
+		case T_NUMBER:
+			printf("%g\n", object.value.number);
+			break;
+		default:
+			break;
+	}
 }
