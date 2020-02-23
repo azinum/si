@@ -23,6 +23,7 @@
 
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* func);
 static int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant);
+static int compile_declvar(struct VM_state* vm, struct Func_state* func, struct Token variable);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
@@ -31,6 +32,17 @@ int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token con
 	int location = -1;
 	store_constant(func, constant, &location);
 	list_push(vm->program, vm->program_size, location);
+	return NO_ERR;
+}
+
+int compile_declvar(struct VM_state* vm, struct Func_state* func, struct Token variable) {
+	int location = -1;
+	int err = store_variable(vm, func, variable, &location);
+	if (err != NO_ERR) {
+		compile_error("Variable already exists");
+		return err;
+	}
+	printf("Stored variable at: %i\n", location);
 	return NO_ERR;
 }
 
@@ -67,8 +79,16 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 		token = ast_get_node(ast, i);
 		if (token) {
 			switch (token->type) {
+				// {number}
 				case T_NUMBER:
 					compile_pushk(vm, func, *token);
+					break;
+
+				// {decl, identifier}
+				case T_DECL_VOID:
+				case T_DECL_NUMBER: {
+					compile_declvar(vm, func, *token);
+				}
 					break;
 
 				// All of these require two operands {opr_a, opr_b, op}

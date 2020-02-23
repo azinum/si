@@ -9,6 +9,8 @@
 
 #define MAX_ARGC 12
 
+struct VM_state;
+
 struct Scope {
 	unsigned int constants_count;
 	struct Object* constants;
@@ -43,6 +45,8 @@ int scope_init(struct Scope* scope, struct Scope* parent);
 int func_state_init(struct Func_state* state);
 
 int store_constant(struct Func_state* state, struct Token constant, int* location);
+
+int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
 
 void object_print(struct Object object);
 

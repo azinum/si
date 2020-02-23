@@ -24,4 +24,7 @@
 
 typedef double obj_number;
 
+#define DECL_NUMBER "number"
+#define DECL_VOID "void"
+
 #endif

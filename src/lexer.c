@@ -17,6 +17,7 @@ static int is_whitespace(char ch);
 static int is_endofline(char ch);
 static int remove_whitespaces(struct Lexer* lexer);
 static int remove_newlines(struct Lexer* lexer);
+static int token_equals(struct Token token, const char* match);
 
 int is_alpha(char ch) {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
@@ -49,6 +50,16 @@ int remove_newlines(struct Lexer* lexer) {
 		lexer->line++;
 	}
 	return NO_ERR;
+}
+
+int token_equals(struct Token token, const char* match) {
+  const char* index = match;
+  for (int i = 0; i < token.length; i++, index++) {
+    if (token.string[i] != *index) {
+      return 0;
+    }
+  }
+  return (*index == 0);
 }
 
 // Jump to next token
@@ -163,9 +174,14 @@ struct Token next_token(struct Lexer* lexer) {
 					lexer->index[0] == '_')) {
 						lexer->index++;
 				}
-				
-				token.type = T_IDENTIFIER;
 				token.length = lexer->index - token.string;
+
+				if (token_equals(token, DECL_NUMBER))
+					token.type = T_DECL_NUMBER;
+				else if (token_equals(token, DECL_VOID))
+					token.type = T_DECL_VOID;
+				else
+					token.type = T_IDENTIFIER;
 			}
 			else if (is_number(ch) || ch == '.') {
 				int dot_count = 0;

@@ -39,6 +39,7 @@ static const struct Operator op_priority[] = {
 static int get_binop(struct Token token);
 static int get_uop(struct Token token);
 static int eof(struct Parser* p);
+static int expect(struct Parser* p, enum Token_types expected_type);
 static int expression_end(struct Parser* p);
 static int statement(struct Parser* p);
 static int statements(struct Parser* p);
@@ -60,6 +61,11 @@ int get_uop(struct Token token) {
 int eof(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 	return token.type == T_EOF;
+}
+
+int expect(struct Parser* p, enum Token_types expected_type) {
+	struct Token token = get_token(p->lexer);
+	return token.type == expected_type;
 }
 
 int expression_end(struct Parser* p) {
@@ -105,27 +111,43 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
+		// decl_type a = <value> ;
+		// decl_type a ;
+		// decl_type a() {...}
+		// decl_type identifier {'=', expr} | {'(...)', '{...}'}
+		case T_DECL_VOID:
+		case T_DECL_NUMBER: {
+			enum Token_types decl_type = token.type;
+			token = next_token(p->lexer);	// Skip variable declaration type
+			// token => identifier
+			if (!expect(p, T_IDENTIFIER)) {
+				parseerror("Expected identifier in declaration\n");
+				return p->status = PARSE_ERR;
+			}
+			token.type = decl_type;
+			ast_add_node(p->ast, token);	// Add identifier to ast
+		}
+			break;
+
 		case T_OPENPAREN: {
 			next_token(p->lexer);	// Skip '('
 			if (expression_end(p)) {
 				parseerror("Expression can't be empty\n");
-				return (p->status = PARSE_ERR);
+				return p->status = PARSE_ERR;
 			}
 			statement(p);
 			if (!expression_end(p)) {
 				parseerror("Missing ')' closing parenthesis in expression\n");
-				return (p->status = PARSE_ERR);
+				return p->status = PARSE_ERR;
 			}
 			next_token(p->lexer);	// Skip ')'
 		}
 			break;
 
-		default: {
+		default:
 			parseerror("Invalid token in expression\n");
 			next_token(p->lexer);
-			return (p->status = PARSE_ERR);
-		}
-			break;
+			return p->status = PARSE_ERR;
 	}
 	return p->status;
 }

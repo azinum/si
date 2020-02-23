@@ -34,6 +34,16 @@ struct Object token_to_object(struct Token token) {
 		}	
 			break;
 
+		case T_DECL_NUMBER: {
+			object.type = T_NUMBER;
+			object.value.number = 0;
+		}
+			break;
+
+		case T_DECL_VOID:
+			object.type = T_VOID;
+			break;
+
 		default:
 			error("Invalid token type\n");
 			break;
@@ -64,6 +74,25 @@ int store_constant(struct Func_state* state, struct Token constant, int* locatio
 	*location = scope->constants_count;
 	struct Object object = token_to_object(constant);
 	list_push(scope->constants, scope->constants_count, object);
+	return NO_ERR;
+}
+
+int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location) {
+	assert(location != NULL);
+	struct Scope* scope = &state->func.scope;
+	char* identifier = string_new_copy(variable.string, variable.length);
+	if (ht_element_exists(&scope->var_locations, identifier)) {
+		string_free(identifier);
+		return ERR;
+	}
+	else {
+		struct Object object = token_to_object(variable);
+		*location = vm->variables_count;
+		ht_insert_element(&scope->var_locations, identifier, *location);
+		list_push(vm->variables, vm->variables_count, object);
+		assert(ht_element_exists(&scope->var_locations, identifier) != 0);
+		string_free(identifier);
+	}
 	return NO_ERR;
 }
 

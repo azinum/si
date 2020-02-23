@@ -134,6 +134,7 @@ unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value
 
 const Hvalue* ht_lookup(const Htable* table, const Hkey key) {
 	assert(table != NULL);
+	if (ht_get_size(table) == 0) return NULL;
 	unsigned int collisions = 0;
 	int index = linear_probe(table, key, &collisions);
 	if (index >= 0 && index < ht_get_size(table)) {
