@@ -14,7 +14,7 @@
 #include "vm.h"
 
 #define vmerror(fmt, ...) \
-	error(COLOR_ERROR "vm-error: " COLOR_NONE fmt, ##__VA_ARGS__)
+	error(COLOR_ERROR "runtime-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
 #define OP_ARITH(OP) { \
 	if (vm->stack_top > 1) { \
@@ -69,7 +69,9 @@ int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant) {
 }
 
 int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
-	return NO_ERR;
+	assert(vm->variables_count > var);
+	struct Object object = vm->variables[var];
+	return stack_push(vm, object);
 }
 
 int stack_reset(struct VM_state* vm) {
@@ -117,6 +119,12 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 			case I_PUSHK: {
 				int constant = vm->program[++i];
 				stack_pushk(vm, &func->scope, constant);
+			}
+				break;
+
+			case I_PUSH_VAR: {
+				int variable = vm->program[++i];
+				stack_pushvar(vm, &func->scope, variable);
 			}
 				break;
 

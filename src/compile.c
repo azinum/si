@@ -8,6 +8,8 @@
 
 #include "error.h"
 #include "config.h"
+#include "str.h"
+#include "hash.h"
 #include "list.h"
 #include "ast.h"
 #include "vm.h"
@@ -21,23 +23,41 @@
 #define compile_error(fmt, ...) \
 	error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
-static int compile(struct VM_state* vm, Ast* ast, struct Func_state* func);
-static int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant);
-static int compile_declvar(struct VM_state* vm, struct Func_state* func, struct Token variable);
+static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state);
+static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant);
+static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
+static int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
-int compile_pushk(struct VM_state* vm, struct Func_state* func, struct Token constant) {
+int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant) {
 	list_push(vm->program, vm->program_size, I_PUSHK);
 	int location = -1;
-	store_constant(func, constant, &location);
+	store_constant(state, constant, &location);
 	list_push(vm->program, vm->program_size, location);
 	return NO_ERR;
 }
 
-int compile_declvar(struct VM_state* vm, struct Func_state* func, struct Token variable) {
+int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
+	struct Scope* scope = &state->func.scope;
+	char* identifier = string_new_copy(variable.string, variable.length);
+	const int* found = ht_lookup(&scope->var_locations, identifier);
 	int location = -1;
-	int err = store_variable(vm, func, variable, &location);
+	string_free(identifier);
+	if (!found) {
+		compile_error("Undeclared variable '%.*s'\n", variable.length, variable.string);
+		return COMPILE_ERR;
+	}
+	// Okay, no errors. Let's continue compiling!
+	location = *found;
+	list_push(vm->program, vm->program_size, I_PUSH_VAR);
+	list_push(vm->program, vm->program_size, location);
+	return NO_ERR;
+}
+
+int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
+	int location = -1;
+	int err = store_variable(vm, state, variable, &location);
 	if (err != NO_ERR) {
 		compile_error("Variable '%.*s' already exists\n", variable.length, variable.string);
 		return err;
@@ -70,9 +90,9 @@ int equal_type(const struct Token* left, const struct Token* right) {
 	return left->type == right->type;
 }
 
-int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
+int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 	assert(vm != NULL);
-	assert(func != NULL);
+	assert(state != NULL);
 	struct Token* token = NULL;
 	for (int i = 0; i < ast_child_count(ast); i++) {
 		token = ast_get_node(ast, i);
@@ -80,13 +100,17 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* func) {
 			switch (token->type) {
 				// {number}
 				case T_NUMBER:
-					compile_pushk(vm, func, *token);
+					compile_pushk(vm, state, *token);
+					break;
+
+				case T_IDENTIFIER:
+					compile_pushvar(vm, state, *token);
 					break;
 
 				// {decl, identifier}
 				case T_DECL_VOID:
 				case T_DECL_NUMBER:
-					compile_declvar(vm, func, *token);
+					compile_declvar(vm, state, *token);
 					break;
 
 				// All of these require two operands {opr_a, opr_b, op}

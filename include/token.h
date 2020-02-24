@@ -42,6 +42,9 @@ enum Token_types {
 	T_COUNT
 };
 
+#define DECL_NUMBER "number"
+#define DECL_VOID "void"
+
 struct Token {
 	int length;
 	char* string;
