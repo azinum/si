@@ -12,15 +12,6 @@
 #include "object.h"
 
 static int func_init(struct Function* func);
-static struct Object token_to_object(struct Token token);
-
-int func_init(struct Function* func) {
-	assert(func != NULL);
-	func->addr = 0;
-	func->stack_offset = 0;
-	scope_init(&func->scope, NULL);
-	return NO_ERR;
-}
 
 struct Object token_to_object(struct Token token) {
 	struct Object object = { .type = token.type };
@@ -51,6 +42,14 @@ struct Object token_to_object(struct Token token) {
 	return object;
 }
 
+int func_init(struct Function* func) {
+	assert(func != NULL);
+	func->addr = 0;
+	func->stack_offset = 0;
+	scope_init(&func->scope, NULL);
+	return NO_ERR;
+}
+
 int scope_init(struct Scope* scope, struct Scope* parent) {
 	assert(scope != NULL);
 	scope->constants_count = 0;
@@ -65,34 +64,6 @@ int func_state_init(struct Func_state* state) {
 	state->argc = 0;
 	state->return_type = T_UNKNOWN;
 	func_init(&state->func);
-	return NO_ERR;
-}
-
-int store_constant(struct Func_state* state, struct Token constant, int* location) {
-	assert(location != NULL);
-	struct Scope* scope = &state->func.scope;
-	*location = scope->constants_count;
-	struct Object object = token_to_object(constant);
-	list_push(scope->constants, scope->constants_count, object);
-	return NO_ERR;
-}
-
-int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location) {
-	assert(location != NULL);
-	struct Scope* scope = &state->func.scope;
-	char* identifier = string_new_copy(variable.string, variable.length);
-	if (ht_element_exists(&scope->var_locations, identifier)) {
-		string_free(identifier);
-		return ERR;
-	}
-	else {
-		struct Object object = token_to_object(variable);
-		*location = vm->variables_count;
-		ht_insert_element(&scope->var_locations, identifier, *location);
-		list_push(vm->variables, vm->variables_count, object);
-		assert(ht_element_exists(&scope->var_locations, identifier) != 0);
-		string_free(identifier);
-	}
 	return NO_ERR;
 }
 

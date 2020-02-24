@@ -27,6 +27,8 @@ static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
 static int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
+static int store_constant(struct Func_state* state, struct Token constant, int* location);
+static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
@@ -61,6 +63,34 @@ int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	if (err != NO_ERR) {
 		compile_error("Variable '%.*s' already exists\n", variable.length, variable.string);
 		return err;
+	}
+	return NO_ERR;
+}
+
+int store_constant(struct Func_state* state, struct Token constant, int* location) {
+	assert(location != NULL);
+	struct Scope* scope = &state->func.scope;
+	*location = scope->constants_count;
+	struct Object object = token_to_object(constant);
+	list_push(scope->constants, scope->constants_count, object);
+	return NO_ERR;
+}
+
+int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location) {
+	assert(location != NULL);
+	struct Scope* scope = &state->func.scope;
+	char* identifier = string_new_copy(variable.string, variable.length);
+	if (ht_element_exists(&scope->var_locations, identifier)) {
+		string_free(identifier);
+		return ERR;
+	}
+	else {
+		struct Object object = token_to_object(variable);
+		*location = vm->variables_count;
+		ht_insert_element(&scope->var_locations, identifier, *location);
+		list_push(vm->variables, vm->variables_count, object);
+		assert(ht_element_exists(&scope->var_locations, identifier) != 0);
+		string_free(identifier);
 	}
 	return NO_ERR;
 }
