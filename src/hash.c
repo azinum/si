@@ -124,7 +124,7 @@ unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value
 	int index = linear_probe(table, key, &collisions);
 	if (index >= 0 && index < ht_get_size(table)) {
 		struct Item item = { .value = value, .used_slot = USED_SLOT };
-		strcpy(item.key, key);
+		strncpy(item.key, key, HTABLE_KEY_SIZE);
 		table->items[index] = item;
 		table->count++;
 	}
