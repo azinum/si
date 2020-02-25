@@ -66,7 +66,7 @@ int token_equals(struct Token token, const char* match) {
 struct Token next_token(struct Lexer* lexer) {
 	(void)is_endofline;
 	assert(lexer != NULL);
-	remove_newlines(lexer);
+	(void)remove_newlines;
 	remove_whitespaces(lexer);
 	struct Token token = {1, lexer->index, T_UNKNOWN};
 
@@ -157,9 +157,13 @@ struct Token next_token(struct Lexer* lexer) {
 			token.type = T_BLOCKEND;
 			break;
 
+		case ';':
+			token.type = T_SEMICOLON;
+			break;
+
 		case '\n':
 		case '\r':
-			assert(0);
+			token.type = T_NEWLINE;
 			break;
 
 		case '\0':

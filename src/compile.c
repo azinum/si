@@ -110,7 +110,7 @@ int token_to_op(struct Token token) {
 		case T_NOT: return I_NOT;
 		default: break;
 	}
-	assert(0);	// TEMP
+	assert(0);
 	return I_UNKNOWN;
 }
 
@@ -133,14 +133,22 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 					compile_pushk(vm, state, *token);
 					break;
 
-				case T_IDENTIFIER:
-					compile_pushvar(vm, state, *token);
+				case T_IDENTIFIER: {
+					int result = compile_pushvar(vm, state, *token);
+					if (result != NO_ERR) return result;
+				}
 					break;
 
 				// {decl, identifier}
 				case T_DECL_VOID:
-				case T_DECL_NUMBER:
-					compile_declvar(vm, state, *token);
+				case T_DECL_NUMBER: {
+					int result = compile_declvar(vm, state, *token);
+					if (result != NO_ERR) return result;
+				}
+					break;
+
+				case T_ASSIGN:
+					list_push(vm->program, vm->program_size, I_ASSIGN);
 					break;
 
 				// All of these require two operands {opr_a, opr_b, op}

@@ -43,6 +43,7 @@
 #define OP_SAMETYPE(LEFT, RIGHT, TYPE) (LEFT.type == TYPE && RIGHT.type == TYPE)
 
 inline int stack_push(struct VM_state* vm, struct Object object);
+inline int stack_pop(struct VM_state* vm);
 inline int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant);
 inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
 inline int stack_reset(struct VM_state* vm);
@@ -59,6 +60,15 @@ int stack_push(struct VM_state* vm, struct Object object) {
 		return vm->status = STACK_ERR;
 	}
 	vm->stack[vm->stack_top++] = object;
+	return NO_ERR;
+}
+
+int stack_pop(struct VM_state* vm) {
+	if (vm->stack_top <= 0) {
+		vmerror("Can't pop stack\n");
+		return vm->status = STACK_ERR;
+	}
+	vm->stack_top--;
 	return NO_ERR;
 }
 
@@ -126,6 +136,10 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				int variable = vm->program[++i];
 				stack_pushvar(vm, &func->scope, variable);
 			}
+				break;
+
+			case I_ASSIGN:
+				stack_pop(vm);
 				break;
 
 			case I_ADD:

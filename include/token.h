@@ -28,6 +28,7 @@ enum Token_types {
 	T_CLOSEDBRACKET,	// ']'
 	T_BLOCKBEGIN,			// '{'
 	T_BLOCKEND,				// '}'
+	T_SEMICOLON,			// ';'
 
 	T_IDENTIFIER,
 	T_NUMBER,

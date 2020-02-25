@@ -93,7 +93,8 @@ int statement(struct Parser* p) {
 }
 
 int statements(struct Parser* p) {
-	while (!eof(p)) p->status = statement(p);
+	while (!eof(p))
+		p->status = statement(p);
 	return p->status;
 }
 
@@ -106,9 +107,20 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
-		case T_IDENTIFIER:
+		case T_IDENTIFIER: {
 			next_token(p->lexer);
 			ast_add_node(p->ast, token);
+			if (expect(p, T_ASSIGN)) {
+				struct Token assign_token = get_token(p->lexer);
+				next_token(p->lexer);	// Skip '='
+				statement(p);	// '= statement'
+				ast_add_node(p->ast, assign_token);
+			}
+		}
+			break;
+
+		case T_NEWLINE:
+			next_token(p->lexer);
 			break;
 
 		// decl_type a = <value> ;
@@ -126,7 +138,18 @@ int simple_expr(struct Parser* p) {
 			}
 			token.type = decl_type;
 			ast_add_node(p->ast, token);	// Add identifier to ast
-			next_token(p->lexer);	// Skip identifier
+			token = next_token(p->lexer);	// Skip identifier
+			if (expect(p, T_ASSIGN)) {	// Variable assignment?
+				next_token(p->lexer);	// Skip '='
+				statement(p);	// Parse the right hand side statement
+				ast_add_node(p->ast, token);	// Add T_ASSIGN to ast
+				if (!(expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))) {
+					parseerror("Missing end of line in declaration\n");
+				}
+				next_token(p->lexer);	// Skip '\n' or ';'
+			}
+			if (expect(p, T_SEMICOLON))
+				next_token(p->lexer);	// Skip ';'
 		}
 			break;
 
