@@ -27,6 +27,7 @@ static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
 static int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
+static int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
 static int store_constant(struct Func_state* state, struct Token constant, int* location);
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
 static int token_to_op(struct Token token);
@@ -47,7 +48,7 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	int location = -1;
 	string_free(identifier);
 	if (!found) {
-		compile_error("Undeclared variable '%.*s'\n", variable.length, variable.string);
+		compile_error("Undeclared identifier '%.*s'\n", variable.length, variable.string);
 		return COMPILE_ERR;
 	}
 	// Okay, no errors. Let's continue compiling!
@@ -64,6 +65,19 @@ int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token 
 		compile_error("Variable '%.*s' already exists\n", variable.length, variable.string);
 		return err;
 	}
+	return NO_ERR;
+}
+
+int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location) {
+	struct Scope* scope = &state->func.scope;
+	char* identifier = string_new_copy(variable.string, variable.length);
+	const int* found = ht_lookup(&scope->var_locations, identifier);
+	string_free(identifier);
+	if (!found) {
+		compile_error("No such variable '%.*s'", variable.length, variable.string);
+		return COMPILE_ERR;
+	}
+	*location = *found;
 	return NO_ERR;
 }
 
@@ -135,7 +149,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 
 				case T_IDENTIFIER: {
 					int result = compile_pushvar(vm, state, *token);
-					if (result != NO_ERR) return result;
+					if (result != NO_ERR)
+						return result;
 				}
 					break;
 
@@ -143,12 +158,19 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 				case T_DECL_VOID:
 				case T_DECL_NUMBER: {
 					int result = compile_declvar(vm, state, *token);
-					if (result != NO_ERR) return result;
+					if (result != NO_ERR)
+						return result;
 				}
 					break;
 
-				case T_ASSIGN:
+				case T_ASSIGN: {
+					int location;
+					int result = get_variable_location(vm, state, *token, &location);
+					if (result != NO_ERR)
+						return result;
 					list_push(vm->program, vm->program_size, I_ASSIGN);
+					list_push(vm->program, vm->program_size, location);
+				}
 					break;
 
 				// All of these require two operands {opr_a, opr_b, op}

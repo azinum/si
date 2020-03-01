@@ -67,11 +67,17 @@ int func_state_init(struct Func_state* state) {
 	return NO_ERR;
 }
 
-void object_print(struct Object object) {
-	switch (object.type) {
+void object_print(const struct Object* object) {
+	assert(object != NULL);
+	switch (object->type) {
 		case T_NUMBER:
-			printf("%g\n", object.value.number);
+			printf("%g\n", object->value.number);
 			break;
+
+		case T_VOID:
+			printf("<void: %p>\n", object);
+			break;
+
 		default:
 			break;
 	}

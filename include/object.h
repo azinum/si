@@ -46,6 +46,6 @@ int scope_init(struct Scope* scope, struct Scope* parent);
 
 int func_state_init(struct Func_state* state);
 
-void object_print(struct Object object);
+void object_print(const struct Object* object);
 
 #endif

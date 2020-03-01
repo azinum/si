@@ -50,6 +50,8 @@ inline int stack_reset(struct VM_state* vm);
 inline int stack_print_top(struct VM_state* vm);
 inline struct Object* stack_gettop(struct VM_state* vm);
 inline struct Object* stack_get(struct VM_state* vm, int offset);
+inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var);
+inline int equal_types(const struct Object* a, const struct Object* b);
 
 static int vm_init(struct VM_state* vm);
 static int vm_dispatch(struct VM_state* vm, struct Function* func);
@@ -92,9 +94,7 @@ int stack_reset(struct VM_state* vm) {
 int stack_print_top(struct VM_state* vm) {
 	struct Object* top = stack_gettop(vm);
 	if (top)
-		object_print(*top);
-	else
-		printf("{}\n");
+		object_print(top);
 	return NO_ERR;
 }
 
@@ -104,8 +104,20 @@ struct Object* stack_gettop(struct VM_state* vm) {
 
 struct Object* stack_get(struct VM_state* vm, int offset) {
 	int index = vm->stack_top - (offset + 1);	// offset 0 is top of stack
-	if (index >= 0) return &vm->stack[index];
+	if (index >= 0)
+		return &vm->stack[index];
 	return NULL;
+}
+
+struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var) {
+	assert(vm->variables_count > var);
+	return &vm->variables[var];
+}
+
+int equal_types(const struct Object* a, const struct Object* b) {
+	assert(a != NULL);
+	assert(b != NULL);
+	return a->type == b->type;
 }
 
 int vm_init(struct VM_state* vm) {
@@ -138,8 +150,17 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 			}
 				break;
 
-			case I_ASSIGN:
+			case I_ASSIGN: {
+				int var_location = vm->program[++i];
+				struct Object* variable = get_variable(vm, &func->scope, var_location);
+				const struct Object* top = stack_gettop(vm);
+				if (!equal_types(variable, top)) {
+					vmerror("Invalid (unequal) types in assignment\n");
+					return RUNTIME_ERR;
+				}
+				variable->value = top->value;
 				stack_pop(vm);
+			}
 				break;
 
 			case I_ADD:

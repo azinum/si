@@ -130,21 +130,24 @@ int simple_expr(struct Parser* p) {
 		case T_DECL_VOID:
 		case T_DECL_NUMBER: {
 			enum Token_types decl_type = token.type;
-			token = next_token(p->lexer);	// Skip variable declaration type
+			struct Token identifier = next_token(p->lexer);	// Skip variable declaration type
 			// token => identifier
 			if (!expect(p, T_IDENTIFIER)) {
 				parseerror("Expected identifier in declaration\n");
 				return p->status = PARSE_ERR;
 			}
-			token.type = decl_type;
-			ast_add_node(p->ast, token);	// Add identifier to ast
+			identifier.type = decl_type;
+			ast_add_node(p->ast, identifier);	// Add identifier to ast
 			token = next_token(p->lexer);	// Skip identifier
 			if (expect(p, T_ASSIGN)) {	// Variable assignment?
 				next_token(p->lexer);	// Skip '='
 				statement(p);	// Parse the right hand side statement
-				ast_add_node(p->ast, token);	// Add T_ASSIGN to ast
+				// ast_add_node(p->ast, token);	// Add T_ASSIGN to ast
+				identifier.type = T_ASSIGN;
+				ast_add_node(p->ast, identifier);
 				if (!(expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))) {
 					parseerror("Missing end of line in declaration\n");
+					return p->status = PARSE_ERR;
 				}
 				next_token(p->lexer);	// Skip '\n' or ';'
 			}
