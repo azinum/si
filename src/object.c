@@ -11,8 +11,6 @@
 #include "str.h"
 #include "object.h"
 
-static int func_init(struct Function* func);
-
 struct Object token_to_object(struct Token token) {
 	struct Object object = { .type = token.type };
 	switch (token.type) {
@@ -56,14 +54,6 @@ int scope_init(struct Scope* scope, struct Scope* parent) {
 	scope->constants = NULL;
 	scope->var_locations = ht_create_empty();
 	scope->parent = parent;
-	return NO_ERR;
-}
-
-int func_state_init(struct Func_state* state) {
-	assert(state != NULL);
-	state->argc = 0;
-	state->return_type = T_UNKNOWN;
-	func_init(&state->func);
 	return NO_ERR;
 }
 

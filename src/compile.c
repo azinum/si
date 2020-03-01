@@ -17,12 +17,21 @@
 #include "token.h"
 #include "compile.h"
 
+// Compile-time function state
+struct Func_state {
+	struct Function func;
+	int argc;
+	int arg_types[MAX_ARGC];
+	int return_type;
+};
+
 // TODO: Add more useful information when printing errors.
 // i.e. add info about where the error occured e.t.c.
 // Just like we did in the lexer and parser.
 #define compile_error(fmt, ...) \
 	error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
+static int func_state_init(struct Func_state* state);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
@@ -32,6 +41,14 @@ static int store_constant(struct Func_state* state, struct Token constant, int* 
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
+
+int func_state_init(struct Func_state* state) {
+	assert(state != NULL);
+	state->argc = 0;
+	state->return_type = T_UNKNOWN;
+	func_init(&state->func);
+	return NO_ERR;
+}
 
 int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant) {
 	list_push(vm->program, vm->program_size, I_PUSHK);
