@@ -108,13 +108,14 @@ int simple_expr(struct Parser* p) {
 			break;
 
 		case T_IDENTIFIER: {
+			struct Token identifier = token;
 			next_token(p->lexer);
 			ast_add_node(p->ast, token);
 			if (expect(p, T_ASSIGN)) {
-				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer);	// Skip '='
 				statement(p);	// '= statement'
-				ast_add_node(p->ast, assign_token);
+				identifier.type = T_ASSIGN;
+				ast_add_node(p->ast, identifier);
 			}
 		}
 			break;
