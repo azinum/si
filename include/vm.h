@@ -39,8 +39,13 @@ struct VM_state {
 	int status;
 	int* program;
 	int program_size;
+	int prev_ip;	// Instruction pointer from the latest/previous vm dispatch
 };
 
-int vm_exec(char* input);
+struct VM_state* vm_state_new();
+
+int vm_exec(struct VM_state* vm, char* input);
+
+void vm_state_free(struct VM_state* vm);
 
 #endif

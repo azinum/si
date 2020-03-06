@@ -46,7 +46,6 @@ int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
 	state->argc = 0;
 	state->return_type = T_UNKNOWN;
-	func_init(&state->func);
 	return NO_ERR;
 }
 
@@ -229,6 +228,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	if (ast_is_empty(*ast)) return NO_ERR;
 	struct Func_state global_state;
 	func_state_init(&global_state);
+	global_state.func = vm->global;
 	int status = compile(vm, ast, &global_state);
 	vm->global = global_state.func;
 	return status;

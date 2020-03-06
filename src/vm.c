@@ -128,10 +128,13 @@ int vm_init(struct VM_state* vm) {
 	vm->status = NO_ERR;
 	vm->program = NULL;
 	vm->program_size = 0;
+	vm->prev_ip = 0;
 	return vm->status;
 }
 
 int vm_dispatch(struct VM_state* vm, struct Function* func) {
+	if (vm->prev_ip == vm->program_size)
+		return NO_ERR;	// Okay, program has not changed since last dispatch
 	// Normal dispatch for now
 	// TODO: convert this to a jumptable
 	int instruction = I_UNKNOWN;
@@ -212,20 +215,34 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 		}
 	}
 	stack_print_top(vm);
+	vm->prev_ip = vm->program_size;
 	return NO_ERR;
 }
 
-int vm_exec(char* input) {
-	assert(input != NULL);
-	struct VM_state vm = {};
-	vm_init(&vm);
+struct VM_state* vm_state_new() {
+	struct VM_state* vm = malloc(sizeof(struct VM_state));
+	if (!vm) {
+		vmerror("Failed to initialize VM state\n");
+		return NULL;
+	}
+	vm_init(vm);
+	return vm;
+}
 
+int vm_exec(struct VM_state* vm, char* input) {
+	assert(input != NULL);
+	assert(vm != NULL);
 	Ast ast = ast_create();
 	if (parser_parse(input, &ast) == NO_ERR) {
-		if (compile_from_tree(&vm, &ast) == NO_ERR)
-			vm_dispatch(&vm, &vm.global);
-		// ast_print(ast);
+		if (compile_from_tree(vm, &ast) == NO_ERR) {
+			vm_dispatch(vm, &vm->global);
+		}
 	}
 	ast_free(&ast);
-	return vm.status;
+	return vm->status;
+}
+
+void vm_state_free(struct VM_state* vm) {
+	assert(vm != NULL);
+	free(vm);
 }
