@@ -34,6 +34,7 @@ enum Token_types {
 	T_NUMBER,
 	T_VOID,
 
+	T_DECL,
 	T_DECL_NUMBER,
 	T_DECL_VOID,
 
@@ -43,6 +44,7 @@ enum Token_types {
 	T_COUNT
 };
 
+#define DECL_TOKEN "let"
 #define DECL_NUMBER "number"
 #define DECL_VOID "void"
 

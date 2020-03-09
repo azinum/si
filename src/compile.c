@@ -171,8 +171,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 					break;
 
 				// {decl, identifier}
-				case T_DECL_VOID:
-				case T_DECL_NUMBER: {
+				case T_DECL: {
 					int result = compile_declvar(vm, state, *token);
 					if (result != NO_ERR)
 						return result;

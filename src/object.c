@@ -23,14 +23,8 @@ struct Object token_to_object(struct Token token) {
 		}	
 			break;
 
-		case T_DECL_NUMBER: {
-			object.type = T_NUMBER;
-			object.value.number = 0;
-		}
-			break;
-
-		case T_DECL_VOID:
-			object.type = T_VOID;
+		case T_DECL:
+			object.type = T_UNKNOWN;
 			break;
 
 		default:

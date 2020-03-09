@@ -180,10 +180,8 @@ struct Token next_token(struct Lexer* lexer) {
 				}
 				token.length = lexer->index - token.string;
 
-				if (token_equals(token, DECL_NUMBER))
-					token.type = T_DECL_NUMBER;
-				else if (token_equals(token, DECL_VOID))
-					token.type = T_DECL_VOID;
+				if (token_equals(token, DECL_TOKEN))
+					token.type = T_DECL;
 				else
 					token.type = T_IDENTIFIER;
 			}

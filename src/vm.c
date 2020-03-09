@@ -157,8 +157,10 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				int var_location = vm->program[++i];
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-				if (!equal_types(variable, top)) {
-					vmerror("Invalid (unequal) types in assignment\n");
+				if (variable->type == T_UNKNOWN)
+					*variable = *top;
+				else if (!equal_types(variable, top)) {
+					vmerror("Invalid types in assignment\n");
 					return RUNTIME_ERR;
 				}
 				variable->value = top->value;

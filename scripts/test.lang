@@ -1,4 +1,4 @@
 
-number a = 5;
-number b = a + 3;
-a
+let a = 5;
+let b = a + 3;
+b

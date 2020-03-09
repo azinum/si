@@ -124,20 +124,16 @@ int simple_expr(struct Parser* p) {
 			next_token(p->lexer);
 			break;
 
-		// decl_type a = <value> ;
-		// decl_type a ;
-		// decl_type a() {...}
-		// decl_type identifier {'=', expr} | {'(...)', '{...}'}
-		case T_DECL_VOID:
-		case T_DECL_NUMBER: {
-			enum Token_types decl_type = token.type;
-			struct Token identifier = next_token(p->lexer);	// Skip variable declaration type
+		// let a = <value> ;
+		// let a ;
+		case T_DECL: {
+			struct Token identifier = next_token(p->lexer);	// Skip 'let'
+			identifier.type = T_DECL;
 			// token => identifier
 			if (!expect(p, T_IDENTIFIER)) {
 				parseerror("Expected identifier in declaration\n");
 				return p->status = PARSE_ERR;
 			}
-			identifier.type = decl_type;
 			ast_add_node(p->ast, identifier);	// Add identifier to ast
 			token = next_token(p->lexer);	// Skip identifier
 			if (expect(p, T_ASSIGN)) {	// Variable assignment?
