@@ -58,10 +58,6 @@ void object_print(const struct Object* object) {
 			printf("%g\n", object->value.number);
 			break;
 
-		case T_VOID:
-			printf("<void: %p>\n", object);
-			break;
-
 		default:
 			break;
 	}

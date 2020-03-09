@@ -151,14 +151,9 @@ int simple_expr(struct Parser* p) {
 				statement(p); // Parse the right hand side statement
 				ast_add_node(p->ast, assign_token);
 				ast_add_node(p->ast, identifier);
-				if (!(expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))) {
-					parseerror("Missing end of line in declaration\n");
-					return p->status = PARSE_ERR;
-				}
-				next_token(p->lexer); // Skip '\n' or ';'
 			}
-			if (expect(p, T_SEMICOLON))
-				next_token(p->lexer); // Skip ';'
+			if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
+					next_token(p->lexer); // Skip '\n' or ';'
 		}
 			break;
 

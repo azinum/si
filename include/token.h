@@ -32,11 +32,8 @@ enum Token_types {
 
 	T_IDENTIFIER,
 	T_NUMBER,
-	T_VOID,
 
-	T_DECL,
-	T_DECL_NUMBER,
-	T_DECL_VOID,
+	T_DECL,	// 'let'
 
 	T_NEWLINE,
 	T_EOF,
@@ -45,8 +42,6 @@ enum Token_types {
 };
 
 #define DECL_TOKEN "let"
-#define DECL_NUMBER "number"
-#define DECL_VOID "void"
 
 struct Token {
 	int length;

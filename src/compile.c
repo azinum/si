@@ -21,8 +21,6 @@
 struct Func_state {
 	struct Function func;
 	int argc;
-	int arg_types[MAX_ARGC];
-	int return_type;
 };
 
 // TODO: Add more useful information when printing errors.
@@ -45,7 +43,6 @@ static int equal_type(const struct Token* left, const struct Token* right);
 int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
 	state->argc = 0;
-	state->return_type = T_UNKNOWN;
 	return NO_ERR;
 }
 
@@ -144,7 +141,6 @@ int token_to_op(struct Token token) {
 	return I_UNKNOWN;
 }
 
-// TODO: Compare between constants and variables (when implemented)
 int equal_type(const struct Token* left, const struct Token* right) {
 	assert(left != NULL && right != NULL);
 	return left->type == right->type;
