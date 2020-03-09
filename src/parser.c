@@ -26,12 +26,12 @@ struct Operator {
 
 // Warning: Order is reserved. DO NOT CHANGE.
 static const struct Operator op_priority[] = {
-	{0, 0},	// T_UNKNOWN
-	{10, 10}, {10, 10},	// T_ADD, T_SUB
-	{11, 11}, {11, 11},	// T_MULT, T_DIV
-	{3, 3},		{3, 3},		// T_LT, T_GT
-	{3, 3},		{3, 3},		// T_EQ, T_LEQ
-	{3, 3},		{3, 3},		// T_GEQ, T_NEQ
+	{0, 0}, // T_UNKNOWN
+	{10, 10}, {10, 10}, // T_ADD, T_SUB
+	{11, 11}, {11, 11}, // T_MULT, T_DIV
+	{3, 3},   {3, 3},   // T_LT, T_GT
+	{3, 3},   {3, 3},   // T_EQ, T_LEQ
+	{3, 3},   {3, 3},   // T_GEQ, T_NEQ
 };
 
 #define UNARY_PRIORITY 12
@@ -49,13 +49,13 @@ static int expr(struct Parser* p, int priority);
 int get_binop(struct Token token) {
 	if (token.type > T_UNKNOWN && token.type < T_NOBINOP)
 		return token.type;
-	return T_NOBINOP;	// This is not a binary operator
+	return T_NOBINOP; // This is not a binary operator
 }
 
 int get_uop(struct Token token) {
 	if ((token.type > T_NOBINOP && token.type < T_NOUNOP) || token.type == T_SUB)
 		return token.type;
-	return T_NOUNOP;	// This is not a unary operator
+	return T_NOUNOP;  // This is not a unary operator
 }
 
 int eof(struct Parser* p) {
@@ -107,16 +107,22 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
+		// The assignment case:
+		// Output: { (expr) assign identifier }
+		// No assignment case:
+		// Output: { identifier }
 		case T_IDENTIFIER: {
 			struct Token identifier = token;
 			next_token(p->lexer);
-			ast_add_node(p->ast, token);
 			if (expect(p, T_ASSIGN)) {
-				next_token(p->lexer);	// Skip '='
-				statement(p);	// '= statement'
-				identifier.type = T_ASSIGN;
-				ast_add_node(p->ast, identifier);
+				struct Token assign_token = get_token(p->lexer);
+				next_token(p->lexer); // Skip '='
+				statement(p); // Parse the right hand side statement
+				ast_add_node(p->ast, assign_token);
+				if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
+					next_token(p->lexer);
 			}
+			ast_add_node(p->ast, identifier);
 		}
 			break;
 
@@ -126,35 +132,38 @@ int simple_expr(struct Parser* p) {
 
 		// let a = <value> ;
 		// let a ;
+		// The assignment case:
+		// Output: { decl identifier (expr) assign identifier }
+		// No assignment case:
+		// Output: { decl identifier }
 		case T_DECL: {
-			struct Token identifier = next_token(p->lexer);	// Skip 'let'
-			identifier.type = T_DECL;
-			// token => identifier
+			ast_add_node(p->ast, token);	// 'let' token
+			struct Token identifier = next_token(p->lexer); // Skip 'let'
 			if (!expect(p, T_IDENTIFIER)) {
 				parseerror("Expected identifier in declaration\n");
 				return p->status = PARSE_ERR;
 			}
-			ast_add_node(p->ast, identifier);	// Add identifier to ast
-			token = next_token(p->lexer);	// Skip identifier
-			if (expect(p, T_ASSIGN)) {	// Variable assignment?
-				next_token(p->lexer);	// Skip '='
-				statement(p);	// Parse the right hand side statement
-				// ast_add_node(p->ast, token);	// Add T_ASSIGN to ast
-				identifier.type = T_ASSIGN;
+			ast_add_node(p->ast, identifier); // Add identifier to ast
+			next_token(p->lexer); // Skip identifier
+			if (expect(p, T_ASSIGN)) {  // Variable assignment?
+				struct Token assign_token = get_token(p->lexer);
+				next_token(p->lexer); // Skip '='
+				statement(p); // Parse the right hand side statement
+				ast_add_node(p->ast, assign_token);
 				ast_add_node(p->ast, identifier);
 				if (!(expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))) {
 					parseerror("Missing end of line in declaration\n");
 					return p->status = PARSE_ERR;
 				}
-				next_token(p->lexer);	// Skip '\n' or ';'
+				next_token(p->lexer); // Skip '\n' or ';'
 			}
 			if (expect(p, T_SEMICOLON))
-				next_token(p->lexer);	// Skip ';'
+				next_token(p->lexer); // Skip ';'
 		}
 			break;
 
 		case T_OPENPAREN: {
-			next_token(p->lexer);	// Skip '('
+			next_token(p->lexer); // Skip '('
 			if (expression_end(p)) {
 				parseerror("Expression can't be empty\n");
 				return p->status = PARSE_ERR;
@@ -164,7 +173,7 @@ int simple_expr(struct Parser* p) {
 				parseerror("Missing ')' closing parenthesis in expression\n");
 				return p->status = PARSE_ERR;
 			}
-			next_token(p->lexer);	// Skip ')'
+			next_token(p->lexer); // Skip ')'
 		}
 			break;
 
@@ -182,7 +191,7 @@ int expr(struct Parser* p, int priority) {
 	struct Token uop_token = get_token(p->lexer);
 	int uop = get_uop(uop_token);
 	if (uop != T_NOUNOP) {
-		next_token(p->lexer);	// Skip operator token
+		next_token(p->lexer); // Skip operator token
 		expr(p, UNARY_PRIORITY);
 		ast_add_node(p->ast, uop_token);
 	}

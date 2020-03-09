@@ -23,7 +23,7 @@ struct Object token_to_object(struct Token token) {
 		}	
 			break;
 
-		case T_DECL:
+		case T_IDENTIFIER:
 			object.type = T_UNKNOWN;
 			break;
 

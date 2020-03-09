@@ -78,7 +78,7 @@ int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	int location = -1;
 	int err = store_variable(vm, state, variable, &location);
 	if (err != NO_ERR) {
-		compile_error("Variable '%.*s' already exists\n", variable.length, variable.string);
+		compile_error("Variable '%.*s' is already declared\n", variable.length, variable.string);
 		return err;
 	}
 	return NO_ERR;
@@ -172,15 +172,19 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 
 				// {decl, identifier}
 				case T_DECL: {
-					int result = compile_declvar(vm, state, *token);
+					struct Token* identifier = ast_get_node(ast, ++i);
+					assert(identifier != NULL);
+					int result = compile_declvar(vm, state, *identifier);
 					if (result != NO_ERR)
 						return result;
 				}
 					break;
 
 				case T_ASSIGN: {
+					struct Token* identifier = ast_get_node(ast, ++i);
+					assert(identifier != NULL);
 					int location;
-					int result = get_variable_location(vm, state, *token, &location);
+					int result = get_variable_location(vm, state, *identifier, &location);
 					if (result != NO_ERR)
 						return result;
 					list_push(vm->program, vm->program_size, I_ASSIGN);
