@@ -56,6 +56,8 @@ int remove_whitespaces(struct Lexer* lexer) {
 			lexerror("Multi-line comment is incomplete\n");
 			return LEX_ERR;
 		}
+		if (is_endofline(*lexer->index))
+			lexer->line++;
 		lexer->index += 3;
 	}
 	return NO_ERR;
@@ -182,6 +184,9 @@ struct Token next_token(struct Lexer* lexer) {
 		case '\n':
 		case '\r':
 			token.type = T_NEWLINE;
+			token.length = 0;
+			lexer->count = 0;
+			lexer->line++;
 			break;
 
 		case '\0':

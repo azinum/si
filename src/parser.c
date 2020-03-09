@@ -86,6 +86,8 @@ int statement(struct Parser* p) {
 
 		default:
 			expr(p, 0);
+			if (p->status != NO_ERR)
+				return p->status;
 			break;
 	}
 
@@ -212,7 +214,7 @@ int parser_parse(char* input, Ast* ast) {
 	struct Lexer lexer = {
 		.index = input,
 		.line = 1,
-		.count = 1,
+		.count = 0,
 		.token = (struct Token) {0}
 	};
 	struct Parser parser = {
