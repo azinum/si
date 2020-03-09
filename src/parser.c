@@ -119,10 +119,10 @@ int simple_expr(struct Parser* p) {
 				next_token(p->lexer); // Skip '='
 				statement(p); // Parse the right hand side statement
 				ast_add_node(p->ast, assign_token);
-				if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
-					next_token(p->lexer);
 			}
 			ast_add_node(p->ast, identifier);
+			if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
+					next_token(p->lexer);
 		}
 			break;
 

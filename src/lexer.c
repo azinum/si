@@ -40,6 +40,24 @@ int remove_whitespaces(struct Lexer* lexer) {
 		lexer->index++;
 		lexer->count++;
 	}
+	if (*lexer->index == '/' && *(lexer->index + 1) == '/') {
+		lexer->index += 2;
+		while (*lexer->index && !is_endofline(*lexer->index))
+			lexer->index++;
+	}
+	if (*lexer->index == '/' && *(lexer->index + 1) == '*') {
+		lexer->index += 2;
+		while (*lexer->index && !(*lexer->index == '*' && *(lexer->index + 1) == '/')) {
+			if (is_endofline(*lexer->index))
+				lexer->line++;
+			lexer->index++;
+		}
+		if (!(*lexer->index)) {
+			lexerror("Multi-line comment is incomplete\n");
+			return LEX_ERR;
+		}
+		lexer->index += 3;
+	}
 	return NO_ERR;
 }
 
