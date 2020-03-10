@@ -28,17 +28,15 @@ int user_input(struct VM_state* vm) {
 }
 
 int si_exec(int argc, char** argv) {
-	(void)user_input;
-	struct VM_state* vm = vm_state_new();
-	if (!vm)
-		return ERR;
+	struct VM_state vm;
+	vm_init(&vm);
 	char* input = read_file("test/test.lang");
 	if (input) {
-		vm_exec(vm, input);
+		vm_exec(&vm, input);
 		free(input);
 	}
 	print_memory_info();
-	user_input(vm);
-	vm_state_free(vm);
+	user_input(&vm);
+	vm_state_free(&vm);
 	return NO_ERR;
 }

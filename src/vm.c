@@ -54,7 +54,6 @@ inline struct Object* stack_get(struct VM_state* vm, int offset);
 inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var);
 inline int equal_types(const struct Object* a, const struct Object* b);
 
-static int vm_init(struct VM_state* vm);
 static int vm_dispatch(struct VM_state* vm, struct Function* func);
 
 int stack_push(struct VM_state* vm, struct Object object) {
@@ -119,19 +118,6 @@ int equal_types(const struct Object* a, const struct Object* b) {
 	assert(a != NULL);
 	assert(b != NULL);
 	return a->type == b->type;
-}
-
-int vm_init(struct VM_state* vm) {
-	assert(vm != NULL);
-	scope_init(&vm->global.scope, NULL);
-	vm->variables = NULL;
-	vm->variable_count = 0;
-	vm->stack_top = 0;
-	vm->status = NO_ERR;
-	vm->program = NULL;
-	vm->program_size = 0;
-	vm->prev_ip = 0;
-	return vm->status;
 }
 
 int vm_dispatch(struct VM_state* vm, struct Function* func) {
@@ -226,6 +212,20 @@ done_exec:
 	return NO_ERR;
 }
 
+int vm_init(struct VM_state* vm) {
+	assert(vm != NULL);
+	scope_init(&vm->global.scope, NULL);
+	vm->variables = NULL;
+	vm->variable_count = 0;
+	vm->stack_top = 0;
+	vm->status = NO_ERR;
+	vm->program = NULL;
+	vm->program_size = 0;
+	vm->prev_ip = 0;
+	vm->heap_allocated = 0;
+	return vm->status;
+}
+
 struct VM_state* vm_state_new() {
 	struct VM_state* vm = mmalloc(sizeof(struct VM_state));
 	if (!vm) {
@@ -233,6 +233,7 @@ struct VM_state* vm_state_new() {
 		return NULL;
 	}
 	vm_init(vm);
+	vm->heap_allocated = 1;
 	return vm;
 }
 
@@ -260,6 +261,7 @@ void vm_state_free(struct VM_state* vm) {
 	mfree(vm->program, vm->program_size * sizeof(Instruction));
 	vm->program_size = 0;
 	vm->prev_ip = 0;
-	mfree(vm, sizeof(struct VM_state));
-	assert(memory_alloc_count() == 0);	// Memory leak if this assert fails
+	if (vm->heap_allocated)
+		mfree(vm, sizeof(struct VM_state));
+	assert(memory_alloc_count() == 0);
 }
