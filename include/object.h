@@ -38,6 +38,8 @@ int func_init(struct Function* func);
 
 int scope_init(struct Scope* scope, struct Scope* parent);
 
+int scope_free(struct Scope* scope);
+
 void object_print(const struct Object* object);
 
 #endif

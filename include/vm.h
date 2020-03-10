@@ -22,6 +22,8 @@ enum VM_instructions {
 	I_NEQ,
 	I_NOT,
 
+	I_RETURN,
+
 	I_ASSIGN,
 	I_PUSHK,
 	I_POP,

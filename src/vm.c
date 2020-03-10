@@ -6,10 +6,8 @@
 
 #include "error.h"
 #include "mem.h"
-#include "config.h"
 #include "list.h"
 #include "ast.h"
-#include "hash.h"
 #include "parser.h"
 #include "compile.h"
 #include "vm.h"
@@ -213,10 +211,15 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				UNOP_ARITH(!);
 				break;
 
+			case I_RETURN:
+				goto done_exec;
+				break;
+
 			default:
 				break;
 		}
 	}
+done_exec:
 	stack_print_top(vm);
 	vm->prev_ip = vm->program_size;
 	return NO_ERR;
@@ -249,5 +252,15 @@ int vm_exec(struct VM_state* vm, char* input) {
 
 void vm_state_free(struct VM_state* vm) {
 	assert(vm != NULL);
+	scope_free(&vm->global.scope);
+	mfree(vm->variables, vm->variables_count * sizeof(struct Object));
+	vm->variables_count = 0;
+	vm->stack_top = 0;
+	vm->status = 0;
+	mfree(vm->program, vm->program_size * sizeof(int));
+	vm->program_size = 0;
+	vm->prev_ip = 0;
 	mfree(vm, sizeof(struct VM_state));
+	assert(memory_alloc_count() == 0);	// Memory leak if this assert fails
+	print_memory_info();
 }

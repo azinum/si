@@ -5,6 +5,8 @@
 
 void print_memory_info();
 
+int memory_alloc_count();
+
 void* mmalloc(const unsigned int size);
 
 void* mcalloc(const unsigned int size, const unsigned int count);

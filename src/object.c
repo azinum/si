@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "mem.h"
 #include "list.h"
 #include "vm.h"
 #include "token.h"
@@ -48,6 +49,13 @@ int scope_init(struct Scope* scope, struct Scope* parent) {
 	scope->constants = NULL;
 	scope->var_locations = ht_create_empty();
 	scope->parent = parent;
+	return NO_ERR;
+}
+
+int scope_free(struct Scope* scope) {
+	assert(scope != NULL);
+	mfree(scope->constants, scope->constants_count * sizeof(struct Object));
+	ht_free(&scope->var_locations);
 	return NO_ERR;
 }
 

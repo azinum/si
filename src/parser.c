@@ -182,6 +182,11 @@ int simple_expr(struct Parser* p) {
 		}
 			break;
 
+		case T_RETURN:
+			next_token(p->lexer);
+			ast_add_node(p->ast, token);
+			break;
+
 		default:
 			parseerror("Invalid token in expression\n");
 			next_token(p->lexer);

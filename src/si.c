@@ -29,11 +29,11 @@ int si_exec(int argc, char** argv) {
 	struct VM_state* vm = vm_state_new();
 	if (!vm)
 		return ERR;
-	char* input = read_file("scripts/test.lang");
-	if (input) {
-		vm_exec(vm, input);
-		free(input);
-	}
+	// char* input = read_file("scripts/test.lang");
+	// if (input) {
+	// 	vm_exec(vm, input);
+	// 	free(input);
+	// }
 	user_input(vm);
 	vm_state_free(vm);
 	return NO_ERR;

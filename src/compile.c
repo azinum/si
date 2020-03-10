@@ -212,6 +212,10 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 				}
 					break;
 
+				case T_RETURN:
+					list_push(vm->program, vm->program_size, I_RETURN);
+					break;
+
 				default:
 					compile_error("%s\n", "Invalid instruction");
 					return COMPILE_ERR;

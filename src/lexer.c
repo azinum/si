@@ -205,6 +205,8 @@ struct Token next_token(struct Lexer* lexer) {
 
 				if (token_equals(token, DECL_TOKEN))
 					token.type = T_DECL;
+				else if (token_equals(token, RETURN_TOKEN))
+					token.type = T_RETURN;
 				else
 					token.type = T_IDENTIFIER;
 			}

@@ -27,6 +27,6 @@ void string_to_number(char* string, obj_number* number) {
 
 void string_free(char* string) {
 	assert(string != NULL);
-	unsigned int length = strlen(string);
-	mfree(string, length);
+	unsigned int length = strlen(string) + 1;
+	mfree(string, length * sizeof(char));
 }

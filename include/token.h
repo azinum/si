@@ -34,6 +34,7 @@ enum Token_types {
 	T_NUMBER,
 
 	T_DECL,	// 'let'
+	T_RETURN,
 
 	T_NEWLINE,
 	T_EOF,
@@ -41,7 +42,8 @@ enum Token_types {
 	T_COUNT
 };
 
-#define DECL_TOKEN "let"
+#define DECL_TOKEN 		"let"
+#define RETURN_TOKEN 	"return"
 
 struct Token {
 	int length;

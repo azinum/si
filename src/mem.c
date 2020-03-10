@@ -23,9 +23,7 @@ static struct Memory_info info = {
 	.alloc_count = 0,
 };
 
-static void memory_info();
-
-void memory_info() {
+static void memory_info() {
 	printf(
 		"Memory info:\n"
 		"  Memory allocated: %g KB (%i bytes)\n"
@@ -36,16 +34,26 @@ void memory_info() {
 	);
 }
 
+static int alloc_count() {
+	return info.alloc_count;
+}
+
 #else
 
 #define mem_info_update(add_total, add_count)
 
 #define memory_info()
 
+#define alloc_count() 0
+
 #endif
 
 void print_memory_info() {
 	memory_info();
+}
+
+int memory_alloc_count() {
+	return alloc_count();
 }
 
 void* mmalloc(const unsigned int size) {
