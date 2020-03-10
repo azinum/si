@@ -34,9 +34,9 @@ static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
 static int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
-static int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
-static int store_constant(struct Func_state* state, struct Token constant, int* location);
-static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location);
+static int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
+static int store_constant(struct Func_state* state, struct Token constant, Instruction* location);
+static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
@@ -48,7 +48,7 @@ int func_state_init(struct Func_state* state) {
 
 int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant) {
 	list_push(vm->program, vm->program_size, I_PUSHK);
-	int location = -1;
+	Instruction location = -1;
 	store_constant(state, constant, &location);
 	list_push(vm->program, vm->program_size, location);
 	return NO_ERR;
@@ -58,7 +58,7 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	struct Scope* scope = &state->func.scope;
 	char* identifier = string_new_copy(variable.string, variable.length);
 	const int* found = ht_lookup(&scope->var_locations, identifier);
-	int location = -1;
+	Instruction location = -1;
 	string_free(identifier);
 	if (!found) {
 		compile_error("Undeclared identifier '%.*s'\n", variable.length, variable.string);
@@ -68,11 +68,12 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	location = *found;
 	list_push(vm->program, vm->program_size, I_PUSH_VAR);
 	list_push(vm->program, vm->program_size, location);
+	assert(location >= 0);
 	return NO_ERR;
 }
 
 int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
-	int location = -1;
+	Instruction location;
 	int err = store_variable(vm, state, variable, &location);
 	if (err != NO_ERR) {
 		compile_error("Variable '%.*s' is already declared\n", variable.length, variable.string);
@@ -81,7 +82,7 @@ int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	return NO_ERR;
 }
 
-int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location) {
+int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location) {
 	struct Scope* scope = &state->func.scope;
 	char* identifier = string_new_copy(variable.string, variable.length);
 	const int* found = ht_lookup(&scope->var_locations, identifier);
@@ -94,7 +95,7 @@ int get_variable_location(struct VM_state* vm, struct Func_state* state, struct 
 	return NO_ERR;
 }
 
-int store_constant(struct Func_state* state, struct Token constant, int* location) {
+int store_constant(struct Func_state* state, struct Token constant, Instruction* location) {
 	assert(location != NULL);
 	struct Scope* scope = &state->func.scope;
 	*location = scope->constants_count;
@@ -103,7 +104,7 @@ int store_constant(struct Func_state* state, struct Token constant, int* locatio
 	return NO_ERR;
 }
 
-int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, int* location) {
+int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location) {
 	assert(location != NULL);
 	struct Scope* scope = &state->func.scope;
 	char* identifier = string_new_copy(variable.string, variable.length);
@@ -113,9 +114,9 @@ int store_variable(struct VM_state* vm, struct Func_state* state, struct Token v
 	}
 	else {
 		struct Object object = token_to_object(variable);
-		*location = vm->variables_count;
+		*location = vm->variable_count;
 		ht_insert_element(&scope->var_locations, identifier, *location);
-		list_push(vm->variables, vm->variables_count, object);
+		list_push(vm->variables, vm->variable_count, object);
 		assert(ht_element_exists(&scope->var_locations, identifier) != 0);
 		string_free(identifier);
 	}
@@ -179,7 +180,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 				case T_ASSIGN: {
 					struct Token* identifier = ast_get_node(ast, ++i);
 					assert(identifier != NULL);
-					int location;
+					Instruction location;
 					int result = get_variable_location(vm, state, *identifier, &location);
 					if (result != NO_ERR)
 						return result;

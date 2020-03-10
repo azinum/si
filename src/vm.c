@@ -24,7 +24,8 @@
 	    left->value.number = left->value.number OP right->value.number; \
 	    vm->stack_top--; \
 	  } \
-	  else vmerror("Invalid types in binary arithmetic operation\n"); \
+		else \
+			vmerror("Invalid types in binary arithmetic operation\n"); \
 	} \
 } \
 
@@ -35,7 +36,8 @@
 	  if (top->type == T_NUMBER) { \
 	    top->value.number = UOP(top->value.number); \
 	  } \
-	  else vmerror("Invalid types in unary arithmetic operation\n"); \
+	  else \
+			vmerror("Invalid types in unary arithmetic operation\n"); \
 	} \
 } \
 
@@ -80,7 +82,7 @@ int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant) {
 }
 
 int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
-	assert(vm->variables_count > var);
+	assert(vm->variable_count > var);
 	struct Object object = vm->variables[var];
 	return stack_push(vm, object);
 }
@@ -109,7 +111,7 @@ struct Object* stack_get(struct VM_state* vm, int offset) {
 }
 
 struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var) {
-	assert(vm->variables_count > var);
+	assert(vm->variable_count > var);
 	return &vm->variables[var];
 }
 
@@ -123,6 +125,7 @@ int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
 	scope_init(&vm->global.scope, NULL);
 	vm->variables = NULL;
+	vm->variable_count = 0;
 	vm->stack_top = 0;
 	vm->status = NO_ERR;
 	vm->program = NULL;
@@ -136,7 +139,7 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 		return NO_ERR;	// Okay, program has not changed since last dispatch
 	// Normal dispatch for now
 	// TODO: convert this to a jumptable
-	for (int i = func->addr; i < vm->program_size; i++) {
+	for (Instruction i = func->addr; i < vm->program_size; i++) {
 		switch (vm->program[i]) {
 			case I_PUSHK: {
 				int constant = vm->program[++i];
@@ -163,6 +166,10 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				variable->value = top->value;
 				stack_pop(vm);
 			}
+				break;
+
+			case I_RETURN:
+				goto done_exec;
 				break;
 
 			case I_ADD:
@@ -209,10 +216,6 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				UNOP_ARITH(!);
 				break;
 
-			case I_RETURN:
-				goto done_exec;
-				break;
-
 			default:
 				break;
 		}
@@ -250,11 +253,11 @@ int vm_exec(struct VM_state* vm, char* input) {
 void vm_state_free(struct VM_state* vm) {
 	assert(vm != NULL);
 	scope_free(&vm->global.scope);
-	mfree(vm->variables, vm->variables_count * sizeof(struct Object));
-	vm->variables_count = 0;
+	mfree(vm->variables, vm->variable_count * sizeof(struct Object));
+	vm->variable_count = 0;
 	vm->stack_top = 0;
 	vm->status = 0;
-	mfree(vm->program, vm->program_size * sizeof(int));
+	mfree(vm->program, vm->program_size * sizeof(Instruction));
 	vm->program_size = 0;
 	vm->prev_ip = 0;
 	mfree(vm, sizeof(struct VM_state));

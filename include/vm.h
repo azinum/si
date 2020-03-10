@@ -8,6 +8,8 @@
 
 #define STACK_SIZE 128
 
+typedef int Instruction;
+
 enum VM_instructions {
 	I_UNKNOWN,
 	I_ADD = 1,
@@ -22,12 +24,11 @@ enum VM_instructions {
 	I_NEQ,
 	I_NOT,
 
-	I_RETURN,
-
 	I_ASSIGN,
 	I_PUSHK,
 	I_POP,
 	I_PUSH_VAR,
+	I_RETURN,
 
 	I_EXIT
 };
@@ -35,13 +36,13 @@ enum VM_instructions {
 struct VM_state {
 	struct Function global;
 	struct Object* variables;
-	int variables_count;
+	int variable_count;
 	struct Object stack[STACK_SIZE];
 	int stack_top;
 	int status;
-	int* program;
+	Instruction* program;
 	int program_size;
-	int prev_ip;	// Instruction pointer from the latest/previous vm dispatch
+	int prev_ip;	// Instruction pointer from the previous vm dispatch
 };
 
 struct VM_state* vm_state_new();

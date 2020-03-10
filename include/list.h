@@ -9,7 +9,7 @@
 
 #define list_push(list, size, value) do { \
 	if (list == NULL) { list = list_init(sizeof(value), 1); list[0] = value; size = 1; break; } \
-	typeof(value)* new_list = mrealloc(list, size * sizeof(*list), (1 + size) * (sizeof(value))); \
+	typeof(*list)* new_list = mrealloc(list, size * sizeof(*list), (1 + size) * (sizeof(value))); \
 	if (new_list) { \
 		list = new_list; \
 		list[size++] = value; \
