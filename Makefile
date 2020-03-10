@@ -8,17 +8,17 @@ clean:
 	rm build/*
 
 prepare:
-	@if [ ! -d $(BUILD_DIR) ]; then \
-		mkdir $(BUILD_DIR); \
-	fi \
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR_DEBUG)
+	@mkdir -p $(BUILD_DIR_RELEASE)
 
 local:
 	$(CC) $(FLAGS) $(FLAGS_LOCAL)
 
 install:
 	$(CC) $(FLAGS) $(FLAGS_RELEASE)
-	chmod o+x $(BUILD_DIR)/$(PROGRAM_NAME)
-	cp $(BUILD_DIR)/$(PROGRAM_NAME) $(INSTALL_BIN)/
+	chmod o+x $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME)
+	cp $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME) $(INSTALL_BIN)/
 
 build_debug:
 	$(CC) $(FLAGS) $(FLAGS_DEBUG)
@@ -26,7 +26,7 @@ build_debug:
 debug: build_debug run_debug
 
 run:
-	./$(BUILD_DIR)/$(PROGRAM_NAME)
+	./$(BUILD_DIR_DEBUG)/$(PROGRAM_NAME)
 
 run_debug:
-	gdb ./$(BUILD_DIR)/$(PROGRAM_NAME)
+	gdb ./$(BUILD_DIR_DEBUG)/$(PROGRAM_NAME)

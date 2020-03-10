@@ -1,8 +1,6 @@
 // main.c
 // tabsize: 2
 
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <stdlib.h>
 #include <stdio.h>
 
