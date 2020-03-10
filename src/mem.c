@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if TRACK_MEMORY
+#if defined(TRACK_MEMORY)
 
 #define mem_info_update(add_total, add_count) \
 info.alloc_total += add_total; \
@@ -26,7 +26,7 @@ static struct Memory_info info = {
 static void memory_info() {
 	printf(
 		"Memory info:\n"
-		"  Memory allocated: %g KB (%i bytes)\n"
+		"  Memory allocated: %.2g KB (%i bytes)\n"
 		"  Allocation count: %i\n",
 		info.alloc_total / 1000.0f,
 		info.alloc_total,

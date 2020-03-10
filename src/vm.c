@@ -136,10 +136,8 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 		return NO_ERR;	// Okay, program has not changed since last dispatch
 	// Normal dispatch for now
 	// TODO: convert this to a jumptable
-	int instruction = I_UNKNOWN;
 	for (int i = func->addr; i < vm->program_size; i++) {
-		instruction = vm->program[i];
-		switch (instruction) {
+		switch (vm->program[i]) {
 			case I_PUSHK: {
 				int constant = vm->program[++i];
 				stack_pushk(vm, &func->scope, constant);
@@ -246,7 +244,6 @@ int vm_exec(struct VM_state* vm, char* input) {
 		}
 	}
 	ast_free(&ast);
-	print_memory_info();
 	return vm->status;
 }
 
@@ -262,5 +259,4 @@ void vm_state_free(struct VM_state* vm) {
 	vm->prev_ip = 0;
 	mfree(vm, sizeof(struct VM_state));
 	assert(memory_alloc_count() == 0);	// Memory leak if this assert fails
-	print_memory_info();
 }

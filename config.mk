@@ -14,10 +14,9 @@ FLAGS=-o $(BUILD_DIR)/$(PROGRAM_NAME) $(SOURCE_DIR)/*.c -Iinclude -Wall
 
 FLAGS_DEBUG=-g
 
-FLAGS_LOCAL=-O2
+FLAGS_LOCAL=-O2 -D TRACK_MEMORY
 
 FLAGS_RELEASE=-O2 -Werror
 
 # Compiler and linker
-#CC=gcc
-CC_DEV=gcc
+CC=gcc
