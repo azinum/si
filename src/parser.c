@@ -119,6 +119,10 @@ int simple_expr(struct Parser* p) {
 			if (expect(p, T_ASSIGN)) {
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
+				if (expect(p, T_NEWLINE)) {
+					parseerror("Unexpected newline in assignment\n");
+					return p->status = PARSE_ERR;
+				}
 				statement(p); // Parse the right hand side statement
 				ast_add_node(p->ast, assign_token);
 			}
@@ -150,6 +154,10 @@ int simple_expr(struct Parser* p) {
 			if (expect(p, T_ASSIGN)) {  // Variable assignment?
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
+				if (expect(p, T_NEWLINE)) {
+					parseerror("Unexpected newline\n");
+					return p->status = PARSE_ERR;
+				}
 				statement(p); // Parse the right hand side statement
 				ast_add_node(p->ast, assign_token);
 				ast_add_node(p->ast, identifier);

@@ -87,7 +87,7 @@ int get_variable_location(struct VM_state* vm, struct Func_state* state, struct 
 	const int* found = ht_lookup(&scope->var_locations, identifier);
 	string_free(identifier);
 	if (!found) {
-		compile_error("No such variable '%.*s'", variable.length, variable.string);
+		compile_error("No such variable '%.*s'\n", variable.length, variable.string);
 		return COMPILE_ERR;
 	}
 	*location = *found;

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "mem.h"
 #include "hash.h"
 
 #define UNUSED_SLOT 0
@@ -89,7 +90,7 @@ Htable ht_create(unsigned int size) {
 	if (!size) size = 1;
 
 	Htable table = {
-		.items = calloc(sizeof(struct Item), size),
+		.items = mcalloc(sizeof(struct Item), size),
 		.count = 0,
 		.size = size
 	};
@@ -194,7 +195,7 @@ unsigned int ht_num_elements(const Htable* table) {
 void ht_free(Htable* table) {
 	assert(table != NULL);
 	if (table->items) {
-		free(table->items);
+		mfree(table->items, table->size * sizeof(struct Item));
 		table->items = NULL;
 		table->size = 0;
 		table->count = 0;

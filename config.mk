@@ -6,6 +6,10 @@ SOURCE_DIR=src
 
 BUILD_DIR=build
 
+INSTALL_TOP=/usr/local
+
+INSTALL_BIN=$(INSTALL_TOP)/bin
+
 FLAGS=-o $(BUILD_DIR)/$(PROGRAM_NAME) $(SOURCE_DIR)/*.c -Iinclude -Wall
 
 FLAGS_DEBUG=-g

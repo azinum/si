@@ -17,6 +17,8 @@ local:
 
 install:
 	$(CC) $(FLAGS) $(FLAGS_RELEASE)
+	chmod o+x $(BUILD_DIR)/$(PROGRAM_NAME)
+	cp $(BUILD_DIR)/$(PROGRAM_NAME) $(INSTALL_BIN)/
 
 build_debug:
 	$(CC) $(FLAGS) $(FLAGS_DEBUG)

@@ -18,6 +18,8 @@
 #define COLOR_NUMBER C_BLUE
 #define COLOR_NONE C_NONE
 
+#define TRACK_MEMORY 1
+
 #define INPUT_MAX 128
 
 #define HASH_TABLE_INIT_SIZE 3

@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "mem.h"
 #include "file.h"
 
 char* read_file(const char* path) {

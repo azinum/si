@@ -7,7 +7,7 @@
 #include "list.h"
 
 void* list_init(const unsigned int size, unsigned int count) {
-	void* list = calloc(size, count);
+	void* list = mcalloc(size, count);
 	if (!list) {
 		error("Failed to allocate memory for list\n");
 		return NULL;
@@ -17,7 +17,7 @@ void* list_init(const unsigned int size, unsigned int count) {
 
 int list_free(void* list, unsigned int* size) {
 	if (list != NULL) {
-		free(list);
+		mfree(list, *size);
 		*size = 0;
 		return NO_ERR;
 	}

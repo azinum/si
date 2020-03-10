@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "mem.h"
 #include "config.h"
 #include "list.h"
 #include "ast.h"
@@ -222,7 +223,7 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 }
 
 struct VM_state* vm_state_new() {
-	struct VM_state* vm = malloc(sizeof(struct VM_state));
+	struct VM_state* vm = mmalloc(sizeof(struct VM_state));
 	if (!vm) {
 		vmerror("Failed to initialize VM state\n");
 		return NULL;
@@ -238,13 +239,15 @@ int vm_exec(struct VM_state* vm, char* input) {
 	if (parser_parse(input, &ast) == NO_ERR) {
 		if (compile_from_tree(vm, &ast) == NO_ERR) {
 			vm_dispatch(vm, &vm->global);
+			stack_reset(vm);
 		}
 	}
 	ast_free(&ast);
+	print_memory_info();
 	return vm->status;
 }
 
 void vm_state_free(struct VM_state* vm) {
 	assert(vm != NULL);
-	free(vm);
+	mfree(vm, sizeof(struct VM_state));
 }

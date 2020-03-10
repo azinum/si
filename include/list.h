@@ -4,11 +4,12 @@
 #define _LIST_H
 
 #include <assert.h>
-#include <stdlib.h>
+
+#include "mem.h"
 
 #define list_push(list, size, value) { \
 	if (list == NULL) { list = list_init(sizeof(value), 1); } \
-	typeof(value)* new_list = realloc(list, (1 + size) * (sizeof(value))); \
+	typeof(value)* new_list = mrealloc(list, size, (1 + size) * (sizeof(value))); \
 	if (new_list) { \
 		list = new_list; \
 		list[size++] = value; \
@@ -17,7 +18,7 @@
 
 #define list_realloc(list, size, new_size) { \
 	assert(list != NULL); \
-	typeof(*list)* new_list = realloc(list, (new_size) * (sizeof(*list))); \
+	typeof(*list)* new_list = mrealloc(list, size, (new_size) * (sizeof(*list))); \
 	if (new_list != NULL) { \
 		list = new_list; \
 		size = new_size; \
@@ -33,7 +34,6 @@
 
 // size of type, count of elements to allocate
 void* list_init(const unsigned int size, unsigned int count);
-
 
 int list_free(void* list, unsigned int* size);
 
