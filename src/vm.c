@@ -263,5 +263,6 @@ void vm_state_free(struct VM_state* vm) {
 	vm->prev_ip = 0;
 	if (vm->heap_allocated)
 		mfree(vm, sizeof(struct VM_state));
+	vm->heap_allocated = 0;
 	assert(memory_alloc_count() == 0);
 }

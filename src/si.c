@@ -9,17 +9,36 @@
 #include "config.h"
 #include "si.h"
 
+#if defined(USE_READLINE)
+
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#define readinput(buffer, prompt) ((buffer = readline(prompt)) != NULL)
+#define addhistory(buffer) (buffer[0] != '\0' ? add_history(buffer) : (void)0)
+#define freebuffer(buffer) free(buffer)
+
+#else
+
+#define readinput(buffer, prompt) (printf(prompt), fgets(input, INPUT_MAX, stdin) != NULL)
+#define addhistory(buffer)
+#define freebuffer(buffer)
+
+#endif
+
 int user_input(struct VM_state* vm) {
 	assert(vm != NULL);
 	char input[INPUT_MAX] = {0};
+	char* buffer = input;
 	int status = NO_ERR;
 	int is_running = 1;
 	while (is_running) {
-		printf("> ");
-		if (fgets(input, INPUT_MAX, stdin) != NULL) {
-			status = vm_exec(vm, input);
+		if (readinput(buffer, PROMPT)) {
+			status = vm_exec(vm, buffer);
 			if (status != NO_ERR)
 				return status;
+			addhistory(buffer);
+			freebuffer(buffer);
 		}
 		else
 			is_running = 0;

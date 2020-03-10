@@ -3,6 +3,8 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define PROMPT "> "
+
 #define C_RED "\e[1;31m"
 #define C_DARK_RED "\e[0;31m"
 #define C_BLUE "\e[1;34m"

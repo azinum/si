@@ -1,5 +1,5 @@
 // mem.c
-// Keep track of memory allocated
+// Keep track of allocated memory
 
 #include "mem.h"
 #include "config.h"
