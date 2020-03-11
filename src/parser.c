@@ -124,8 +124,8 @@ int simple_expr(struct Parser* p) {
 			if (expect(p, T_ASSIGN)) {
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
-				if (expect(p, T_NEWLINE)) {
-					parseerror("Unexpected newline in assignment\n");
+				if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
+					parseerror("Unexpected end of line in assignment\n");
 					return p->status = PARSE_ERR;
 				}
 				statement(p); // Parse the right hand side statement
@@ -159,8 +159,8 @@ int simple_expr(struct Parser* p) {
 			if (expect(p, T_ASSIGN)) {  // Variable assignment?
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
-				if (expect(p, T_NEWLINE)) {
-					parseerror("Unexpected newline\n");
+				if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
+					parseerror("Unexpected end of line\n");
 					return p->status = PARSE_ERR;
 				}
 				statement(p); // Parse the right hand side statement
@@ -192,8 +192,14 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
+		case T_EOF:
+			return p->status;
+
 		default:
-			parseerror("Invalid token in expression\n");
+			if (token.length > 0)
+				parseerror("Unexpected symbol '%.*s'\n", token.length, token.string);
+			else
+				parseerror("Unexpected symbol\n");
 			next_token(p->lexer);
 			return p->status = PARSE_ERR;
 	}

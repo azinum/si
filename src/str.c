@@ -22,7 +22,8 @@ void string_to_number(char* string, obj_number* number) {
 	assert(number != NULL);
 	char* end;
   *number = strtod(string, &end);
-  if (*end != '\0') assert(0);
+  if (*end != '\0')
+		(void)0;	// String -> number failed, ignore for now
 }
 
 void string_free(char* string) {

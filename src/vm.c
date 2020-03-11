@@ -94,6 +94,7 @@ inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int
 inline int equal_types(const struct Object* a, const struct Object* b);
 
 static int vm_dispatch(struct VM_state* vm, struct Function* func);
+static int disasm(struct VM_state* vm, FILE* file);
 
 int stack_push(struct VM_state* vm, struct Object object) {
 	if (vm->stack_top >= STACK_SIZE) {
@@ -291,6 +292,27 @@ done_exec:
 	return NO_ERR;
 }
 
+int disasm(struct VM_state* vm, FILE* file) {
+	assert(file != NULL);
+	for (int i = 0; i < vm->program_size; i++) {
+		Instruction instruction = vm->program[i];
+		switch (instruction) {
+			// One argument instructions
+			case I_ASSIGN:
+			case I_PUSH_VAR:
+			case I_PUSHK:
+				fprintf(file, "%.4i %-14s%i\n", i, ins_descriptions[instruction], vm->program[i + 1]);
+				i++;
+				break;
+			// Instructions that have no args
+			default:
+				fprintf(file, "%.4i %s\n", i, ins_descriptions[instruction]);
+				break;
+		}
+	}
+	return NO_ERR;
+}
+
 int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
 	func_init(&vm->global);
@@ -336,22 +358,7 @@ int vm_disasm(struct VM_state* vm, const char* output_file) {
 		error("%s: Failed to open file '%s'", __FUNCTION__, output_file);
 		return ERR;
 	}
-	for (int i = 0; i < vm->program_size; i++) {
-		Instruction instruction = vm->program[i];
-		switch (instruction) {
-			// One argument instructions
-			case I_ASSIGN:
-			case I_PUSH_VAR:
-			case I_PUSHK:
-				fprintf(file, "%.4i %-14s%i\n", i, ins_descriptions[instruction], vm->program[i + 1]);
-				i++;
-				break;
-			// Instructions that have no args
-			default:
-				fprintf(file, "%.4i %s\n", i, ins_descriptions[instruction]);
-				break;
-		}
-	}
+	disasm(vm, file);
 	fclose(file);
 	return NO_ERR;
 }

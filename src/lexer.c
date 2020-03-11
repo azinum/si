@@ -252,6 +252,18 @@ struct Token next_token(struct Lexer* lexer) {
 				else
 					token.type = T_IDENTIFIER;
 			}
+			else if (ch == '0' && lexer->index[0] == 'x') {
+				lexer->index++;
+				while (is_number(lexer->index[0]) || (lexer->index[0] >= 'a' && lexer->index[0] <= 'f') || (lexer->index[0] >= 'A' && lexer->index[0] <= 'F')) {
+					if (lexer->index[0] == 'x') {
+						lexerror("Invalid hexadecimal\n");
+						break;
+					}
+					lexer->index++;
+				}
+				token.type = T_NUMBER;
+				token.length = lexer->index - token.string;
+			}
 			else if (is_number(ch) || ch == '.') {
 				int dot_count = 0;
 				while (is_number(lexer->index[0]) || lexer->index[0] == '.') {

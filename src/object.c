@@ -63,7 +63,7 @@ void object_print(const struct Object* object) {
 	assert(object != NULL);
 	switch (object->type) {
 		case T_NUMBER:
-			printf("%g\n", object->value.number);
+			printf(COLOR_NUMBER "%g\n" COLOR_NONE, object->value.number);
 			break;
 
 		default:

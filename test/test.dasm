@@ -4,3 +4,19 @@
 0006 pushk         1
 0008 add
 0009 assign        1
+0011 pushvar       0
+0013 pushvar       1
+0015 bitwise_and
+0016 pushk         2
+0018 bitwise_xor
+0019 pushk         3
+0021 pushk         4
+0023 sub
+0024 pushk         5
+0026 leftshift
+0027 bitwise_or
+0028 assign        2
+0030 pushk         6
+0032 pushk         7
+0034 bitwise_xor
+0035 assign        3

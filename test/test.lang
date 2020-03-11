@@ -2,3 +2,5 @@
 
 let a = 5;
 let b = a + 3;
+let c = a & b ^ 1 | (1-2) << 2;
+let d = 0xa ^ 0xf;
