@@ -116,6 +116,12 @@ struct Token next_token(struct Lexer* lexer) {
         token.length = 2;
         break;
       }
+      if (lexer->index[0] == '<') {
+				lexer->index++;
+				token.type = T_LEFTSHIFT;
+				token.length = 2;
+				break;
+      }
 			token.type = T_LT;
 		}
 			break;
@@ -126,6 +132,12 @@ struct Token next_token(struct Lexer* lexer) {
         token.type = T_GEQ;
         token.length = 2;
         break;
+      }
+      if (lexer->index[0] == '>') {
+				lexer->index++;
+				token.type = T_RIGHTSHIFT;
+				token.length = 2;
+				break;
       }
 			token.type = T_GT;
 		}
@@ -140,6 +152,36 @@ struct Token next_token(struct Lexer* lexer) {
       }
       token.type = T_ASSIGN;
     }
+			break;
+
+		case '%':
+			token.type = T_MOD;
+			break;
+
+		case '&': {
+			if (lexer->index[0] == '&') {
+				lexer->index++;
+				token.type = T_AND;
+				token.length = 2;
+				break;
+			}
+			token.type = T_BAND;
+		}
+			break;
+
+		case '|': {
+			if (lexer->index[0] == '|') {
+				lexer->index++;
+				token.type = T_OR;
+				token.length = 2;
+				break;
+			}
+			token.type = T_BOR;
+		}
+			break;
+
+		case '^':
+			token.type = T_BXOR;
 			break;
 
 		case '!': {

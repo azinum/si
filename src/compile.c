@@ -123,22 +123,32 @@ int store_variable(struct VM_state* vm, struct Func_state* state, struct Token v
 	return NO_ERR;
 }
 
+#define OP_CASE(OP) case T_##OP: return I_##OP
+
 int token_to_op(struct Token token) {
 	switch (token.type) {
-		case T_ADD: return I_ADD;
-		case T_SUB: return I_SUB;
-		case T_MULT: return I_MULT;
-		case T_DIV: return I_DIV;
-		case T_LT: return I_LT;
-		case T_GT: return I_GT;
-		case T_EQ: return I_EQ;
-		case T_LEQ: return I_LEQ;
-		case T_GEQ: return I_GEQ;
-		case T_NEQ: return I_NEQ;
-		case T_NOT: return I_NOT;
-		default: break;
+		OP_CASE(ADD);
+		OP_CASE(SUB);
+		OP_CASE(MULT);
+		OP_CASE(DIV);
+		OP_CASE(LT);
+		OP_CASE(GT);
+		OP_CASE(EQ);
+		OP_CASE(LEQ);
+		OP_CASE(GEQ);
+		OP_CASE(NEQ);
+		OP_CASE(MOD);
+		OP_CASE(BAND);
+		OP_CASE(BOR);
+		OP_CASE(BXOR);
+		OP_CASE(LEFTSHIFT);
+		OP_CASE(RIGHTSHIFT);
+		OP_CASE(AND);
+		OP_CASE(OR);
+		OP_CASE(NOT);
+		default:
+			break;
 	}
-	assert(0);
 	return I_UNKNOWN;
 }
 
@@ -189,37 +199,20 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 				}
 					break;
 
-				// All of these require two operands {opr_a, opr_b, op}
-				case T_ADD:
-				case T_SUB:
-				case T_MULT:
-				case T_DIV:
-				case T_LT:
-				case T_GT:
-				case T_EQ:
-				case T_LEQ:
-				case T_GEQ:
-				case T_NEQ: {
-					(void)equal_type;	// Silence warning
-					int op = token_to_op(*token);
-					list_push(vm->program, vm->program_size, op);
-				}
-					break;
-
-				// These only require one operand {opr, uop}
-				case T_NOT: {
-					int op = token_to_op(*token);
-					list_push(vm->program, vm->program_size, op);
-				}
-					break;
-
 				case T_RETURN:
 					list_push(vm->program, vm->program_size, I_RETURN);
 					break;
 
-				default:
+				default: {
+					(void)equal_type;
+					int op = token_to_op(*token);
+					if (op != I_UNKNOWN) {
+						list_push(vm->program, vm->program_size, op);
+						break;
+					}
 					compile_error("%s\n", "Invalid instruction");
 					return COMPILE_ERR;
+				}
 			}
 		}
 	}

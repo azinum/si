@@ -22,10 +22,24 @@
 	  assert((left != NULL) && (right != NULL)); \
 	  if (OP_SAMETYPE((*left), (*right), T_NUMBER)) { \
 	    left->value.number = left->value.number OP right->value.number; \
-	    vm->stack_top--; \
+	    stack_pop(vm); \
 	  } \
 		else \
 			vmerror("Invalid types in binary arithmetic operation\n"); \
+	} \
+} \
+
+#define OP_INT_ARITH(OP) { \
+	if (vm->stack_top > 1) { \
+	  struct Object* left = stack_get(vm, 1); \
+	  const struct Object* right = stack_gettop(vm); \
+	  assert((left != NULL) && (right != NULL)); \
+	  if (OP_SAMETYPE((*left), (*right), T_NUMBER)) { \
+	    left->value.number = ((int)left->value.number) OP ((int)right->value.number); \
+	    stack_pop(vm); \
+	  } \
+		else \
+			vmerror("Invalid types in bitwise arithmetic operation\n"); \
 	} \
 } \
 
@@ -196,6 +210,38 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 
 			case I_NEQ:
 				OP_ARITH(!=);
+				break;
+
+			case I_MOD:
+				OP_INT_ARITH(%);
+				break;
+
+			case I_BAND:
+				OP_INT_ARITH(&);
+				break;
+
+		  case I_BOR:
+				OP_INT_ARITH(|);
+				break;
+
+		  case I_BXOR:
+				OP_INT_ARITH(^);
+				break;
+
+		  case I_LEFTSHIFT:
+				OP_INT_ARITH(<<);
+				break;
+
+		  case I_RIGHTSHIFT:
+				OP_INT_ARITH(>>);
+				break;
+
+		  case I_AND:
+				OP_ARITH(&&);
+				break;
+
+		  case I_OR:
+				OP_ARITH(||);
 				break;
 
 			case I_NOT:

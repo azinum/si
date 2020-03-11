@@ -2,6 +2,8 @@
 // simple interpreter
 // author: lucas (azinum)
 
+#include <signal.h>
+
 #include "error.h"
 #include "mem.h"
 #include "vm.h"
@@ -26,6 +28,10 @@
 
 #endif
 
+void signal_exit(int x) {
+	printf("Enter ^D to exit\n");
+}
+
 int user_input(struct VM_state* vm) {
 	assert(vm != NULL);
 	char input[INPUT_MAX] = {0};
@@ -47,6 +53,7 @@ int user_input(struct VM_state* vm) {
 }
 
 int si_exec(int argc, char** argv) {
+	signal(SIGINT, signal_exit);
 	struct VM_state vm;
 	vm_init(&vm);
 	char* input = read_file("test/test.lang");

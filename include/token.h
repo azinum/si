@@ -16,6 +16,14 @@ enum Token_types {
   T_LEQ,  // '<='
   T_GEQ,  // '>='
   T_NEQ,  // '!='
+  T_MOD,	// '%'
+  T_BAND,		// Bitwise '&'
+  T_BOR,		// '|'
+  T_BXOR,		// '^'
+  T_LEFTSHIFT,	// '<<'
+  T_RIGHTSHIFT,	// '>>'
+  T_AND,	// '&&'
+  T_OR,		// '||'
 	T_NOBINOP,
 	
 	T_NOT,	// '!'

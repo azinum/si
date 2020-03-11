@@ -2,6 +2,8 @@
 
 PROGRAM_NAME=si
 
+INCLUDE_DIR=include
+
 SOURCE_DIR=src
 
 BUILD_DIR=build

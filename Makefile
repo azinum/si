@@ -21,7 +21,7 @@ install:
 	cp $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME) $(INSTALL_BIN)/
 
 build_debug:
-	$(CC) $(FLAGS) $(FLAGS_DEBUG)
+	$(CC) $(FLAGS) $(FLAGS_LOCAL) $(FLAGS_DEBUG)
 
 debug: build_debug run_debug
 

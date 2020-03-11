@@ -25,13 +25,18 @@ struct Operator {
 };
 
 // Warning: Order is reserved. DO NOT CHANGE.
+// See enum Token_types in token.h for the order
 static const struct Operator op_priority[] = {
 	{0, 0}, // T_UNKNOWN
-	{10, 10}, {10, 10}, // T_ADD, T_SUB
-	{11, 11}, {11, 11}, // T_MULT, T_DIV
-	{3, 3},   {3, 3},   // T_LT, T_GT
-	{3, 3},   {3, 3},   // T_EQ, T_LEQ
-	{3, 3},   {3, 3},   // T_GEQ, T_NEQ
+	{10, 10}, {10, 10}, // '+', '-'
+	{11, 11}, {11, 11}, // '*', '/'
+	{3, 3},   {3, 3},   // '<', '>'
+	{3, 3},   {3, 3},   // '==', '<='
+	{3, 3},   {3, 3},   // '>=', '!='
+	{11, 11},	// '%',
+	{6, 6},	{4, 4}, {5, 5},	// '&', '|', '^'
+	{7, 7}, {7, 7},	// '<<', '>>'
+	{2, 2}, {1, 1},	// '&&', '||'
 };
 
 #define UNARY_PRIORITY 12
