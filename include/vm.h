@@ -11,8 +11,8 @@
 typedef int Instruction;
 
 enum VM_instructions {
-	I_UNKNOWN,
-	I_ADD = 1,
+	I_UNKNOWN = 0,
+	I_ADD,
 	I_SUB,
 	I_MULT,
 	I_DIV,
@@ -38,7 +38,8 @@ enum VM_instructions {
 	I_PUSH_VAR,
 	I_RETURN,
 
-	I_EXIT
+	I_EXIT,
+	INSTRUCTION_COUNT
 };
 
 struct VM_state {

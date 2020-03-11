@@ -15,33 +15,27 @@
 #define vmerror(fmt, ...) \
 	error(COLOR_ERROR "runtime-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
-#define OP_ARITH(OP) { \
+#define vmdispatch(instruction) switch (instruction)
+#define vmcase(c) case c:
+#define vmbreak break
+
+#define OP_ARITH_CAST(OP, CAST) { \
 	if (vm->stack_top > 1) { \
 	  struct Object* left = stack_get(vm, 1); \
 	  const struct Object* right = stack_gettop(vm); \
 	  assert((left != NULL) && (right != NULL)); \
 	  if (OP_SAMETYPE((*left), (*right), T_NUMBER)) { \
-	    left->value.number = left->value.number OP right->value.number; \
+	    left->value.number = ((CAST)left->value.number) OP ((CAST)right->value.number); \
 	    stack_pop(vm); \
 	  } \
 		else \
-			vmerror("Invalid types in binary arithmetic operation\n"); \
+			vmerror("Invalid types in arithmetic operation\n"); \
 	} \
 } \
 
-#define OP_INT_ARITH(OP) { \
-	if (vm->stack_top > 1) { \
-	  struct Object* left = stack_get(vm, 1); \
-	  const struct Object* right = stack_gettop(vm); \
-	  assert((left != NULL) && (right != NULL)); \
-	  if (OP_SAMETYPE((*left), (*right), T_NUMBER)) { \
-	    left->value.number = ((int)left->value.number) OP ((int)right->value.number); \
-	    stack_pop(vm); \
-	  } \
-		else \
-			vmerror("Invalid types in bitwise arithmetic operation\n"); \
-	} \
-} \
+#define OP_ARITH(OP) OP_ARITH_CAST(OP, obj_number)
+
+#define OP_INT_ARITH(OP) OP_ARITH_CAST(OP, int)
 
 #define UNOP_ARITH(UOP) { \
 	if (vm->stack_top > 0) { \
@@ -137,23 +131,12 @@ int equal_types(const struct Object* a, const struct Object* b) {
 int vm_dispatch(struct VM_state* vm, struct Function* func) {
 	if (vm->prev_ip == vm->program_size)
 		return NO_ERR;	// Okay, program has not changed since last dispatch
-	// Normal dispatch for now
-	// TODO: convert this to a jumptable
+#if defined(USE_JUMPTABLE)
+#include "jumptable.h"
+#endif
 	for (Instruction i = func->addr; i < vm->program_size; i++) {
-		switch (vm->program[i]) {
-			case I_PUSHK: {
-				int constant = vm->program[++i];
-				stack_pushk(vm, &func->scope, constant);
-			}
-				break;
-
-			case I_PUSH_VAR: {
-				int variable = vm->program[++i];
-				stack_pushvar(vm, &func->scope, variable);
-			}
-				break;
-
-			case I_ASSIGN: {
+		vmdispatch(vm->program[i]) {
+			vmcase(I_ASSIGN) {
 				int var_location = vm->program[++i];
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
@@ -165,91 +148,111 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				}
 				variable->value = top->value;
 				stack_pop(vm);
+				vmbreak;
 			}
-				break;
 
-			case I_RETURN:
+			vmcase(I_PUSHK) {
+				int constant = vm->program[++i];
+				stack_pushk(vm, &func->scope, constant);
+				vmbreak;
+			}
+
+			vmcase(I_POP)
+				stack_pop(vm);
+				vmbreak;
+
+			vmcase(I_PUSH_VAR) {
+				int variable = vm->program[++i];
+				stack_pushvar(vm, &func->scope, variable);
+				vmbreak;
+			}
+
+			vmcase(I_RETURN)
 				goto done_exec;
-				break;
+				vmbreak;
 
-			case I_ADD:
+			vmcase(I_ADD)
 				OP_ARITH(+);
-				break;
+				vmbreak;
 
-			case I_SUB:
+			vmcase(I_SUB)
 				OP_ARITH(-);
-				break;
+				vmbreak;
 
-			case I_MULT:
+			vmcase(I_MULT)
 				OP_ARITH(*);
-				break;
+				vmbreak;
 
-			case I_DIV:
+			vmcase(I_DIV)
 				OP_ARITH(/);
-				break;
+				vmbreak;
 
-			case I_LT:
+			vmcase(I_LT)
 				OP_ARITH(<);
-				break;
+				vmbreak;
 
-			case I_GT:
+			vmcase(I_GT)
 				OP_ARITH(>);
-				break;
+				vmbreak;
 
-			case I_EQ:
+			vmcase(I_EQ)
 				OP_ARITH(==);
-				break;
+				vmbreak;
 
-			case I_LEQ:
+			vmcase(I_LEQ)
 				OP_ARITH(<=);
-				break;
+				vmbreak;
 
-			case I_GEQ:
+			vmcase(I_GEQ)
 				OP_ARITH(>=);
-				break;
+				vmbreak;
 
-			case I_NEQ:
+			vmcase(I_NEQ)
 				OP_ARITH(!=);
-				break;
+				vmbreak;
 
-			case I_MOD:
+			vmcase(I_MOD)
 				OP_INT_ARITH(%);
-				break;
+				vmbreak;
 
-			case I_BAND:
+			vmcase(I_BAND)
 				OP_INT_ARITH(&);
-				break;
+				vmbreak;
 
-		  case I_BOR:
+		  vmcase(I_BOR)
 				OP_INT_ARITH(|);
-				break;
+				vmbreak;
 
-		  case I_BXOR:
+		  vmcase(I_BXOR)
 				OP_INT_ARITH(^);
-				break;
+				vmbreak;
 
-		  case I_LEFTSHIFT:
+		  vmcase(I_LEFTSHIFT)
 				OP_INT_ARITH(<<);
-				break;
+				vmbreak;
 
-		  case I_RIGHTSHIFT:
+		  vmcase(I_RIGHTSHIFT)
 				OP_INT_ARITH(>>);
-				break;
+				vmbreak;
 
-		  case I_AND:
+		  vmcase(I_AND)
 				OP_ARITH(&&);
-				break;
+				vmbreak;
 
-		  case I_OR:
+		  vmcase(I_OR)
 				OP_ARITH(||);
-				break;
+				vmbreak;
 
-			case I_NOT:
+			vmcase(I_NOT)
 				UNOP_ARITH(!);
-				break;
+				vmbreak;
 
-			default:
-				break;
+			vmcase(I_UNKNOWN)
+				goto done_exec;
+				// assert(0);
+
+			vmcase(I_EXIT)
+				goto done_exec;
 		}
 	}
 done_exec:
