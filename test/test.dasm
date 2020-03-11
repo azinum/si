@@ -1,0 +1,6 @@
+0000 pushk         0
+0002 assign        0
+0004 pushvar       0
+0006 pushk         1
+0008 add
+0009 assign        1

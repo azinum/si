@@ -62,6 +62,7 @@ int si_exec(int argc, char** argv) {
 	char* input = read_file("test/test.lang");
 	if (input) {
 		vm_exec(&vm, input);
+		vm_disasm(&vm, "test/test.dasm");
 		free(input);
 	}
 	print_memory_info();

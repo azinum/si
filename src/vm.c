@@ -12,6 +12,37 @@
 #include "compile.h"
 #include "vm.h"
 
+static const char* ins_descriptions[INSTRUCTION_COUNT] = {
+	"unknown",
+	"add",
+	"sub",
+	"mult",
+	"div",
+	"less_than",
+	"greater_than",
+	"equal",
+	"less_equal",
+	"greater_equal",
+	"not_equal",
+	"mod",
+	"bitwise_and",
+	"bitwise_or",
+	"bitwise_xor",
+	"leftshift",
+	"rightshift",
+	"and",
+	"or",
+	"not",
+
+	"assign",
+	"pushk",
+	"pop",
+	"pushvar",
+	"return",
+
+	"exit",
+};
+
 #define vmerror(fmt, ...) \
 	error(COLOR_ERROR "runtime-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
@@ -297,6 +328,32 @@ int vm_exec(struct VM_state* vm, char* input) {
 	}
 	ast_free(&ast);
 	return vm->status;
+}
+
+int vm_disasm(struct VM_state* vm, const char* output_file) {
+	FILE* file = fopen(output_file, "w");
+	if (!file) {
+		error("%s: Failed to open file '%s'", __FUNCTION__, output_file);
+		return ERR;
+	}
+	for (int i = 0; i < vm->program_size; i++) {
+		Instruction instruction = vm->program[i];
+		switch (instruction) {
+			// One argument instructions
+			case I_ASSIGN:
+			case I_PUSH_VAR:
+			case I_PUSHK:
+				fprintf(file, "%.4i %-14s%i\n", i, ins_descriptions[instruction], vm->program[i + 1]);
+				i++;
+				break;
+			// Instructions that have no args
+			default:
+				fprintf(file, "%.4i %s\n", i, ins_descriptions[instruction]);
+				break;
+		}
+	}
+	fclose(file);
+	return NO_ERR;
 }
 
 void vm_state_free(struct VM_state* vm) {

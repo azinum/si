@@ -61,6 +61,8 @@ struct VM_state* vm_state_new();
 
 int vm_exec(struct VM_state* vm, char* input);
 
+int vm_disasm(struct VM_state* vm, const char* output_file);
+
 void vm_state_free(struct VM_state* vm);
 
 #endif
