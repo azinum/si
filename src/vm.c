@@ -248,8 +248,7 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				vmbreak;
 
 			vmcase(I_UNKNOWN)
-				goto done_exec;
-				// assert(0);
+				assert(0);
 
 			vmcase(I_EXIT)
 				goto done_exec;
@@ -263,7 +262,7 @@ done_exec:
 
 int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
-	scope_init(&vm->global.scope, NULL);
+	func_init(&vm->global);
 	vm->variables = NULL;
 	vm->variable_count = 0;
 	vm->stack_top = 0;
