@@ -49,6 +49,9 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 #define vmdispatch(instruction) switch (instruction)
 #define vmcase(c) case c:
 #define vmbreak break
+#define vmfetch() { \
+	i = *(ip++); \
+}
 
 #define OP_ARITH_CAST(OP, CAST) { \
 	if (vm->stack_top > 1) { \
@@ -93,12 +96,12 @@ inline struct Object* stack_get(struct VM_state* vm, int offset);
 inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var);
 inline int equal_types(const struct Object* a, const struct Object* b);
 
-static int vm_dispatch(struct VM_state* vm, struct Function* func);
+static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 
 int stack_push(struct VM_state* vm, struct Object object) {
 	if (vm->stack_top >= STACK_SIZE) {
-		vmerror("Stack overflow!\n");
+		vmerror("Stack overflow\n");
 		return vm->status = STACK_ERR;
 	}
 	vm->stack[vm->stack_top++] = object;
@@ -150,7 +153,7 @@ struct Object* stack_get(struct VM_state* vm, int offset) {
 }
 
 struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var) {
-	assert(vm->variable_count > var);
+	assert(var >= 0 && vm->variable_count > var);
 	return &vm->variables[var];
 }
 
@@ -160,16 +163,19 @@ int equal_types(const struct Object* a, const struct Object* b) {
 	return a->type == b->type;
 }
 
-int vm_dispatch(struct VM_state* vm, struct Function* func) {
+int execute(struct VM_state* vm, struct Function* func) {
 	if (vm->prev_ip == vm->program_size)
-		return NO_ERR;	// Okay, program has not changed since last dispatch
+		return NO_ERR;	// Program has not changed since last vm execution
 #if defined(USE_JUMPTABLE)
 #include "jumptable.h"
 #endif
-	for (Instruction i = func->addr; i < vm->program_size; i++) {
-		vmdispatch(vm->program[i]) {
+	const Instruction* ip = (vm->prev_ip > 0 ? &vm->program[vm->prev_ip] : &vm->program[func->addr]);
+	Instruction i = I_EXIT;
+	for (;;) {
+		vmfetch();
+		vmdispatch(i) {
 			vmcase(I_ASSIGN) {
-				int var_location = vm->program[++i];
+				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
 				if (variable->type == T_UNKNOWN)
@@ -184,7 +190,7 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 			}
 
 			vmcase(I_PUSHK) {
-				int constant = vm->program[++i];
+				int constant = *(ip++);
 				stack_pushk(vm, &func->scope, constant);
 				vmbreak;
 			}
@@ -194,14 +200,13 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 				vmbreak;
 
 			vmcase(I_PUSH_VAR) {
-				int variable = vm->program[++i];
+				int variable = *(ip++);
 				stack_pushvar(vm, &func->scope, variable);
 				vmbreak;
 			}
 
 			vmcase(I_RETURN)
 				goto done_exec;
-				vmbreak;
 
 			vmcase(I_ADD)
 				OP_ARITH(+);
@@ -287,8 +292,6 @@ int vm_dispatch(struct VM_state* vm, struct Function* func) {
 		}
 	}
 done_exec:
-	stack_print_top(vm);
-	vm->prev_ip = vm->program_size;
 	return NO_ERR;
 }
 
@@ -344,8 +347,13 @@ int vm_exec(struct VM_state* vm, char* input) {
 	Ast ast = ast_create();
 	if (parser_parse(input, &ast) == NO_ERR) {
 		if (compile_from_tree(vm, &ast) == NO_ERR) {
-			vm_dispatch(vm, &vm->global);
+			execute(vm, &vm->global);
+			stack_print_top(vm);
 			stack_reset(vm);
+			if (vm->prev_ip != vm->program_size) {	// Has program changed?
+				list_shrink(vm->program, vm->program_size, 1);	// If so, remove the exit instruction
+				vm->prev_ip = vm->program_size;
+			}
 		}
 	}
 	ast_free(&ast);

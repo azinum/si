@@ -85,6 +85,7 @@ int statement(struct Parser* p) {
 		case T_EOF:
 			return NO_ERR;
 
+		case T_SEMICOLON:
 		case T_NEWLINE:
 			next_token(p->lexer);
 			break;

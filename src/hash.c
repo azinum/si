@@ -20,7 +20,7 @@ struct Item {
 };
 
 static int is_empty(const Htable* table);
-static unsigned long hash(const Hkey key, unsigned long tablesize);
+static unsigned int hash(const Hkey key, unsigned int tablesize);
 static int linear_probe(const Htable* table, const Hkey key, unsigned int* collision_count);
 static int key_compare(const Hkey a, const Hkey b);
 static Htable resize_table(Htable* table, unsigned int new_size);
@@ -30,12 +30,12 @@ int is_empty(const Htable* table) {
 	return table->items == NULL;
 }
 
-unsigned long hash(const Hkey key, unsigned long tablesize) {
-	unsigned long hash_number = 5381;
-  unsigned long size = strlen(key);
+unsigned int hash(const Hkey key, unsigned int tablesize) {
+	unsigned int hash_number = 5381;
+  unsigned int size = strlen(key);
   int c;
 
-  for (unsigned long i = 0; i < size; i++) {
+  for (unsigned int i = 0; i < size; i++) {
 		c = key[i];
 		hash_number = ((hash_number << 5) + hash_number) + c;
   }

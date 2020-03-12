@@ -24,6 +24,11 @@
 		size = new_size; \
 	} \
 } \
+
+#define list_shrink(list, size, num) { \
+	assert(size - num >= 0); \
+	list_realloc(list, size, size - num); \
+}
  
 #define list_assign(list, size, index, value) { \
 	assert(list != NULL); \

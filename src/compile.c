@@ -216,6 +216,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 			}
 		}
 	}
+	list_push(vm->program, vm->program_size, I_EXIT);
 	return NO_ERR;
 }
 

@@ -9,11 +9,7 @@
 
 #define vmdispatch(instruction) goto *jumptable[instruction];
 #define vmcase(c) J_##c:
-#define vmbreak vmfetch(); vmdispatch(vm->program[i])
-#define vmfetch() { \
-	if (++i >= vm->program_size) \
-		goto done_exec; \
-}
+#define vmbreak vmfetch(); vmdispatch(i)
 
 // From enum VM_instructions (vm.h)
 static void* jumptable[INSTRUCTION_COUNT] = {

@@ -23,6 +23,11 @@ install:
 build_debug:
 	$(CC) $(FLAGS) $(FLAGS_LOCAL) $(FLAGS_DEBUG)
 
+build_minimal:
+	$(CC) $(FLAGS) $(FLAGS_MINIMAL_BUILD)
+
+minimal: build_minimal run
+
 debug: build_debug run_debug
 
 run:
