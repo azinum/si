@@ -198,7 +198,7 @@ int simple_expr(struct Parser* p) {
 
 		default:
 			if (token.length > 0)
-				parseerror("Unexpected symbol '%.*s'\n", token.length, token.string);
+				parseerror("Unexpected symbol near '%.*s'\n", token.length, token.string);
 			else
 				parseerror("Unexpected symbol\n");
 			next_token(p->lexer);

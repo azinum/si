@@ -29,10 +29,11 @@ struct Func_state {
 #define compile_error(fmt, ...) \
 	error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
+static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
-static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state);
-static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant);
-static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
+static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
+static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count);
+static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count);
 static int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
 static int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int store_constant(struct Func_state* state, struct Token constant, Instruction* location);
@@ -40,21 +41,28 @@ static int store_variable(struct VM_state* vm, struct Func_state* state, struct 
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
+static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
+	list_push(vm->program, vm->program_size, instruction);
+	if (ins_count)
+		(*ins_count)++;
+	return NO_ERR;
+}
+
 int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
 	state->argc = 0;
 	return NO_ERR;
 }
 
-int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant) {
-	list_push(vm->program, vm->program_size, I_PUSHK);
+int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count) {
 	Instruction location = -1;
 	store_constant(state, constant, &location);
-	list_push(vm->program, vm->program_size, location);
+	add_instruction(vm, I_PUSHK, ins_count);
+	add_instruction(vm, location, ins_count);
 	return NO_ERR;
 }
 
-int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
+int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count) {
 	struct Scope* scope = &state->func.scope;
 	char* identifier = string_new_copy(variable.string, variable.length);
 	const int* found = ht_lookup(&scope->var_locations, identifier);
@@ -66,8 +74,8 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	}
 	// Okay, no errors. Let's continue compiling!
 	location = *found;
-	list_push(vm->program, vm->program_size, I_PUSH_VAR);
-	list_push(vm->program, vm->program_size, location);
+	add_instruction(vm, I_PUSH_VAR, ins_count);
+	add_instruction(vm, location, ins_count);
 	assert(location >= 0);
 	return NO_ERR;
 }
@@ -157,7 +165,8 @@ int equal_type(const struct Token* left, const struct Token* right) {
 	return left->type == right->type;
 }
 
-int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
+int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count) {
+	assert(ins_count != NULL);
 	assert(vm != NULL);
 	assert(state != NULL);
 	struct Token* token = NULL;
@@ -167,11 +176,11 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 			switch (token->type) {
 				// {number}
 				case T_NUMBER:
-					compile_pushk(vm, state, *token);
+					compile_pushk(vm, state, *token, ins_count);
 					break;
 
 				case T_IDENTIFIER: {
-					int result = compile_pushvar(vm, state, *token);
+					int result = compile_pushvar(vm, state, *token, ins_count);
 					if (result != NO_ERR)
 						return result;
 				}
@@ -194,20 +203,20 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 					int result = get_variable_location(vm, state, *identifier, &location);
 					if (result != NO_ERR)
 						return result;
-					list_push(vm->program, vm->program_size, I_ASSIGN);
-					list_push(vm->program, vm->program_size, location);
+					add_instruction(vm, I_ASSIGN, ins_count);
+					add_instruction(vm, location, ins_count);
 				}
 					break;
 
 				case T_RETURN:
-					list_push(vm->program, vm->program_size, I_RETURN);
+					add_instruction(vm, I_RETURN, ins_count);
 					break;
 
 				default: {
 					(void)equal_type;
 					int op = token_to_op(*token);
 					if (op != I_UNKNOWN) {
-						list_push(vm->program, vm->program_size, op);
+						add_instruction(vm, op, ins_count);
 						break;
 					}
 					compile_error("%s\n", "Invalid instruction");
@@ -216,7 +225,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state) {
 			}
 		}
 	}
-	list_push(vm->program, vm->program_size, I_EXIT);
+	add_instruction(vm, I_RETURN, ins_count);
 	return NO_ERR;
 }
 
@@ -227,7 +236,9 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	struct Func_state global_state;
 	func_state_init(&global_state);
 	global_state.func = vm->global;
-	int status = compile(vm, ast, &global_state);
+	unsigned int ins_count = 0;
+	int status = compile(vm, ast, &global_state, &ins_count);
+	printf("ins_count: %i\n", ins_count);
 	vm->global = global_state.func;
 	return status;
 }
