@@ -31,6 +31,7 @@ struct Func_state {
 
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
+static int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count);
@@ -84,7 +85,7 @@ int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	Instruction location;
 	int err = store_variable(vm, state, variable, &location);
 	if (err != NO_ERR) {
-		compile_error("Variable '%.*s' is already declared\n", variable.length, variable.string);
+		compile_error("Identifier '%.*s' has already been declared\n", variable.length, variable.string);
 		return err;
 	}
 	return NO_ERR;
@@ -165,6 +166,18 @@ int equal_type(const struct Token* left, const struct Token* right) {
 	return left->type == right->type;
 }
 
+int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state) {
+	unsigned int block_size = 0;
+	add_instruction(vm, I_IF, &block_size);
+	add_instruction(vm, -1, NULL);
+	int jump_address_index = vm->program_size - 1;
+	compile(vm, ast, state, &block_size);
+	list_assign(vm->program, vm->program_size, jump_address_index, block_size);
+	(void)block_size;	// Will be used on chaining if-else statements
+	assert(vm->program[jump_address_index] >= 0);
+	return NO_ERR;
+}
+
 int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count) {
 	assert(ins_count != NULL);
 	assert(vm != NULL);
@@ -212,6 +225,13 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					add_instruction(vm, I_RETURN, ins_count);
 					break;
 
+				case T_IF: {
+					Ast branch = ast_get_node_at(ast, i);
+					assert(branch != NULL);
+					compile_ifstatement(vm, &branch, state);
+				}
+					break;
+
 				default: {
 					(void)equal_type;
 					int op = token_to_op(*token);
@@ -219,13 +239,13 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 						add_instruction(vm, op, ins_count);
 						break;
 					}
+					assert(0);
 					compile_error("%s\n", "Invalid instruction");
 					return COMPILE_ERR;
 				}
 			}
 		}
 	}
-	add_instruction(vm, I_RETURN, ins_count);
 	return NO_ERR;
 }
 
@@ -238,7 +258,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	global_state.func = vm->global;
 	unsigned int ins_count = 0;
 	int status = compile(vm, ast, &global_state, &ins_count);
-	printf("ins_count: %i\n", ins_count);
+	add_instruction(vm, I_RETURN, NULL);
 	vm->global = global_state.func;
 	return status;
 }

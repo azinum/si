@@ -1,6 +1,28 @@
 // test.lang
 
-let a = 5;
-let b = a + 3;
-let c = a & b ^ 1 | (1-2) << 2;
-let d = 0xa ^ 0xf;
+let a = if 1 {
+	5
+}
+
+let b = if a {
+	a * 2
+}
+
+if (a) { let c = 1; }
+
+(if (a) {
+	let d = 1
+})
+
+let w = if 1 {
+	if 1 {
+		let x = 2
+	}
+	if 0 {
+		let y = 3
+	}
+	if 1 {
+		let z = 3
+	}
+	x + z
+}

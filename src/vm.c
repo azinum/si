@@ -39,6 +39,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"pop",
 	"pushvar",
 	"return",
+	"if",
 
 	"exit",
 };
@@ -52,6 +53,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 #define vmfetch() { \
 	i = *(ip++); \
 }
+#define vmjump(n) i = *(ip += n)
 
 #define OP_ARITH_CAST(OP, CAST) { \
 	if (vm->stack_top > 1) { \
@@ -95,7 +97,7 @@ inline struct Object* stack_gettop(struct VM_state* vm);
 inline struct Object* stack_get(struct VM_state* vm, int offset);
 inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var);
 inline int equal_types(const struct Object* a, const struct Object* b);
-
+inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 
@@ -163,6 +165,22 @@ int equal_types(const struct Object* a, const struct Object* b) {
 	return a->type == b->type;
 }
 
+int object_checktrue(const struct Object* object) {
+	assert(object != NULL);
+	switch (object->type) {
+		case T_NUMBER:
+			if (object->value.number != 0)
+				return 1;
+
+		case T_UNKNOWN:
+			return 0;
+
+		default:
+			assert(0);
+			return 0;
+	}
+}
+
 int execute(struct VM_state* vm, struct Function* func) {
 	if (vm->prev_ip == vm->program_size)
 		return NO_ERR;	// Program has not changed since last vm execution
@@ -207,6 +225,23 @@ int execute(struct VM_state* vm, struct Function* func) {
 
 			vmcase(I_RETURN)
 				goto done_exec;
+
+			// Input: { COND if addr BLOCK }
+			// jump if condition is false (skip if block)
+			// continue if true (skip jump address)
+			vmcase(I_IF) {
+				const struct Object* top = stack_gettop(vm);
+				if (object_checktrue(top)) {
+					stack_pop(vm);
+					ip++;	// Skip jump address
+					vmbreak;	// Enter if block
+				}
+				stack_pop(vm);
+				int jump_address = *(ip);
+				assert(jump_address >= 0 && jump_address < vm->program_size);
+				vmjump(jump_address);
+				vmbreak;
+			}
 
 			vmcase(I_ADD)
 				OP_ARITH(+);
@@ -301,6 +336,7 @@ int disasm(struct VM_state* vm, FILE* file) {
 		Instruction instruction = vm->program[i];
 		switch (instruction) {
 			// One argument instructions
+			case I_IF:
 			case I_ASSIGN:
 			case I_PUSH_VAR:
 			case I_PUSHK:
@@ -347,6 +383,7 @@ int vm_exec(struct VM_state* vm, char* input) {
 	Ast ast = ast_create();
 	if (parser_parse(input, &ast) == NO_ERR) {
 		if (compile_from_tree(vm, &ast) == NO_ERR) {
+			// ast_print(ast);
 			execute(vm, &vm->global);
 			stack_print_top(vm);
 			stack_reset(vm);

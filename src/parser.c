@@ -43,9 +43,13 @@ static const struct Operator op_priority[] = {
 
 static int get_binop(struct Token token);
 static int get_uop(struct Token token);
-static int eof(struct Parser* p);
+static int block_end(struct Parser* p);
 static int expect(struct Parser* p, enum Token_types expected_type);
+static void check(struct Parser* p, enum Token_types type);
 static int expression_end(struct Parser* p);
+static int declare_variable(struct Parser* p);
+static int if_statement(struct Parser* p);
+static int block(struct Parser* p);
 static int statement(struct Parser* p);
 static int statements(struct Parser* p);
 static int simple_expr(struct Parser* p);
@@ -63,9 +67,17 @@ int get_uop(struct Token token) {
 	return T_NOUNOP;  // This is not a unary operator
 }
 
-int eof(struct Parser* p) {
+int block_end(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
-	return token.type == T_EOF;
+	switch (token.type) {
+		case T_EOF:
+		case T_BLOCKEND:
+		// case T_RETURN:
+			return 1;
+		default:
+			return 0;
+	}
+	return 0;
 }
 
 int expect(struct Parser* p, enum Token_types expected_type) {
@@ -73,14 +85,92 @@ int expect(struct Parser* p, enum Token_types expected_type) {
 	return token.type == expected_type;
 }
 
+void check(struct Parser* p, enum Token_types type) {
+	struct Token token = get_token(p->lexer);
+	if (token.type != type) {
+		if (token.length > 0)
+			parseerror("Unexpected symbol '%.*s'\n", token.length, token.string);
+		else
+			parseerror("Unexpected symbol\n");
+		p->status = PARSE_ERR;
+	}
+}
+
 int expression_end(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 	return token.type == T_CLOSEDPAREN;
 }
 
+// let a = <value> ;
+// let a ;
+// Assignment:
+// Output: { decl identifier (expr) assign identifier }
+// No assignment:
+// Output: { decl identifier }
+int declare_variable(struct Parser* p) {
+	struct Token token = get_token(p->lexer);
+	ast_add_node(p->ast, token);	// 'let' token
+	struct Token identifier = next_token(p->lexer); // Skip 'let'
+	if (!expect(p, T_IDENTIFIER)) {
+		parseerror("Expected identifier in declaration\n");
+		return p->status = PARSE_ERR;
+	}
+	ast_add_node(p->ast, identifier); // Add identifier to ast
+	next_token(p->lexer); // Skip identifier
+	if (expect(p, T_ASSIGN)) {  // Variable assignment?
+		struct Token assign_token = get_token(p->lexer);
+		next_token(p->lexer); // Skip '='
+		if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
+			parseerror("Unexpected end of line\n");
+			return p->status = PARSE_ERR;
+		}
+		statement(p); // Parse the right hand side statement
+		ast_add_node(p->ast, assign_token);
+		ast_add_node(p->ast, identifier);
+	}
+	if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
+			next_token(p->lexer); // Skip '\n' or ';'
+	return NO_ERR;
+}
+
+// if (cond) {}
+// if cond {}
+// Output: { if (cond) { block } }
+// Ast output:
+// \--> if
+//   \--> (cond)
+//   \--> { block }
+int if_statement(struct Parser* p) {
+	struct Token token = get_token(p->lexer);
+	next_token(p->lexer);	// Skip 'if'
+	expr(p, 0);	// Read condition
+	Ast* orig_branch = p->ast;
+	ast_add_node(orig_branch, token);
+	Ast block_branch = ast_get_last(orig_branch);
+	p->ast = &block_branch;
+	// add instruction if
+	if (!expect(p, T_BLOCKBEGIN)) {
+		parseerror("Expected '{' curly-bracket in if statement\n");
+		return p->status = PARSE_ERR;
+	}
+	next_token(p->lexer);	// Skip '{'
+	block(p);
+	p->ast = orig_branch;
+	return NO_ERR;
+}
+
+int block(struct Parser* p) {
+	statements(p);
+	if (!expect(p, T_BLOCKEND)) {
+		parseerror("Expected '}' curly-bracket in block\n");
+		return p->status = PARSE_ERR;
+	}
+	next_token(p->lexer);
+	return NO_ERR;
+}
+
 int statement(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
-
 	switch (token.type) {
 		case T_EOF:
 			return NO_ERR;
@@ -88,6 +178,14 @@ int statement(struct Parser* p) {
 		case T_SEMICOLON:
 		case T_NEWLINE:
 			next_token(p->lexer);
+			break;
+
+		case T_DECL:
+			declare_variable(p);
+			break;
+
+		case T_IF:
+			if_statement(p);
 			break;
 
 		default:
@@ -101,7 +199,7 @@ int statement(struct Parser* p) {
 }
 
 int statements(struct Parser* p) {
-	while (!eof(p))
+	while (!block_end(p))
 		p->status = statement(p);
 	return p->status;
 }
@@ -126,7 +224,7 @@ int simple_expr(struct Parser* p) {
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
 				if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
-					parseerror("Unexpected end of line in assignment\n");
+					parseerror("Unexpected end of line in variable assignment\n");
 					return p->status = PARSE_ERR;
 				}
 				statement(p); // Parse the right hand side statement
@@ -135,41 +233,6 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, identifier);
 			if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
 					next_token(p->lexer);
-		}
-			break;
-
-		case T_NEWLINE:
-			next_token(p->lexer);
-			break;
-
-		// let a = <value> ;
-		// let a ;
-		// The assignment case:
-		// Output: { decl identifier (expr) assign identifier }
-		// No assignment case:
-		// Output: { decl identifier }
-		case T_DECL: {
-			ast_add_node(p->ast, token);	// 'let' token
-			struct Token identifier = next_token(p->lexer); // Skip 'let'
-			if (!expect(p, T_IDENTIFIER)) {
-				parseerror("Expected identifier in declaration\n");
-				return p->status = PARSE_ERR;
-			}
-			ast_add_node(p->ast, identifier); // Add identifier to ast
-			next_token(p->lexer); // Skip identifier
-			if (expect(p, T_ASSIGN)) {  // Variable assignment?
-				struct Token assign_token = get_token(p->lexer);
-				next_token(p->lexer); // Skip '='
-				if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
-					parseerror("Unexpected end of line\n");
-					return p->status = PARSE_ERR;
-				}
-				statement(p); // Parse the right hand side statement
-				ast_add_node(p->ast, assign_token);
-				ast_add_node(p->ast, identifier);
-			}
-			if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
-					next_token(p->lexer); // Skip '\n' or ';'
 		}
 			break;
 
@@ -193,12 +256,16 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
+		case T_NEWLINE:
+			next_token(p->lexer);
+			break;
+
 		case T_EOF:
 			return p->status;
 
 		default:
 			if (token.length > 0)
-				parseerror("Unexpected symbol near '%.*s'\n", token.length, token.string);
+				parseerror("Unexpected symbol '%.*s'\n", token.length, token.string);
 			else
 				parseerror("Unexpected symbol\n");
 			next_token(p->lexer);
@@ -249,5 +316,6 @@ int parser_parse(char* input, Ast* ast) {
 	};
 	next_token(parser.lexer);
 	statements(&parser);
+	check(&parser, T_EOF);
 	return parser.status;
 }

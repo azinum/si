@@ -10,35 +10,39 @@
 
 typedef int Instruction;
 
+#define INSTRUCTIONS(T) \
+	T##_UNKNOWN, \
+	T##_ADD, \
+	T##_SUB, \
+	T##_MULT, \
+	T##_DIV, \
+	T##_LT, \
+	T##_GT, \
+	T##_EQ, \
+	T##_LEQ, \
+	T##_GEQ, \
+	T##_NEQ, \
+	T##_MOD, \
+	T##_BAND, \
+	T##_BOR, \
+	T##_BXOR, \
+	T##_LEFTSHIFT, \
+	T##_RIGHTSHIFT, \
+	T##_AND, \
+	T##_OR, \
+	T##_NOT, \
+\
+	T##_ASSIGN, \
+	T##_PUSHK, \
+	T##_POP, \
+	T##_PUSH_VAR, \
+	T##_RETURN, \
+	T##_IF, \
+\
+	T##_EXIT, \
+
 enum VM_instructions {
-	I_UNKNOWN = 0,
-	I_ADD,
-	I_SUB,
-	I_MULT,
-	I_DIV,
-	I_LT,
-	I_GT,
-	I_EQ,
-	I_LEQ,
-	I_GEQ,
-	I_NEQ,
-	I_MOD,
-	I_BAND,
-	I_BOR,
-	I_BXOR,
-	I_LEFTSHIFT,
-	I_RIGHTSHIFT,
-	I_AND,
-	I_OR,
-	I_NOT,
-
-	I_ASSIGN,
-	I_PUSHK,
-	I_POP,
-	I_PUSH_VAR,
-	I_RETURN,
-
-	I_EXIT,
+	INSTRUCTIONS(I)
 	INSTRUCTION_COUNT
 };
 

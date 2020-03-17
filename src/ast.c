@@ -38,14 +38,10 @@ struct Node* create_node(Value value) {
 int print_tree(const Ast ast, int level) {
 	if (is_empty(ast))
 		return NO_ERR;
-	// for (int i = 0; i < level; i++) {
-	// 	printf(" ");
-	// }
-
-	if (level < 1)
-		printf("%.*s\n", ast->value.length, ast->value.string);
-	else
-		printf("%.*s ", ast->value.length, ast->value.string);
+	for (int i = 0; i < level-1; i++) {
+		printf("  ");
+	}
+	printf("%.*s\n", ast->value.length, ast->value.string);
 
 	for (unsigned long i = 0; i < ast->child_count; i++) {
 		print_tree(ast->children[i], level + 1);
@@ -90,8 +86,25 @@ int ast_add_node_at(Ast* ast, int index, Value value) {
 	return ast_add_node(&(*ast)->children[index], value);
 }
 
-int ast_child_count(Ast* ast) {
+Ast ast_get_node_at(Ast* ast, int index) {
+	assert(!is_empty(*ast));
+	if (index < 0 || index > (*ast)->child_count)
+		return NULL;
+	return (*ast)->children[index];
+}
+
+Ast ast_get_last(Ast* ast) {
+	assert(!is_empty(*ast));
+	int child_count = ast_child_count(ast);
+	if (child_count == 0)
+		return NULL;
+	return (*ast)->children[child_count - 1];
+}
+
+int ast_child_count(const Ast* ast) {
 	assert(ast != NULL);
+	if (!(*ast))
+		return 0;
 	return (*ast)->child_count;
 }
 

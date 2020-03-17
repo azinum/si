@@ -17,7 +17,11 @@ int ast_add_node(Ast* ast, Value value);
 
 int ast_add_node_at(Ast* ast, int index, Value value);
 
-int ast_child_count(Ast* ast);
+Ast ast_get_node_at(Ast* ast, int index);
+
+Ast ast_get_last(Ast* ast);
+
+int ast_child_count(const Ast* ast);
 
 Value* ast_get_node(Ast* ast, int index);
 

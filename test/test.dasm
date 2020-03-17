@@ -1,22 +1,36 @@
 0000 pushk         0
-0002 assign        0
-0004 pushvar       0
-0006 pushk         1
-0008 add
-0009 assign        1
-0011 pushvar       0
-0013 pushvar       1
-0015 bitwise_and
-0016 pushk         2
-0018 bitwise_xor
-0019 pushk         3
-0021 pushk         4
-0023 sub
-0024 pushk         5
-0026 leftshift
-0027 bitwise_or
-0028 assign        2
-0030 pushk         6
-0032 pushk         7
-0034 bitwise_xor
-0035 assign        3
+0002 if            3
+0004 pushk         1
+0006 assign        0
+0008 pushvar       0
+0010 if            6
+0012 pushvar       0
+0014 pushk         2
+0016 mult
+0017 assign        1
+0019 pushvar       0
+0021 if            5
+0023 pushk         3
+0025 assign        2
+0027 pushvar       0
+0029 if            5
+0031 pushk         4
+0033 assign        3
+0035 pushk         5
+0037 if            12
+0039 pushk         6
+0041 if            5
+0043 pushk         7
+0045 assign        5
+0047 pushk         8
+0049 if            5
+0051 pushk         9
+0053 assign        6
+0055 pushk         10
+0057 if            5
+0059 pushk         11
+0061 assign        7
+0063 pushvar       5
+0065 pushvar       7
+0067 add
+0068 assign        4
