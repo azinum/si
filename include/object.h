@@ -40,6 +40,8 @@ int scope_init(struct Scope* scope, struct Scope* parent);
 
 int scope_free(struct Scope* scope);
 
+void object_printline(const struct Object* object);
+
 void object_print(const struct Object* object);
 
 #endif

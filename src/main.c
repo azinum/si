@@ -6,6 +6,8 @@
 
 #include "si.h"
 
+#define ARR_SIZE 7
+
 int main(int argc, char** argv) {
 	return si_exec(argc, argv);
 }

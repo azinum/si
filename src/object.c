@@ -59,14 +59,21 @@ int scope_free(struct Scope* scope) {
 	return NO_ERR;
 }
 
+void object_printline(const struct Object* object) {
+	assert(object != NULL);
+	object_print(object);
+	printf("\n");
+}
+
 void object_print(const struct Object* object) {
 	assert(object != NULL);
 	switch (object->type) {
 		case T_NUMBER:
-			printf(COLOR_NUMBER "%g\n" COLOR_NONE, object->value.number);
+			printf(COLOR_NUMBER "%g" COLOR_NONE, object->value.number);
 			break;
 
 		default:
+			printf(COLOR_UNDEFINED "Undefined" COLOR_NONE);
 			break;
 	}
 }

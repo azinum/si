@@ -16,12 +16,14 @@
 #define C_YELLOW "\e[1;33m"
 #define C_DARK_YELLOW "\e[0;33m"
 #define C_PINK "\e[1;35m"
+#define C_GRAY "\e[0;90m"
 #define C_NONE "\e[0m"
 
 #define COLOR_WARNING C_YELLOW
 #define COLOR_ERROR C_RED
 #define COLOR_MESSAGE C_DARK_GREEN
 #define COLOR_NUMBER C_DARK_YELLOW
+#define COLOR_UNDEFINED C_GRAY
 #define COLOR_NONE C_NONE
 
 #else
@@ -30,13 +32,14 @@
 #define COLOR_ERROR
 #define COLOR_MESSAGE
 #define COLOR_NUMBER
+#define COLOR_UNDEFINED
 #define COLOR_NONE
 
 #endif
 
 #define INPUT_MAX 128
 
-#define HASH_TABLE_INIT_SIZE 3
+#define HASH_TABLE_INIT_SIZE 7
 
 typedef double obj_number;
 

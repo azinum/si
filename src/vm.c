@@ -56,6 +56,9 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	i = *(ip++); \
 }
 #define vmjump(n) i = *(ip += n)
+#define vmgoto(n) { \
+	i = *(ip += (ip - vm->program + n)) \
+}
 
 #define OP_ARITH_CAST(OP, CAST) { \
 	if (vm->stack_top > 1) { \
@@ -102,6 +105,7 @@ inline int equal_types(const struct Object* a, const struct Object* b);
 inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
+static int print_global(struct VM_state* vm);
 
 int stack_push(struct VM_state* vm, struct Object object) {
 	if (vm->stack_top >= STACK_SIZE) {
@@ -141,7 +145,7 @@ int stack_reset(struct VM_state* vm) {
 int stack_print_top(struct VM_state* vm) {
 	struct Object* top = stack_gettop(vm);
 	if (top)
-		object_print(top);
+		object_printline(top);
 	return NO_ERR;
 }
 
@@ -379,6 +383,23 @@ int disasm(struct VM_state* vm, FILE* file) {
 	return NO_ERR;
 }
 
+int print_global(struct VM_state* vm) {
+	struct Scope* scope = &vm->global.scope;
+	printf("{\n");
+	for (int i = 0; i < ht_get_size(&scope->var_locations); i++) {
+		const Hkey* key = ht_lookup_key(&scope->var_locations, i);
+		const Hvalue* value = ht_lookup_byindex(&scope->var_locations, i);
+		if (key != NULL && value != NULL) {
+			printf("  %s: ", *key);
+			struct Object* object = get_variable(vm, scope, *value);
+			object_print(object);
+			printf(",\n");
+		}
+	}
+	printf("}\n");
+	return NO_ERR;
+}
+
 int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
 	func_init(&vm->global);
@@ -417,6 +438,7 @@ int vm_exec(struct VM_state* vm, char* input) {
 			if (vm->prev_ip != vm->program_size) {	// Has program changed?
 				list_shrink(vm->program, vm->program_size, 1);	// If so, remove the exit instruction
 				vm->prev_ip = vm->program_size;
+				print_global(vm);
 			}
 		}
 	}

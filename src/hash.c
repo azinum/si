@@ -148,6 +148,24 @@ const Hvalue* ht_lookup(const Htable* table, const Hkey key) {
 	return NULL;
 }
 
+const Hvalue* ht_lookup_byindex(const Htable* table, const unsigned int index) {
+	assert(table != NULL);
+	if (index < ht_get_size(table)) {
+		if (table->items[index].used_slot != UNUSED_SLOT)
+			return &table->items[index].value;
+	}
+	return NULL;
+}
+
+const Hkey* ht_lookup_key(const Htable* table, const unsigned int index) {
+	assert(table != NULL);
+	if (index < ht_get_size(table)) {
+		if (table->items[index].used_slot != UNUSED_SLOT)
+			return &table->items[index].key;
+	}
+	return NULL;
+}
+
 int ht_element_exists(const Htable* table, const Hkey key) {
 	assert(table != NULL);
 	return ht_lookup(table, key) != NULL;

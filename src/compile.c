@@ -178,7 +178,6 @@ int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state,
 	int jump_index = vm->program_size - 1;
 	compile(vm, ast, state, &block_size);
 	list_assign(vm->program, vm->program_size, jump_index, block_size);
-	(void)block_size;	// Will be used on chaining if-else statements
 	assert(vm->program[jump_index] >= 0);
 	*ins_count += block_size;
 	return NO_ERR;
@@ -284,7 +283,6 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 			}
 		}
 	}
-	// printf("ins_count: %i\n", *ins_count);
 	return NO_ERR;
 }
 

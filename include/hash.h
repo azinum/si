@@ -26,6 +26,10 @@ unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value
 
 const Hvalue* ht_lookup(const Htable* table, const Hkey key);
 
+const Hvalue* ht_lookup_byindex(const Htable* table, const unsigned int index);
+
+const Hkey* ht_lookup_key(const Htable* table, const unsigned int index);
+
 int ht_element_exists(const Htable* table, const Hkey key);
 
 void ht_remove_element(Htable* table, const Hkey key);
