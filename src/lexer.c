@@ -45,6 +45,11 @@ int remove_whitespaces(struct Lexer* lexer) {
 		while (*lexer->index && !is_endofline(*lexer->index))
 			lexer->index++;
 	}
+	if (*lexer->index == '#' && *(lexer->index + 1) == '!') {	// Shebang #!
+		lexer->index += 2;
+		while (*lexer->index && !is_endofline(*lexer->index))
+			lexer->index++;
+	}
 	if (*lexer->index == '/' && *(lexer->index + 1) == '*') {
 		lexer->index += 2;
 		while (*lexer->index && !(*lexer->index == '*' && *(lexer->index + 1) == '/')) {

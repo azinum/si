@@ -1,0 +1,7 @@
+#!/usr/local/bin/si
+
+let a = 0;
+if a {
+	a = 10;
+}
+

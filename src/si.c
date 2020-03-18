@@ -59,10 +59,19 @@ int si_exec(int argc, char** argv) {
 	signal(SIGINT, signal_exit);
 	struct VM_state vm;
 	vm_init(&vm);
-	char* input = read_file("test/test.lang");
+	char* input;
+	const char* filename = "test/test.lang";
+	if (argc > 1) {
+		filename = argv[1];
+		input = read_file(filename);
+	}
+	else
+		input = read_file(filename);
 	if (input) {
 		vm_exec(&vm, input);
-		vm_disasm(&vm, "test/test.dasm");
+#if defined(DEBUG)
+		vm_disasm(&vm, "test/" filename ".out");
+#endif
 		free(input);
 	}
 	print_memory_info();
