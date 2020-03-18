@@ -38,10 +38,13 @@ struct Node* create_node(Value value) {
 int print_tree(const Ast ast, int level) {
 	if (is_empty(ast))
 		return NO_ERR;
-	for (int i = 0; i < level-1; i++) {
+	for (int i = 0; i < level - 1; i++) {
 		printf("  ");
 	}
-	printf("%.*s\n", ast->value.length, ast->value.string);
+	if (ast->value.length > 0)
+		printf("%.*s\n", ast->value.length, ast->value.string);
+	else if (level > 0)
+		printf("t:%i\n", ast->value.type);
 
 	for (unsigned long i = 0; i < ast->child_count; i++) {
 		print_tree(ast->children[i], level + 1);

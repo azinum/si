@@ -38,6 +38,8 @@ typedef int Instruction;
 	T##_PUSH_VAR, \
 	T##_RETURN, \
 	T##_IF, \
+	T##_WHILE, \
+	T##_JUMP, \
 \
 	T##_EXIT, \
 

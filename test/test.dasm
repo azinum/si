@@ -1,36 +1,52 @@
 0000 pushk         0
-0002 if            3
-0004 pushk         1
-0006 assign        0
-0008 pushvar       0
-0010 if            6
-0012 pushvar       0
-0014 pushk         2
-0016 mult
-0017 assign        1
-0019 pushvar       0
-0021 if            5
-0023 pushk         3
-0025 assign        2
-0027 pushvar       0
-0029 if            5
-0031 pushk         4
-0033 assign        3
-0035 pushk         5
-0037 if            12
-0039 pushk         6
-0041 if            5
-0043 pushk         7
-0045 assign        5
-0047 pushk         8
-0049 if            5
-0051 pushk         9
-0053 assign        6
-0055 pushk         10
-0057 if            5
-0059 pushk         11
-0061 assign        7
-0063 pushvar       5
-0065 pushvar       7
-0067 add
-0068 assign        4
+0002 assign        0
+0004 pushvar       0
+0006 pushk         1
+0008 less_than
+0009 while         10
+0011 pushvar       0
+0013 pushk         2
+0015 add
+0016 assign        0
+0018 jump          -15
+0020 pushk         3
+0022 assign        0
+0024 pushvar       0
+0026 pushk         4
+0028 less_than
+0029 while         10
+0031 pushvar       0
+0033 pushk         5
+0035 add
+0036 assign        0
+0038 jump          -15
+0040 pushk         6
+0042 assign        0
+0044 pushvar       0
+0046 pushk         7
+0048 less_than
+0049 while         12
+0051 pushvar       0
+0053 pushk         8
+0055 add
+0056 assign        0
+0058 pushvar       0
+0060 jump          -17
+0062 assign        1
+0064 pushk         9
+0066 assign        2
+0068 pushvar       2
+0070 pushk         10
+0072 less_than
+0073 while         21
+0075 pushvar       2
+0077 pushk         11
+0079 add
+0080 assign        2
+0082 pushvar       2
+0084 pushk         12
+0086 greater_than
+0087 if            5
+0089 pushk         13
+0091 assign        2
+0093 jump          -26

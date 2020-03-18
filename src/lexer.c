@@ -245,12 +245,14 @@ struct Token next_token(struct Lexer* lexer) {
 				}
 				token.length = lexer->index - token.string;
 
-				if (token_equals(token, DECL_TOKEN))
+				if (token_equals(token, TOKEN_DECL))
 					token.type = T_DECL;
-				else if (token_equals(token, RETURN_TOKEN))
+				else if (token_equals(token, TOKEN_RETURN))
 					token.type = T_RETURN;
-				else if (token_equals(token, IF_TOKEN))
+				else if (token_equals(token, TOKEN_IF))
 					token.type = T_IF;
+				else if (token_equals(token, TOKEN_WHILE))
+					token.type = T_WHILE;
 				else
 					token.type = T_IDENTIFIER;
 			}

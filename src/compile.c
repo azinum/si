@@ -31,7 +31,8 @@ struct Func_state {
 
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
-static int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state);
+static int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
+static int compile_whilestatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count);
@@ -166,15 +167,43 @@ int equal_type(const struct Token* left, const struct Token* right) {
 	return left->type == right->type;
 }
 
-int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state) {
+// Code generated:
+// COND ...
+// i_if, jump,
+//   BLOCK ...
+int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count) {
 	unsigned int block_size = 0;
 	add_instruction(vm, I_IF, &block_size);
-	add_instruction(vm, -1, NULL);
-	int jump_address_index = vm->program_size - 1;
+	add_instruction(vm, -1, ins_count);
+	int jump_index = vm->program_size - 1;
 	compile(vm, ast, state, &block_size);
-	list_assign(vm->program, vm->program_size, jump_address_index, block_size);
+	list_assign(vm->program, vm->program_size, jump_index, block_size);
 	(void)block_size;	// Will be used on chaining if-else statements
-	assert(vm->program[jump_address_index] >= 0);
+	assert(vm->program[jump_index] >= 0);
+	*ins_count += block_size;
+	return NO_ERR;
+}
+
+// Code generated:
+// COND ...
+// i_while, jump,
+//   BLOCK ...
+// jump_back (to COND)
+int compile_whilestatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count) {
+	unsigned int cond_size = 0;
+	unsigned int block_size = 0;
+	compile(vm, cond, state, &cond_size);
+	add_instruction(vm, I_WHILE, &block_size);
+	add_instruction(vm, 0, ins_count);
+	int jump_index = vm->program_size - 1;
+	compile(vm, block, state, &block_size);
+	add_instruction(vm, I_JUMP, &block_size);
+	add_instruction(vm, 0, &block_size);
+	int jumpback_index = vm->program_size - 1;
+	list_assign(vm->program, vm->program_size, jump_index, block_size);
+	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
+	assert(vm->program[jump_index] != 0 && vm->program[jump_index] != 0);
+	*ins_count += block_size + cond_size;
 	return NO_ERR;
 }
 
@@ -196,8 +225,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					int result = compile_pushvar(vm, state, *token, ins_count);
 					if (result != NO_ERR)
 						return result;
-				}
 					break;
+				}
 
 				// {decl, identifier}
 				case T_DECL: {
@@ -206,8 +235,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					int result = compile_declvar(vm, state, *identifier);
 					if (result != NO_ERR)
 						return result;
-				}
 					break;
+				}
 
 				case T_ASSIGN: {
 					struct Token* identifier = ast_get_node(ast, ++i);
@@ -218,8 +247,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 						return result;
 					add_instruction(vm, I_ASSIGN, ins_count);
 					add_instruction(vm, location, ins_count);
-				}
 					break;
+				}
 
 				case T_RETURN:
 					add_instruction(vm, I_RETURN, ins_count);
@@ -228,9 +257,18 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				case T_IF: {
 					Ast branch = ast_get_node_at(ast, i);
 					assert(branch != NULL);
-					compile_ifstatement(vm, &branch, state);
-				}
+					compile_ifstatement(vm, &branch, state, ins_count);
 					break;
+				}
+
+				case T_WHILE: {
+					Ast cond = ast_get_node_at(ast, i);
+					Ast block = ast_get_node_at(ast, ++i);
+					assert(cond != NULL);
+					assert(block != NULL);
+					compile_whilestatement(vm, &cond, &block, state, ins_count);
+					break;
+				}
 
 				default: {
 					(void)equal_type;
@@ -246,6 +284,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 			}
 		}
 	}
+	// printf("ins_count: %i\n", *ins_count);
 	return NO_ERR;
 }
 

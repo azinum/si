@@ -40,6 +40,8 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"pushvar",
 	"return",
 	"if",
+	"while",
+	"jump",
 
 	"exit",
 };
@@ -226,20 +228,43 @@ int execute(struct VM_state* vm, struct Function* func) {
 			vmcase(I_RETURN)
 				goto done_exec;
 
-			// Input: { COND if addr BLOCK }
-			// jump if condition is false (skip if block)
+			// Input: { COND if jmp BLOCK }
+			// jump if condition is false (skip if-block)
 			// continue if true (skip jump address)
 			vmcase(I_IF) {
 				const struct Object* top = stack_gettop(vm);
 				if (object_checktrue(top)) {
 					stack_pop(vm);
-					ip++;	// Skip jump address
-					vmbreak;	// Enter if block
+					ip++;	// Skip jump
+					vmbreak;	// Enter if-block
 				}
 				stack_pop(vm);
-				int jump_address = *(ip);
-				assert(jump_address >= 0 && jump_address < vm->program_size);
-				vmjump(jump_address);
+				int jump = *(ip);
+				assert(jump >= 0 && jump < vm->program_size);
+				vmjump(jump);
+				vmbreak;
+			}
+
+			// Input: {COND while jmp BLOCK jmp_back}
+			// Continue if condition is true (skip jump)
+			// Jump if condition is false (next instruction is jump)
+			vmcase(I_WHILE) {
+				const struct Object* top = stack_gettop(vm);
+				if (object_checktrue(top)) {
+					stack_pop(vm);
+					ip++;	// Skip jump
+					vmbreak;	// Enter while-block
+				}
+				stack_pop(vm);
+				int jump = *(ip);
+				assert(jump != 0);
+				vmjump(jump);
+				vmbreak;
+			}
+
+			vmcase(I_JUMP) {
+				int jump = *(ip);
+				vmjump(jump);
 				vmbreak;
 			}
 
@@ -336,10 +361,12 @@ int disasm(struct VM_state* vm, FILE* file) {
 		Instruction instruction = vm->program[i];
 		switch (instruction) {
 			// One argument instructions
-			case I_IF:
 			case I_ASSIGN:
-			case I_PUSH_VAR:
 			case I_PUSHK:
+			case I_PUSH_VAR:
+			case I_IF:
+			case I_WHILE:
+			case I_JUMP:
 				fprintf(file, "%.4i %-14s%i\n", i, ins_descriptions[instruction], vm->program[i + 1]);
 				i++;
 				break;
