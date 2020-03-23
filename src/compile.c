@@ -54,9 +54,9 @@ int optimize_tree(struct VM_state* vm, Ast* ast) {
 		switch (token->type) {
 			case T_WHILE: {
 				Ast block = ast_get_node_at(ast, i + 1);
+				int block_size = ast_child_count(&block);
 				Ast* cond_branch = ast_get_node(ast, i);
 				Ast* block_branch = ast_get_node(ast, i + 1);
-				int block_size = ast_child_count(&block);
 				i += 2;
 				if (!block_size) {
 					compile_warning("Empty while body (omitted)\n");
@@ -250,7 +250,6 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	add_instruction(vm, 0, ins_count);
 	int jump_index = vm->program_size - 1;
 	compile(vm, block, state, &block_size);
-	endblock(vm, block_size);
 	add_instruction(vm, I_JUMP, &block_size);
 	add_instruction(vm, 0, &block_size);
 	int jumpback_index = vm->program_size - 1;
@@ -258,6 +257,7 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
 	assert(vm->program[jump_index] != 0 && vm->program[jump_index] != 0);
 	*ins_count += block_size + cond_size;
+	endblock(vm, block_size);
 	return NO_ERR;
 }
 

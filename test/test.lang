@@ -1,4 +1,6 @@
 // test.lang
 
-while 0 + 0 {
+let a = 0
+while a < 10 {
+	break;
 }
