@@ -95,7 +95,7 @@ int endblock(struct VM_state* vm, int block_size) {
 	for (int i = end - block_size; i < end; i++) {
 		Instruction instruction = vm->program[i];
 		if (instruction == I_JUMP) {
-			if (vm->program[i + 1] < 0)	{	// Fix unresolved jump
+			if (vm->program[i + 1] == 0)	{	// Fix unresolved jump
 				vm->program[i + 1] = end - i;
 			}
 			i++;
@@ -228,11 +228,11 @@ int equal_type(const struct Token* left, const struct Token* right) {
 int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count) {
 	unsigned int block_size = 0;
 	add_instruction(vm, I_IF, &block_size);
-	add_instruction(vm, -1, ins_count);
+	add_instruction(vm, 0, ins_count);
 	int jump_index = vm->program_size - 1;
 	compile(vm, ast, state, &block_size);
 	list_assign(vm->program, vm->program_size, jump_index, block_size);
-	assert(vm->program[jump_index] >= 0);
+	assert(vm->program[jump_index] > 0);
 	*ins_count += block_size;
 	return NO_ERR;
 }
@@ -326,7 +326,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 
 				case T_BREAK:
 					add_instruction(vm, I_JUMP, ins_count);
-					add_instruction(vm, -1, ins_count);
+					add_instruction(vm, 0, ins_count);
 					break;
 
 				default: {

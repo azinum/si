@@ -46,6 +46,7 @@ static int get_binop(struct Token token);
 static int get_uop(struct Token token);
 static int block_end(struct Parser* p);
 static int expect(struct Parser* p, enum Token_types expected_type);
+static int expect_skip(struct Parser* p, enum Token_types consume_type, enum Token_types expected_type);
 static void check(struct Parser* p, enum Token_types type);
 static void skip(struct Parser* p);
 static int expression_end(struct Parser* p);
@@ -88,6 +89,14 @@ int expect(struct Parser* p, enum Token_types expected_type) {
 	return token.type == expected_type;
 }
 
+// Expect a certain token (expected_type) after skipping 0 or more tokens of another type (consume_type)
+int expect_skip(struct Parser* p, enum Token_types consume_type, enum Token_types expected_type) {
+	struct Token token = get_token(p->lexer);
+	while (token.type == consume_type)
+		token = next_token(p->lexer);
+	return token.type == expected_type;
+}
+
 void check(struct Parser* p, enum Token_types type) {
 	struct Token token = get_token(p->lexer);
 	if (token.type != type) {
@@ -121,13 +130,13 @@ int declare_variable(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 	ast_add_node(p->ast, token);	// 'let' token
 	struct Token identifier = next_token(p->lexer); // Skip 'let'
-	if (!expect(p, T_IDENTIFIER)) {
+	if (!expect_skip(p, T_NEWLINE, T_IDENTIFIER)) {
 		parseerror("Expected identifier in declaration\n");
 		return p->status = PARSE_ERR;
 	}
 	ast_add_node(p->ast, identifier); // Add identifier to ast
 	next_token(p->lexer); // Skip identifier
-	if (expect(p, T_ASSIGN)) {  // Variable assignment?
+	if (expect_skip(p, T_NEWLINE, T_ASSIGN)) {  // Variable assignment?
 		struct Token assign_token = get_token(p->lexer);
 		next_token(p->lexer); // Skip '='
 		if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
@@ -158,7 +167,7 @@ int ifstatement(struct Parser* p) {
 	ast_add_node(orig_branch, token);	// Add if node
 	Ast block_branch = ast_get_last(orig_branch);
 	p->ast = &block_branch;
-	if (!expect(p, T_BLOCKBEGIN)) {
+	if (!expect_skip(p, T_NEWLINE, T_BLOCKBEGIN)) {
 		parseerror("Expected '{' block begin after condition\n");
 		return p->status = PARSE_ERR;
 	}
@@ -184,7 +193,7 @@ int whileloop(struct Parser* p) {
 	expr(p, 0);	// Read condition
 	struct Token block_begin = { .type = T_BLOCK };
 	ast_add_node(orig_branch, block_begin);
-	if (!expect(p, T_BLOCKBEGIN)) {
+	if (!expect_skip(p, T_NEWLINE, T_BLOCKBEGIN)) {
 		parseerror("Expected '{' block begin\n");
 		return p->status = PARSE_ERR;
 	}
@@ -280,7 +289,7 @@ int simple_expr(struct Parser* p) {
 		case T_IDENTIFIER: {
 			struct Token identifier = token;
 			next_token(p->lexer);
-			if (expect(p, T_ASSIGN)) {
+			if (expect_skip(p, T_NEWLINE, T_ASSIGN)) {
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
 				if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {

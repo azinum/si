@@ -1,6 +1,6 @@
 // test.lang
 
-let a = 0
-while a < 10 {
-	break;
+let i = 0
+if i < 10 {
+	i = i + 5
 }

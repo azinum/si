@@ -3,6 +3,8 @@
 0004 pushvar       0
 0006 pushk         1
 0008 less_than
-0009 while         5
-0011 jump          3
-0013 jump          1
+0009 if            8
+0011 pushvar       0
+0013 pushk         2
+0015 add
+0016 assign        0

@@ -26,22 +26,22 @@ int is_error() {
 }
 
 void error(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-	
-	vprintf(format, args);
-  va_end(args);
+	va_list args;
+	va_start(args, format);
 
-  err_state.status = ERR;
+	vprintf(format, args);
+	va_end(args);
+
+	err_state.status = ERR;
 }
 
 void warn(const char* format, ...) {
 	if (!err_state.show_warnings)
 		return;
 	va_list args;
-  va_start(args, format);
+	va_start(args, format);
 	vprintf(format, args);
-  va_end(args);
+	va_end(args);
 }
 
 int get_error() {
