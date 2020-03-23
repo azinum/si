@@ -15,6 +15,8 @@ enum Error_codes {
 	RUNTIME_ERR
 };
 
+void error_init(int show_warnings);
+
 int is_error();
 
 void error(const char* format, ...);

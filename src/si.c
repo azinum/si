@@ -57,6 +57,7 @@ int user_input(struct VM_state* vm) {
 
 int si_exec(int argc, char** argv) {
 	signal(SIGINT, signal_exit);
+	error_init(1);	// Show warnings
 	struct VM_state vm;
 	vm_init(&vm);
 	char* input;
