@@ -258,6 +258,8 @@ struct Token next_token(struct Lexer* lexer) {
 					token.type = T_IF;
 				else if (token_equals(token, TOKEN_WHILE))
 					token.type = T_WHILE;
+				else if (token_equals(token, TOKEN_BREAK))
+					token.type = T_BREAK;
 				else
 					token.type = T_IDENTIFIER;
 			}

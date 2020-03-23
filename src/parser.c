@@ -18,6 +18,7 @@ struct Parser {
 	struct Lexer* lexer;
 	Ast* ast;
 	int status;
+	int loop;	// Are we in a loop block?
 };
 
 struct Operator {
@@ -49,8 +50,9 @@ static void check(struct Parser* p, enum Token_types type);
 static int expression_end(struct Parser* p);
 static int declare_variable(struct Parser* p);
 static int ifstatement(struct Parser* p);
-static int whilestatement(struct Parser* p);
+static int whileloop(struct Parser* p);
 static int block(struct Parser* p);
+static int breakstat(struct Parser* p);
 static int statement(struct Parser* p);
 static int statements(struct Parser* p);
 static int simple_expr(struct Parser* p);
@@ -73,7 +75,6 @@ int block_end(struct Parser* p) {
 	switch (token.type) {
 		case T_EOF:
 		case T_BLOCKEND:
-		// case T_RETURN:
 			return 1;
 		default:
 			return 0;
@@ -164,7 +165,8 @@ int ifstatement(struct Parser* p) {
 //   \--> COND
 // \--> T_BLOCK
 //   \--> { BLOCK }
-int whilestatement(struct Parser* p) {
+int whileloop(struct Parser* p) {
+	p->loop++;	// We are now in a while loop block (increment for nested loops)
 	struct Token token = get_token(p->lexer);
 	next_token(p->lexer);	// Skip 'while'
 	Ast* orig_branch = p->ast;
@@ -183,6 +185,7 @@ int whilestatement(struct Parser* p) {
 	p->ast = &block_branch;
 	block(p);
 	p->ast = orig_branch;
+	p->loop--;	// Exit this loop block
 	return NO_ERR;
 }
 
@@ -193,6 +196,21 @@ int block(struct Parser* p) {
 		return p->status = PARSE_ERR;
 	}
 	next_token(p->lexer);
+	return NO_ERR;
+}
+
+int breakstat(struct Parser* p) {
+	struct Token token = get_token(p->lexer);
+	next_token(p->lexer);
+	if (!p->loop) {
+		parseerror("No loop to break\n");
+		return p->status = PARSE_ERR;
+	}
+	ast_add_node(p->ast, token);
+	if (!(expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))) {
+		parseerror("Expected new line or semicolon ';'\n");
+		return p->status = PARSE_ERR;
+	}
 	return NO_ERR;
 }
 
@@ -212,7 +230,11 @@ int statement(struct Parser* p) {
 			break;
 
 		case T_WHILE:
-			whilestatement(p);
+			whileloop(p);
+			break;
+
+		case T_BREAK:
+			breakstat(p);
 			break;
 
 		case T_IF:
@@ -221,11 +243,10 @@ int statement(struct Parser* p) {
 
 		default:
 			expr(p, 0);
-			if (p->status != NO_ERR)
-				return p->status;
 			break;
 	}
-
+	if (p->status != NO_ERR)
+		return p->status;
 	return p->status;
 }
 
@@ -263,7 +284,7 @@ int simple_expr(struct Parser* p) {
 			}
 			ast_add_node(p->ast, identifier);
 			if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
-					next_token(p->lexer);
+				next_token(p->lexer);
 			break;
 		}
 
@@ -343,7 +364,8 @@ int parser_parse(char* input, Ast* ast) {
 	struct Parser parser = {
 		.lexer = &lexer,
 		.ast = ast,
-		.status = NO_ERR
+		.status = NO_ERR,
+		.loop = 0
 	};
 	next_token(parser.lexer);
 	statements(&parser);

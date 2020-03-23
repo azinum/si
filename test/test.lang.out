@@ -1,0 +1,21 @@
+0000 pushk         0
+0002 assign        0
+0004 pushk         1
+0006 while         31
+0008 pushvar       0
+0010 pushk         2
+0012 add
+0013 assign        0
+0015 pushvar       0
+0017 pushk         3
+0019 greater_equal
+0020 if            15
+0022 pushk         4
+0024 while         7
+0026 pushk         5
+0028 breakjump     3
+0030 jump          -9
+0032 pushk         6
+0034 breakjump     3
+0036 jump          -33
+0038 assign        1

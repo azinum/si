@@ -8,8 +8,6 @@
 
 #define STACK_SIZE 128
 
-typedef int Instruction;
-
 #define INSTRUCTIONS(T) \
 	T##_UNKNOWN, \
 	T##_ADD, \
@@ -40,6 +38,7 @@ typedef int Instruction;
 	T##_IF, \
 	T##_WHILE, \
 	T##_JUMP, \
+	T##_BREAKJUMP, \
 \
 	T##_EXIT, \
 

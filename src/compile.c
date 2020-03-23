@@ -31,8 +31,9 @@ struct Func_state {
 
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
+static int endblock(struct VM_state* vm, int block_size);
 static int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
-static int compile_whilestatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
+static int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count);
@@ -53,6 +54,26 @@ static int add_instruction(struct VM_state* vm, Instruction instruction, unsigne
 int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
 	state->argc = 0;
+	return NO_ERR;
+}
+
+// Update all goto/break statements in block
+int endblock(struct VM_state* vm, int block_size) {
+	int end = vm->program_size - 1;
+	for (int i = end - block_size; i < end; i++) {
+		Instruction instruction = vm->program[i];
+		if (instruction == I_BREAKJUMP) {
+			if (vm->program[i + 1] < 0)	// Fix unresolved jump
+				vm->program[i + 1] = end - i;
+			i++;
+		}
+		// Skip any other instruction that isn't a jump
+		// Get that instruction's arg count and jump over those too
+		else {
+			unsigned int arg_count = compile_get_ins_arg_count(instruction);
+			i += arg_count;
+		}
+	}
 	return NO_ERR;
 }
 
@@ -188,7 +209,7 @@ int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state,
 // i_while, jump,
 //   BLOCK ...
 // jump_back (to COND)
-int compile_whilestatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count) {
+int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count) {
 	unsigned int cond_size = 0;
 	unsigned int block_size = 0;
 	compile(vm, cond, state, &cond_size);
@@ -203,6 +224,7 @@ int compile_whilestatement(struct VM_state* vm, Ast* cond, Ast* block, struct Fu
 	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
 	assert(vm->program[jump_index] != 0 && vm->program[jump_index] != 0);
 	*ins_count += block_size + cond_size;
+	endblock(vm, block_size);
 	return NO_ERR;
 }
 
@@ -265,9 +287,14 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					Ast block = ast_get_node_at(ast, ++i);
 					assert(cond != NULL);
 					assert(block != NULL);
-					compile_whilestatement(vm, &cond, &block, state, ins_count);
+					compile_whileloop(vm, &cond, &block, state, ins_count);
 					break;
 				}
+
+				case T_BREAK:
+					add_instruction(vm, I_BREAKJUMP, ins_count);
+					add_instruction(vm, -1, ins_count);
+					break;
 
 				default: {
 					(void)equal_type;
@@ -298,4 +325,19 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	add_instruction(vm, I_RETURN, NULL);
 	vm->global = global_state.func;
 	return status;
+}
+
+unsigned int compile_get_ins_arg_count(Instruction instruction) {
+	switch (instruction) {
+		case I_ASSIGN:
+		case I_PUSHK:
+		case I_PUSH_VAR:
+		case I_IF:
+		case I_WHILE:
+		case I_JUMP:
+		case I_BREAKJUMP:
+			return 1;
+		default:
+			return 0;
+	}
 }

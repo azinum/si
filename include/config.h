@@ -43,4 +43,6 @@
 
 typedef double obj_number;
 
+typedef int Instruction;
+
 #endif

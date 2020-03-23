@@ -40,11 +40,13 @@ enum Token_types {
 
 	T_IDENTIFIER,
 	T_NUMBER,
+	T_NULL,
 
 	T_DECL,	// 'let'
 	T_RETURN,
 	T_IF,
 	T_WHILE,
+	T_BREAK,
 
 	T_BLOCK,
 
@@ -54,10 +56,11 @@ enum Token_types {
 	T_COUNT
 };
 
-#define TOKEN_DECL 		"let"
-#define TOKEN_RETURN 	"return"
-#define TOKEN_IF			"if"
-#define TOKEN_WHILE		"while"
+#define TOKEN_DECL "let"
+#define TOKEN_RETURN "return"
+#define TOKEN_IF "if"
+#define TOKEN_WHILE "while"
+#define TOKEN_BREAK "break"
 
 struct Token {
 	int length;

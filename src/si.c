@@ -69,8 +69,10 @@ int si_exec(int argc, char** argv) {
 		input = read_file(filename);
 	if (input) {
 		vm_exec(&vm, input);
-#if defined(DEBUG)
-		vm_disasm(&vm, "test/" filename ".out");
+#if !defined(NDEBUG)
+		char out_filename[INPUT_MAX];
+		sprintf(out_filename, "%s.out", filename);
+		vm_disasm(&vm, out_filename);
 #endif
 		free(input);
 	}

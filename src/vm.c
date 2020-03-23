@@ -42,6 +42,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"if",
 	"while",
 	"jump",
+	"breakjump",
 
 	"exit",
 };
@@ -56,8 +57,9 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	i = *(ip++); \
 }
 #define vmjump(n) i = *(ip += n)
+// TODO: Fix goto!
 #define vmgoto(n) { \
-	i = *(ip += (ip - vm->program + n)) \
+	i = *(ip += (ip - (vm->program + n))); \
 }
 
 #define OP_ARITH_CAST(OP, CAST) { \
@@ -202,7 +204,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-				if (variable->type == T_UNKNOWN)
+				if (variable->type == T_NULL)
 					*variable = *top;
 				else if (!equal_types(variable, top)) {
 					vmerror("Invalid types in assignment\n");
@@ -249,7 +251,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 				vmbreak;
 			}
 
-			// Input: {COND while jmp BLOCK jmp_back}
+			// Input: { COND while jmp BLOCK jmp_back }
 			// Continue if condition is true (skip jump)
 			// Jump if condition is false (next instruction is jump)
 			vmcase(I_WHILE) {
@@ -267,6 +269,12 @@ int execute(struct VM_state* vm, struct Function* func) {
 			}
 
 			vmcase(I_JUMP) {
+				int jump = *(ip);
+				vmjump(jump);
+				vmbreak;
+			}
+
+			vmcase(I_BREAKJUMP) {
 				int jump = *(ip);
 				vmjump(jump);
 				vmbreak;
@@ -363,21 +371,13 @@ int disasm(struct VM_state* vm, FILE* file) {
 	assert(file != NULL);
 	for (int i = 0; i < vm->program_size; i++) {
 		Instruction instruction = vm->program[i];
-		switch (instruction) {
-			// One argument instructions
-			case I_ASSIGN:
-			case I_PUSHK:
-			case I_PUSH_VAR:
-			case I_IF:
-			case I_WHILE:
-			case I_JUMP:
-				fprintf(file, "%.4i %-14s%i\n", i, ins_descriptions[instruction], vm->program[i + 1]);
-				i++;
-				break;
-			// Instructions that have no args
-			default:
-				fprintf(file, "%.4i %s\n", i, ins_descriptions[instruction]);
-				break;
+		unsigned int arg_count = compile_get_ins_arg_count(instruction);
+		if (arg_count > 0) {
+			fprintf(file, "%.4i %-14s%i\n", i, ins_descriptions[instruction], vm->program[i + 1]);
+			i += arg_count;
+		}
+		else {
+			fprintf(file, "%.4i %s\n", i, ins_descriptions[instruction]);
 		}
 	}
 	return NO_ERR;
@@ -431,14 +431,13 @@ int vm_exec(struct VM_state* vm, char* input) {
 	Ast ast = ast_create();
 	if (parser_parse(input, &ast) == NO_ERR) {
 		if (compile_from_tree(vm, &ast) == NO_ERR) {
-			// ast_print(ast);
 			execute(vm, &vm->global);
 			stack_print_top(vm);
 			stack_reset(vm);
 			if (vm->prev_ip != vm->program_size) {	// Has program changed?
 				list_shrink(vm->program, vm->program_size, 1);	// If so, remove the exit instruction
 				vm->prev_ip = vm->program_size;
-				print_global(vm);
+				(void)print_global;
 			}
 		}
 	}
