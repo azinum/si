@@ -20,6 +20,9 @@ install:
 	chmod o+x $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME)
 	cp $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME) $(INSTALL_BIN)/
 
+uninstall:
+	[ -f $(INSTALL_BIN)/$(PROGRAM_NAME) ] && rm $(INSTALL_BIN)/$(PROGRAM_NAME)
+
 build_debug:
 	$(CC) $(FLAGS) $(FLAGS_LOCAL) $(FLAGS_DEBUG)
 

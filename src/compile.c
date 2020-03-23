@@ -63,12 +63,14 @@ int endblock(struct VM_state* vm, int block_size) {
 	for (int i = end - block_size; i < end; i++) {
 		Instruction instruction = vm->program[i];
 		if (instruction == I_BREAKJUMP) {
-			if (vm->program[i + 1] < 0)	// Fix unresolved jump
+			if (vm->program[i + 1] < 0)	{// Fix unresolved jump
+				vm->program[i] = I_JUMP;	// I_BREAKJUMP is the same as I_JUMP
 				vm->program[i + 1] = end - i;
+			}
 			i++;
 		}
 		// Skip any other instruction that isn't a jump
-		// Get that instruction's arg count and jump over those too
+		// Get that instruction's arg count and jump over it
 		else {
 			unsigned int arg_count = compile_get_ins_arg_count(instruction);
 			i += arg_count;
@@ -188,7 +190,7 @@ int equal_type(const struct Token* left, const struct Token* right) {
 	return left->type == right->type;
 }
 
-// Code generated:
+// Generated code:
 // COND ...
 // i_if, jump,
 //   BLOCK ...
@@ -204,7 +206,7 @@ int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state,
 	return NO_ERR;
 }
 
-// Code generated:
+// Generated code:
 // COND ...
 // i_while, jump,
 //   BLOCK ...

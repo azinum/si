@@ -42,7 +42,6 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"if",
 	"while",
 	"jump",
-	"breakjump",
 
 	"exit",
 };
@@ -269,12 +268,6 @@ int execute(struct VM_state* vm, struct Function* func) {
 			}
 
 			vmcase(I_JUMP) {
-				int jump = *(ip);
-				vmjump(jump);
-				vmbreak;
-			}
-
-			vmcase(I_BREAKJUMP) {
 				int jump = *(ip);
 				vmjump(jump);
 				vmbreak;

@@ -8,42 +8,45 @@
 
 #define STACK_SIZE 128
 
+#define INS(T, I) T##_##I,
+
 #define INSTRUCTIONS(T) \
-	T##_UNKNOWN, \
-	T##_ADD, \
-	T##_SUB, \
-	T##_MULT, \
-	T##_DIV, \
-	T##_LT, \
-	T##_GT, \
-	T##_EQ, \
-	T##_LEQ, \
-	T##_GEQ, \
-	T##_NEQ, \
-	T##_MOD, \
-	T##_BAND, \
-	T##_BOR, \
-	T##_BXOR, \
-	T##_LEFTSHIFT, \
-	T##_RIGHTSHIFT, \
-	T##_AND, \
-	T##_OR, \
-	T##_NOT, \
+	INS(T, UNKNOWN) \
+	INS(T, ADD) \
+	INS(T, SUB) \
+	INS(T, MULT) \
+	INS(T, DIV) \
+	INS(T, LT) \
+	INS(T, GT) \
+	INS(T, EQ) \
+	INS(T, LEQ) \
+	INS(T, GEQ) \
+	INS(T, NEQ) \
+	INS(T, MOD) \
+	INS(T, BAND) \
+	INS(T, BOR) \
+	INS(T, BXOR) \
+	INS(T, LEFTSHIFT) \
+	INS(T, RIGHTSHIFT) \
+	INS(T, AND) \
+	INS(T, OR) \
+	INS(T, NOT) \
 \
-	T##_ASSIGN, \
-	T##_PUSHK, \
-	T##_POP, \
-	T##_PUSH_VAR, \
-	T##_RETURN, \
-	T##_IF, \
-	T##_WHILE, \
-	T##_JUMP, \
-	T##_BREAKJUMP, \
+	INS(T, ASSIGN) \
+	INS(T, PUSHK) \
+	INS(T, POP) \
+	INS(T, PUSH_VAR) \
+	INS(T, RETURN) \
+	INS(T, IF) \
+	INS(T, WHILE) \
+	INS(T, JUMP) \
 \
-	T##_EXIT, \
+	INS(T, EXIT) \
 
 enum VM_instructions {
 	INSTRUCTIONS(I)
+
+	I_BREAKJUMP,	// Dummy instruction
 	INSTRUCTION_COUNT
 };
 

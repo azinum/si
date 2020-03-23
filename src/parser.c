@@ -47,6 +47,7 @@ static int get_uop(struct Token token);
 static int block_end(struct Parser* p);
 static int expect(struct Parser* p, enum Token_types expected_type);
 static void check(struct Parser* p, enum Token_types type);
+static void skip(struct Parser* p);
 static int expression_end(struct Parser* p);
 static int declare_variable(struct Parser* p);
 static int ifstatement(struct Parser* p);
@@ -96,6 +97,13 @@ void check(struct Parser* p, enum Token_types type) {
 			parseerror("Unexpected symbol\n");
 		p->status = PARSE_ERR;
 	}
+}
+
+// Skip newlines and go to next token
+void skip(struct Parser* p) {
+	struct Token token = get_token(p->lexer);
+	while ((token.type == T_NEWLINE || token.type == T_SEMICOLON))
+		token = next_token(p->lexer);
 }
 
 int expression_end(struct Parser* p) {
@@ -151,7 +159,7 @@ int ifstatement(struct Parser* p) {
 	Ast block_branch = ast_get_last(orig_branch);
 	p->ast = &block_branch;
 	if (!expect(p, T_BLOCKBEGIN)) {
-		parseerror("Expected '{' curly-bracket after condition\n");
+		parseerror("Expected '{' block begin after condition\n");
 		return p->status = PARSE_ERR;
 	}
 	next_token(p->lexer);	// Skip '{'
@@ -177,7 +185,7 @@ int whileloop(struct Parser* p) {
 	struct Token block_begin = { .type = T_BLOCK };
 	ast_add_node(orig_branch, block_begin);
 	if (!expect(p, T_BLOCKBEGIN)) {
-		parseerror("Expected '{' curly-bracket after condition\n");
+		parseerror("Expected '{' block begin\n");
 		return p->status = PARSE_ERR;
 	}
 	next_token(p->lexer);	// Skip '{'
@@ -192,7 +200,7 @@ int whileloop(struct Parser* p) {
 int block(struct Parser* p) {
 	statements(p);
 	if (!expect(p, T_BLOCKEND)) {
-		parseerror("Expected '}' curly-bracket in block\n");
+		parseerror("Expected '}' block end\n");
 		return p->status = PARSE_ERR;
 	}
 	next_token(p->lexer);
@@ -283,8 +291,7 @@ int simple_expr(struct Parser* p) {
 				ast_add_node(p->ast, assign_token);
 			}
 			ast_add_node(p->ast, identifier);
-			if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
-				next_token(p->lexer);
+			skip(p);
 			break;
 		}
 
@@ -308,6 +315,7 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
+		case T_SEMICOLON:
 		case T_NEWLINE:
 			next_token(p->lexer);
 			break;

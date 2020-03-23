@@ -77,11 +77,10 @@ void object_print(const struct Object* object) {
 			break;
 
 		case T_NULL:
-			printf(COLOR_UNDEFINED "null" COLOR_NONE);
+			printf(COLOR_UNDEFINED "[null]" COLOR_NONE);
 			break;
 
 		default:
-			printf(COLOR_UNDEFINED "undefined" COLOR_NONE);
 			break;
 	}
 }
