@@ -111,10 +111,20 @@ int ast_child_count(const Ast* ast) {
 	return (*ast)->child_count;
 }
 
-Value* ast_get_node(Ast* ast, int index) {
+Ast* ast_get_node(Ast* ast, int index) {
+	assert(ast != NULL);
+	if (index >= 0 && index < ast_child_count(ast)) {
+		return &(*ast)->children[index];
+	}
+	return NULL;
+}
+
+Value* ast_get_node_value(Ast* ast, int index) {
 	assert(ast != NULL);
 	if (index >= 0 && index < ast_child_count(ast)) {
 		struct Node* node = (*ast)->children[index];
+		if (!node)
+			return NULL;
 		return &node->value;
 	}
 	return NULL;

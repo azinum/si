@@ -30,6 +30,13 @@ void error(const char* format, ...) {
   err_state.status = ERR;
 }
 
+void warn(const char* format, ...) {
+	va_list args;
+  va_start(args, format);
+	vprintf(format, args);
+  va_end(args);
+}
+
 int get_error() {
 	return err_state.status;
 }

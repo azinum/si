@@ -19,6 +19,8 @@ int is_error();
 
 void error(const char* format, ...);
 
+void warn(const char* format, ...);
+
 int get_error();
 
 #endif

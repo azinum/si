@@ -1,5 +1,4 @@
 // test.lang
 
-let a = (if 1 {
-	5
-});
+while 0 + 0 {
+}

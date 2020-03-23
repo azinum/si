@@ -23,12 +23,13 @@ struct Func_state {
 	int argc;
 };
 
-// TODO: Add more useful information when printing errors.
-// i.e. add info about where the error occured e.t.c.
-// Just like we did in the lexer and parser.
 #define compile_error(fmt, ...) \
 	error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
+#define compile_warning(fmt, ...) \
+	warn(COLOR_WARNING "compile-warning: " COLOR_NONE fmt, ##__VA_ARGS__)
+
+static int optimize_tree(struct VM_state* vm, Ast* ast);
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
 static int endblock(struct VM_state* vm, int block_size);
@@ -44,7 +45,38 @@ static int store_variable(struct VM_state* vm, struct Func_state* state, struct 
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
-static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
+int optimize_tree(struct VM_state* vm, Ast* ast) {
+	struct Token* token = NULL;
+	for (int i = 0; i < ast_child_count(ast); i++) {
+		token = ast_get_node_value(ast, i);
+		if (!token)
+			break;
+		switch (token->type) {
+			case T_WHILE: {
+				Ast block = ast_get_node_at(ast, i + 1);
+				Ast* cond_branch = ast_get_node(ast, i);
+				Ast* block_branch = ast_get_node(ast, i + 1);
+				int block_size = ast_child_count(&block);
+				i += 2;
+				if (!block_size) {
+					compile_warning("Empty while body (omitted)\n");
+					ast_free(cond_branch);
+					ast_free(block_branch);
+					cond_branch = NULL;
+					block_branch = NULL;
+					break;
+				}
+				optimize_tree(vm, block_branch);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	return NO_ERR;
+}
+
+int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
 	list_push(vm->program, vm->program_size, instruction);
 	if (ins_count)
 		(*ins_count)++;
@@ -62,9 +94,8 @@ int endblock(struct VM_state* vm, int block_size) {
 	int end = vm->program_size - 1;
 	for (int i = end - block_size; i < end; i++) {
 		Instruction instruction = vm->program[i];
-		if (instruction == I_BREAKJUMP) {
-			if (vm->program[i + 1] < 0)	{// Fix unresolved jump
-				vm->program[i] = I_JUMP;	// I_BREAKJUMP is the same as I_JUMP
+		if (instruction == I_JUMP) {
+			if (vm->program[i + 1] < 0)	{	// Fix unresolved jump
 				vm->program[i + 1] = end - i;
 			}
 			i++;
@@ -219,6 +250,7 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	add_instruction(vm, 0, ins_count);
 	int jump_index = vm->program_size - 1;
 	compile(vm, block, state, &block_size);
+	endblock(vm, block_size);
 	add_instruction(vm, I_JUMP, &block_size);
 	add_instruction(vm, 0, &block_size);
 	int jumpback_index = vm->program_size - 1;
@@ -226,7 +258,6 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
 	assert(vm->program[jump_index] != 0 && vm->program[jump_index] != 0);
 	*ins_count += block_size + cond_size;
-	endblock(vm, block_size);
 	return NO_ERR;
 }
 
@@ -236,7 +267,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 	assert(state != NULL);
 	struct Token* token = NULL;
 	for (int i = 0; i < ast_child_count(ast); i++) {
-		token = ast_get_node(ast, i);
+		token = ast_get_node_value(ast, i);
 		if (token) {
 			switch (token->type) {
 				// {number}
@@ -253,7 +284,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 
 				// {decl, identifier}
 				case T_DECL: {
-					struct Token* identifier = ast_get_node(ast, ++i);
+					struct Token* identifier = ast_get_node_value(ast, ++i);
 					assert(identifier != NULL);
 					int result = compile_declvar(vm, state, *identifier);
 					if (result != NO_ERR)
@@ -262,7 +293,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				}
 
 				case T_ASSIGN: {
-					struct Token* identifier = ast_get_node(ast, ++i);
+					struct Token* identifier = ast_get_node_value(ast, ++i);
 					assert(identifier != NULL);
 					Instruction location;
 					int result = get_variable_location(vm, state, *identifier, &location);
@@ -294,7 +325,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				}
 
 				case T_BREAK:
-					add_instruction(vm, I_BREAKJUMP, ins_count);
+					add_instruction(vm, I_JUMP, ins_count);
 					add_instruction(vm, -1, ins_count);
 					break;
 
@@ -323,6 +354,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	func_state_init(&global_state);
 	global_state.func = vm->global;
 	unsigned int ins_count = 0;
+	optimize_tree(vm, ast);
 	int status = compile(vm, ast, &global_state, &ins_count);
 	add_instruction(vm, I_RETURN, NULL);
 	vm->global = global_state.func;

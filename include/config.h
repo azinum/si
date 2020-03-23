@@ -19,7 +19,7 @@
 #define C_GRAY "\e[0;90m"
 #define C_NONE "\e[0m"
 
-#define COLOR_WARNING C_YELLOW
+#define COLOR_WARNING C_PINK
 #define COLOR_ERROR C_RED
 #define COLOR_MESSAGE C_DARK_GREEN
 #define COLOR_NUMBER C_DARK_YELLOW

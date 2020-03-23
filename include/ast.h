@@ -23,7 +23,9 @@ Ast ast_get_last(Ast* ast);
 
 int ast_child_count(const Ast* ast);
 
-Value* ast_get_node(Ast* ast, int index);
+Ast* ast_get_node(Ast* ast, int index);
+
+Value* ast_get_node_value(Ast* ast, int index);
 
 void ast_print(const Ast ast);
 
