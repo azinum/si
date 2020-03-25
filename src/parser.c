@@ -153,8 +153,6 @@ int declare_variable(struct Parser* p) {
 }
 
 // if COND {}
-// if COND {}
-// Output: { COND if { BLOCK } }
 // Ast output:
 // \--> if
 //   \--> COND
@@ -324,10 +322,17 @@ int simple_expr(struct Parser* p) {
 			break;
 		}
 
-		case T_RETURN:
-			next_token(p->lexer);
-			ast_add_node(p->ast, token);
+		// return ;
+		// return (expr) ;
+		// Output: { (expr) return }
+		// TODO: Invalidate number of return statements to max 1/scope (not counting 'trailing' scopes i.e. scopes in scopes)
+		case T_RETURN: {
+			struct Token return_node = token;
+			next_token(p->lexer);	// Skip 'return'
+			expr(p, 0);
+			ast_add_node(p->ast, return_node);
 			break;
+		}
 
 		case T_SEMICOLON:
 		case T_NEWLINE:

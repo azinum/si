@@ -1,16 +1,10 @@
 // test.si
 
-while 0 {}
-
-while 0 {}
-
-while 0 {
-	if 0 {}
-	while 0 {}
+let a = 4
+if a >= 5 {
+	return a
 }
 
-if 0 {}
-
-if 0 {
-	if 0 {}
+if a < 5 {
+	return a << 2
 }

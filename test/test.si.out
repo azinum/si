@@ -1,5 +1,16 @@
 0000 pushk         0
-0002 while         3
-0004 jump          -5
+0002 assign        0
+0004 pushvar       0
 0006 pushk         1
-0008 if            1
+0008 greater_equal
+0009 if            4
+0011 pushvar       0
+0013 return
+0014 pushvar       0
+0016 pushk         2
+0018 less_than
+0019 if            7
+0021 pushvar       0
+0023 pushk         3
+0025 leftshift
+0026 return

@@ -105,7 +105,7 @@ int endblock(struct VM_state* vm, int block_size) {
 			i++;
 		}
 		// Skip any other instruction that isn't a jump
-		// Get that instruction's arg count and jump over it
+		// Get that instruction's arg count and jump over it (for if arguments read would cause undefined behaviour)
 		else {
 			unsigned int arg_count = compile_get_ins_arg_count(instruction);
 			i += arg_count;
