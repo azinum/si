@@ -60,7 +60,7 @@ struct VM_state {
 	Instruction* program;
 	int program_size;
 	int prev_ip;	// Instruction pointer from the previous vm dispatch
-	int heap_allocated;	// Is the vm state heap allocated?
+	unsigned char heap_allocated;	// Is the vm state heap allocated?
 };
 
 int vm_init(struct VM_state* vm);

@@ -7,8 +7,6 @@
 #include "config.h"
 #include "token.h"
 
-#define MAX_ARGC 12
-
 struct VM_state;
 
 struct Scope {
@@ -19,7 +17,7 @@ struct Scope {
 };
 
 struct Function {
-	int addr;
+	Instruction addr;
 	int stack_offset;
 	struct Scope scope;
 };

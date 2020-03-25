@@ -1,4 +1,4 @@
-// test.lang
+// test.si
 
 let i = 0
 if i < 10 {

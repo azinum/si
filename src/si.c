@@ -61,7 +61,7 @@ int si_exec(int argc, char** argv) {
 	struct VM_state vm;
 	vm_init(&vm);
 	char* input;
-	const char* filename = "test/test.lang";
+	const char* filename = "test/test.si";
 	if (argc > 1) {
 		filename = argv[1];
 		input = read_file(filename);

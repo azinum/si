@@ -40,7 +40,7 @@ enum Token_types {
 
 	T_IDENTIFIER,
 	T_NUMBER,
-	T_NULL,
+	T_NIL,
 
 	T_DECL,	// 'let'
 	T_RETURN,

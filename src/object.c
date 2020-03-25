@@ -25,11 +25,11 @@ struct Object token_to_object(struct Token token) {
 			break;
 
 		case T_IDENTIFIER:
-			object.type = T_NULL;
+			object.type = T_NIL;
 			break;
 
-		case T_NULL:
-			object.type = T_NULL;
+		case T_NIL:
+			object.type = T_NIL;
 			break;
 
 		default:
@@ -76,8 +76,8 @@ void object_print(const struct Object* object) {
 			printf(COLOR_NUMBER "%g" COLOR_NONE, object->value.number);
 			break;
 
-		case T_NULL:
-			printf(COLOR_UNDEFINED "[null]" COLOR_NONE);
+		case T_NIL:
+			printf(COLOR_UNDEFINED "[nil]" COLOR_NONE);
 			break;
 
 		default:

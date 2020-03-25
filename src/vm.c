@@ -179,6 +179,7 @@ int object_checktrue(const struct Object* object) {
 			if (object->value.number != 0)
 				return 1;
 
+		case T_NIL:
 		case T_UNKNOWN:
 			return 0;
 
@@ -203,7 +204,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-				if (variable->type == T_NULL)
+				if (variable->type == T_NIL)
 					*variable = *top;
 				else if (!equal_types(variable, top)) {
 					vmerror("Invalid types in assignment\n");

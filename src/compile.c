@@ -29,6 +29,8 @@ struct Func_state {
 #define compile_warning(fmt, ...) \
 	warn(COLOR_WARNING "compile-warning: " COLOR_NONE fmt, ##__VA_ARGS__)
 
+#define UNRESOLVED_JUMP 0
+
 static int optimize_tree(struct VM_state* vm, Ast* ast);
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
@@ -95,7 +97,7 @@ int endblock(struct VM_state* vm, int block_size) {
 	for (int i = end - block_size; i < end; i++) {
 		Instruction instruction = vm->program[i];
 		if (instruction == I_JUMP) {
-			if (vm->program[i + 1] == 0)	{	// Fix unresolved jump
+			if (vm->program[i + 1] == UNRESOLVED_JUMP)	{	// Fix unresolved jump
 				vm->program[i + 1] = end - i;
 			}
 			i++;
@@ -247,17 +249,17 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	unsigned int block_size = 0;
 	compile(vm, cond, state, &cond_size);
 	add_instruction(vm, I_WHILE, &block_size);
-	add_instruction(vm, 0, ins_count);
+	add_instruction(vm, UNRESOLVED_JUMP, ins_count);
 	int jump_index = vm->program_size - 1;
 	compile(vm, block, state, &block_size);
 	add_instruction(vm, I_JUMP, &block_size);
-	add_instruction(vm, 0, &block_size);
+	add_instruction(vm, UNRESOLVED_JUMP, &block_size);
 	int jumpback_index = vm->program_size - 1;
 	list_assign(vm->program, vm->program_size, jump_index, block_size);
 	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
 	assert(vm->program[jump_index] != 0 && vm->program[jump_index] != 0);
 	*ins_count += block_size + cond_size;
-	endblock(vm, block_size);
+	endblock(vm, block_size);	// Patch up all unresolved jumps in this block
 	return NO_ERR;
 }
 
@@ -326,7 +328,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 
 				case T_BREAK:
 					add_instruction(vm, I_JUMP, ins_count);
-					add_instruction(vm, 0, ins_count);
+					add_instruction(vm, UNRESOLVED_JUMP, ins_count);
 					break;
 
 				default: {
@@ -369,7 +371,6 @@ unsigned int compile_get_ins_arg_count(Instruction instruction) {
 		case I_IF:
 		case I_WHILE:
 		case I_JUMP:
-		case I_BREAKJUMP:
 			return 1;
 		default:
 			return 0;
