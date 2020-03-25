@@ -35,7 +35,7 @@ static int optimize_tree(struct VM_state* vm, Ast* ast);
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
 static int endblock(struct VM_state* vm, int block_size);
-static int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
+static int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count);
@@ -48,20 +48,22 @@ static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
 int optimize_tree(struct VM_state* vm, Ast* ast) {
+	// return NO_ERR;
 	struct Token* token = NULL;
 	for (int i = 0; i < ast_child_count(ast); i++) {
 		token = ast_get_node_value(ast, i);
 		if (!token)
 			break;
 		switch (token->type) {
+			case T_IF:
 			case T_WHILE: {
 				Ast block = ast_get_node_at(ast, i + 1);
 				int block_size = ast_child_count(&block);
 				Ast* cond_branch = ast_get_node(ast, i);
 				Ast* block_branch = ast_get_node(ast, i + 1);
-				i += 2;
+				i++;
 				if (!block_size) {
-					compile_warning("Empty while body (omitted)\n");
+					compile_warning("Empty block body (omitted)\n");
 					ast_free(cond_branch);
 					ast_free(block_branch);
 					cond_branch = NULL;
@@ -96,7 +98,7 @@ int endblock(struct VM_state* vm, int block_size) {
 	int end = vm->program_size - 1;
 	for (int i = end - block_size; i < end; i++) {
 		Instruction instruction = vm->program[i];
-		if (instruction == I_JUMP) {
+		if (instruction == I_JUMP || instruction == I_IF) {
 			if (vm->program[i + 1] == UNRESOLVED_JUMP)	{	// Fix unresolved jump
 				vm->program[i + 1] = end - i;
 			}
@@ -227,14 +229,13 @@ int equal_type(const struct Token* left, const struct Token* right) {
 // COND ...
 // i_if, jump,
 //   BLOCK ...
-int compile_ifstatement(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count) {
+int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count) {
+	compile(vm, cond, state, ins_count);
 	unsigned int block_size = 0;
 	add_instruction(vm, I_IF, &block_size);
-	add_instruction(vm, 0, ins_count);
-	int jump_index = vm->program_size - 1;
-	compile(vm, ast, state, &block_size);
-	list_assign(vm->program, vm->program_size, jump_index, block_size);
-	assert(vm->program[jump_index] > 0);
+	add_instruction(vm, UNRESOLVED_JUMP, ins_count);
+	compile(vm, block, state, &block_size);
+	endblock(vm, block_size);
 	*ins_count += block_size;
 	return NO_ERR;
 }
@@ -311,9 +312,11 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					break;
 
 				case T_IF: {
-					Ast branch = ast_get_node_at(ast, i);
-					assert(branch != NULL);
-					compile_ifstatement(vm, &branch, state, ins_count);
+					Ast cond = ast_get_node_at(ast, i);
+					Ast block = ast_get_node_at(ast, ++i);
+					assert(cond != NULL);
+					assert(block != NULL);
+					compile_ifstatement(vm, &cond, &block, state, ins_count);
 					break;
 				}
 

@@ -1,6 +1,16 @@
 // test.si
 
-let i = 0
-if i < 10 {
-	i = i + 5
+while 0 {}
+
+while 0 {}
+
+while 0 {
+	if 0 {}
+	while 0 {}
+}
+
+if 0 {}
+
+if 0 {
+	if 0 {}
 }

@@ -156,22 +156,27 @@ int declare_variable(struct Parser* p) {
 // if COND {}
 // Output: { COND if { BLOCK } }
 // Ast output:
-// \--> COND
 // \--> if
+//   \--> COND
+// \--> T_BLOCK
 //   \--> { BLOCK }
 int ifstatement(struct Parser* p) {
-	struct Token token = get_token(p->lexer);
+	struct Token if_node = get_token(p->lexer);
 	next_token(p->lexer);	// Skip 'if'
-	expr(p, 0);	// Read condition
 	Ast* orig_branch = p->ast;
-	ast_add_node(orig_branch, token);	// Add if node
-	Ast block_branch = ast_get_last(orig_branch);
-	p->ast = &block_branch;
+	ast_add_node(orig_branch, if_node);	// Add if node
+	Ast cond_branch = ast_get_last(orig_branch);
+	p->ast = &cond_branch;
+	expr(p, 0);	// Read condition
 	if (!expect_skip(p, T_NEWLINE, T_BLOCKBEGIN)) {
 		parseerror("Expected '{' block begin after condition\n");
 		return p->status = PARSE_ERR;
 	}
+	struct Token block_begin = { .type = T_BLOCK };
+	ast_add_node(orig_branch, block_begin);
 	next_token(p->lexer);	// Skip '{'
+	Ast block_branch = ast_get_last(orig_branch);
+	p->ast = &block_branch;
 	block(p);
 	p->ast = orig_branch;
 	return NO_ERR;
@@ -184,19 +189,19 @@ int ifstatement(struct Parser* p) {
 //   \--> { BLOCK }
 int whileloop(struct Parser* p) {
 	p->loop++;	// We are now in a while loop block (increment for nested loops)
-	struct Token token = get_token(p->lexer);
+	struct Token while_node = get_token(p->lexer);
 	next_token(p->lexer);	// Skip 'while'
 	Ast* orig_branch = p->ast;
-	ast_add_node(orig_branch, token);	// Add while node
+	ast_add_node(orig_branch, while_node);	// Add while node
 	Ast cond_branch = ast_get_last(orig_branch);
 	p->ast = &cond_branch;
 	expr(p, 0);	// Read condition
-	struct Token block_begin = { .type = T_BLOCK };
-	ast_add_node(orig_branch, block_begin);
 	if (!expect_skip(p, T_NEWLINE, T_BLOCKBEGIN)) {
 		parseerror("Expected '{' block begin\n");
 		return p->status = PARSE_ERR;
 	}
+	struct Token block_begin = { .type = T_BLOCK };
+	ast_add_node(orig_branch, block_begin);
 	next_token(p->lexer);	// Skip '{'
 	Ast block_branch = ast_get_last(orig_branch);
 	p->ast = &block_branch;
