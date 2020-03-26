@@ -233,8 +233,9 @@ int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_
 	unsigned int block_size = 0;
 	add_instruction(vm, I_IF, &block_size);
 	add_instruction(vm, UNRESOLVED_JUMP, ins_count);
+	Instruction jump_index = vm->program_size - 1;
 	compile(vm, block, state, &block_size);
-	endblock(vm, block_size);
+	list_assign(vm->program, vm->program_size, jump_index, block_size);
 	*ins_count += block_size;
 	return NO_ERR;
 }

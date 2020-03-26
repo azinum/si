@@ -1,8 +1,3 @@
 0000 pushk         0
-0002 assign        0
-0004 pushvar       0
-0006 pushk         1
-0008 less_than
-0009 if            4
-0011 pushvar       0
-0013 return
+0002 if            3
+0004 pushk         1
