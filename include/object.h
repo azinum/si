@@ -9,6 +9,8 @@
 
 struct VM_state;
 
+typedef double obj_number;
+
 struct Scope {
 	unsigned int constants_count;
 	struct Object* constants;

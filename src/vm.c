@@ -190,12 +190,10 @@ int object_checktrue(const struct Object* object) {
 }
 
 int execute(struct VM_state* vm, struct Function* func) {
-	if (vm->prev_ip == vm->program_size)
-		return NO_ERR;	// Program has not changed since last vm execution
 #if defined(USE_JUMPTABLE)
 #include "jumptable.h"
 #endif
-	const Instruction* ip = (vm->prev_ip > 0 ? &vm->program[vm->prev_ip] : &vm->program[func->addr]);
+	const Instruction* ip = &vm->program[func->addr]; // (vm->prev_ip > 0 ? &vm->program[vm->prev_ip] : &vm->program[func->addr]);
 	Instruction i = I_EXIT;
 	for (;;) {
 		vmfetch();
@@ -424,16 +422,18 @@ int vm_exec(struct VM_state* vm, char* input) {
 	assert(vm != NULL);
 	Ast ast = ast_create();
 	if (parser_parse(input, &ast) == NO_ERR) {
-		if (compile_from_tree(vm, &ast) == NO_ERR) {
-			execute(vm, &vm->global);
-			stack_print_top(vm);
-			stack_reset(vm);
-			if (vm->prev_ip != vm->program_size) {	// Has program changed?
+		compile_from_tree(vm, &ast);
+		if (vm->status == NO_ERR) {
+			if (vm->prev_ip != vm->program_size) {	// Has program changed since last vm execution?	
+				execute(vm, &vm->global);
+				stack_print_top(vm);
+				stack_reset(vm);
 				list_shrink(vm->program, vm->program_size, 1);	// If so, remove the exit instruction
 				vm->prev_ip = vm->program_size;
-				(void)print_global;
 			}
 		}
+		vm->global.addr = vm->program_size;	// We're in interactive mode, move the start posiiton to the last instruction
+		(void)print_global;
 	}
 	ast_free(&ast);
 	return vm->status;

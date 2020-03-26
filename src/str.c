@@ -18,7 +18,7 @@ char* string_new_copy(char* old, int length) {
 	return new_string;
 }
 
-void string_to_number(char* string, obj_number* number) {
+void string_to_number(char* string, double* number) {
 	assert(number != NULL);
 	char* end;
   *number = strtod(string, &end);

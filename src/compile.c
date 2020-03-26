@@ -48,7 +48,6 @@ static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
 
 int optimize_tree(struct VM_state* vm, Ast* ast) {
-	// return NO_ERR;
 	struct Token* token = NULL;
 	for (int i = 0; i < ast_child_count(ast); i++) {
 		token = ast_get_node_value(ast, i);
@@ -281,7 +280,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				case T_IDENTIFIER: {
 					int result = compile_pushvar(vm, state, *token, ins_count);
 					if (result != NO_ERR)
-						return result;
+						return vm->status = result;
 					break;
 				}
 
@@ -291,7 +290,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					assert(identifier != NULL);
 					int result = compile_declvar(vm, state, *identifier);
 					if (result != NO_ERR)
-						return result;
+						return vm->status = result;
 					break;
 				}
 
@@ -301,7 +300,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					Instruction location;
 					int result = get_variable_location(vm, state, *identifier, &location);
 					if (result != NO_ERR)
-						return result;
+						return vm->status = result;
 					add_instruction(vm, I_ASSIGN, ins_count);
 					add_instruction(vm, location, ins_count);
 					break;
@@ -343,7 +342,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					}
 					assert(0);
 					compile_error("%s\n", "Invalid instruction");
-					return COMPILE_ERR;
+					return vm->status = COMPILE_ERR;
 				}
 			}
 		}

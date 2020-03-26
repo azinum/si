@@ -325,7 +325,7 @@ int simple_expr(struct Parser* p) {
 		// return ;
 		// return (expr) ;
 		// Output: { (expr) return }
-		// TODO: Invalidate number of return statements to max 1/scope (not counting 'trailing' scopes i.e. scopes in scopes)
+		// TODO: Limit the number of return statements to max 1 for each scope (not counting 'trailing' scopes i.e. scopes in scopes)
 		case T_RETURN: {
 			struct Token return_node = token;
 			next_token(p->lexer);	// Skip 'return'

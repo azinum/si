@@ -13,6 +13,8 @@
 #define C_DARK_BLUE "\e[0;34m"
 #define C_GREEN "\e[1;32m"
 #define C_DARK_GREEN "\e[0;32m"
+#define C_CYAN "\e[1;36m"
+#define C_DARK_CYAN "\e[0;36m"
 #define C_YELLOW "\e[1;33m"
 #define C_DARK_YELLOW "\e[0;33m"
 #define C_PINK "\e[1;35m"
@@ -23,7 +25,8 @@
 #define COLOR_ERROR C_RED
 #define COLOR_MESSAGE C_DARK_GREEN
 #define COLOR_NUMBER C_DARK_YELLOW
-#define COLOR_UNDEFINED C_GRAY
+#define COLOR_TYPE C_DARK_CYAN
+#define COLOR_NIL C_GRAY
 #define COLOR_NONE C_NONE
 
 #else
@@ -32,7 +35,7 @@
 #define COLOR_ERROR
 #define COLOR_MESSAGE
 #define COLOR_NUMBER
-#define COLOR_UNDEFINED
+#define COLOR_NIL
 #define COLOR_NONE
 
 #endif
@@ -40,8 +43,6 @@
 #define INPUT_MAX 128
 
 #define HASH_TABLE_INIT_SIZE 7
-
-typedef double obj_number;
 
 typedef int Instruction;
 
