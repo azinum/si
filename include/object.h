@@ -11,6 +11,8 @@ struct VM_state;
 
 typedef double obj_number;
 
+typedef int Instruction;
+
 struct Scope {
 	unsigned int constants_count;
 	struct Object* constants;

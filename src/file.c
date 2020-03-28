@@ -13,7 +13,7 @@ char* read_file(const char* path) {
 	FILE* file = fopen(path, "rb");
 
 	if (file == NULL) {
-		printf("Error: %d (%s)\n", errno, strerror(errno));
+		printf("'%s': %s\n", path, strerror(errno));
 		return NULL;
 	}
 

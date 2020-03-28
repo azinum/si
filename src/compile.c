@@ -34,7 +34,7 @@ struct Func_state {
 static int optimize_tree(struct VM_state* vm, Ast* ast);
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
-static int endblock(struct VM_state* vm, int block_size);
+static int patchblock(struct VM_state* vm, int block_size);
 static int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
@@ -93,7 +93,7 @@ int func_state_init(struct Func_state* state) {
 }
 
 // Update all goto/break statements in block
-int endblock(struct VM_state* vm, int block_size) {
+int patchblock(struct VM_state* vm, int block_size) {
 	int end = vm->program_size - 1;
 	for (int i = end - block_size; i < end; i++) {
 		Instruction instruction = vm->program[i];
@@ -260,7 +260,7 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
 	assert(vm->program[jump_index] != 0 && vm->program[jump_index] != 0);
 	*ins_count += block_size + cond_size;
-	endblock(vm, block_size);	// Patch up all unresolved jumps in this block
+	patchblock(vm, block_size);	// Patch up all unresolved jumps in this block
 	return NO_ERR;
 }
 

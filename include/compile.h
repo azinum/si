@@ -3,7 +3,7 @@
 #ifndef _COMPILE_H
 #define _COMPILE_H
 
-#include "config.h"
+#include "object.h"
 
 struct VM_state;
 

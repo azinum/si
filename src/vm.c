@@ -361,6 +361,7 @@ done_exec:
 
 int disasm(struct VM_state* vm, FILE* file) {
 	assert(file != NULL);
+	fprintf(file, "[%i instructions, %i variables, %i constants]\n", vm->program_size, vm->variable_count, vm->global.scope.constants_count);
 	for (int i = 0; i < vm->program_size; i++) {
 		Instruction instruction = vm->program[i];
 		unsigned int arg_count = compile_get_ins_arg_count(instruction);
@@ -453,11 +454,11 @@ int vm_disasm(struct VM_state* vm, const char* output_file) {
 void vm_state_free(struct VM_state* vm) {
 	assert(vm != NULL);
 	scope_free(&vm->global.scope);
-	mfree(vm->variables, vm->variable_count * sizeof(struct Object));
+	list_free(vm->variables, vm->variable_count);
 	vm->variable_count = 0;
 	vm->stack_top = 0;
 	vm->status = 0;
-	mfree(vm->program, vm->program_size * sizeof(Instruction));
+	list_free(vm->program, vm->program_size);
 	vm->program_size = 0;
 	vm->prev_ip = 0;
 	if (vm->heap_allocated)

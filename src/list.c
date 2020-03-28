@@ -14,12 +14,3 @@ void* list_init(const unsigned int size, unsigned int count) {
 	}
 	return list;
 }
-
-int list_free(void* list, unsigned int* size) {
-	if (list != NULL) {
-		mfree(list, *size);
-		*size = 0;
-		return NO_ERR;
-	}
-	return ERR;
-}

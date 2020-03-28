@@ -1,6 +1,7 @@
-// test.si
+#!/usr/bin/si
 
-let a = 10
-if a < 15 {
-	return a
+let a = 12
+if a {
+
 }
+return a << 2

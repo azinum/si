@@ -44,6 +44,4 @@
 
 #define HASH_TABLE_INIT_SIZE 7
 
-typedef int Instruction;
-
 #endif

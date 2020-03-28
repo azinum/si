@@ -34,7 +34,7 @@ minimal: build_minimal run
 debug: build_debug run_debug
 
 run:
-	./$(BUILD_DIR_DEBUG)/$(PROGRAM_NAME)
+	./$(BUILD_DIR_DEBUG)/$(PROGRAM_NAME) -i -o test/test.si
 
 run_debug:
 	gdb ./$(BUILD_DIR_DEBUG)/$(PROGRAM_NAME)
