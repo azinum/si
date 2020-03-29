@@ -1,7 +1,6 @@
 #!/usr/bin/si
 
-let a = 12
-if a {
-
+let a
+if 1 {
+	a = 10
 }
-return a << 2

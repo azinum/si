@@ -1,7 +1,5 @@
-[10 instructions, 1 variables, 2 constants]
+[8 instructions, 1 variables, 2 constants]
 0000 pushk         0
-0002 assign        0
-0004 pushvar       0
-0006 pushk         1
-0008 leftshift
-0009 return
+0002 if            5
+0004 pushk         1
+0006 assign        0

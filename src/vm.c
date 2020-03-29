@@ -418,11 +418,11 @@ struct VM_state* vm_state_new() {
 	return vm;
 }
 
-int vm_exec(struct VM_state* vm, char* input) {
+int vm_exec(struct VM_state* vm, char* filename, char* input) {
 	assert(input != NULL);
 	assert(vm != NULL);
 	Ast ast = ast_create();
-	if (parser_parse(input, &ast) == NO_ERR) {
+	if (parser_parse(input, filename, &ast) == NO_ERR) {
 		compile_from_tree(vm, &ast);
 		if (vm->status == NO_ERR) {
 			if (vm->prev_ip != vm->program_size) {	// Has program changed since last vm execution?	

@@ -12,7 +12,7 @@
 #include "parser.h"
 
 #define parseerror(fmt, ...) \
-	error("%i:%i: " COLOR_ERROR "parse-error: " COLOR_NONE fmt, p->lexer->line, p->lexer->count, ##__VA_ARGS__)
+	error("%s:%i:%i: " COLOR_ERROR "parse-error: " COLOR_NONE fmt, p->lexer->filename, p->lexer->line, p->lexer->count, ##__VA_ARGS__)
 
 struct Parser {
 	struct Lexer* lexer;
@@ -381,12 +381,13 @@ int expr(struct Parser* p, int priority) {
 	return op;
 }
 
-int parser_parse(char* input, Ast* ast) {
+int parser_parse(char* input, char* filename, Ast* ast) {
 	struct Lexer lexer = {
 		.index = input,
 		.line = 1,
 		.count = 0,
-		.token = (struct Token) {0}
+		.token = (struct Token) {0},
+		.filename = filename,
 	};
 	struct Parser parser = {
 		.lexer = &lexer,

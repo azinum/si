@@ -83,9 +83,10 @@ int user_input(struct VM_state* vm) {
   char* buffer = input;
   int status = NO_ERR;
   unsigned char is_running = 1;
+  char filename[] = "stdin";
   while (is_running) {
     if (readinput(buffer, PROMPT)) {
-      status = vm_exec(vm, buffer);
+      status = vm_exec(vm, filename, buffer);
       if (status != NO_ERR)
         return status;
       addhistory(buffer);
@@ -113,7 +114,7 @@ int si_exec(int argc, char** argv) {
   if (arguments.input_file) {
     char* input = read_file(arguments.input_file);
     if (input) {
-      vm_exec(&vm, input);
+      vm_exec(&vm, arguments.input_file, input);
       if (arguments.bytecode_out) {
         char out_filename[INPUT_MAX];
         sprintf(out_filename, "%s.out", arguments.input_file);
@@ -122,10 +123,8 @@ int si_exec(int argc, char** argv) {
       free(input);
     }
   }
-  if (arguments.interactive_mode || argc <= 1) {
-    print_memory_info();
+  if (arguments.interactive_mode || argc <= 1)
     user_input(&vm);
-  }
   vm_state_free(&vm);
   return NO_ERR;
 }

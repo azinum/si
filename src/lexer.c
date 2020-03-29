@@ -9,7 +9,7 @@
 
 #define MAX_BUFFER_LENGTH 2 << 9 // 1024
 #define lexerror(fmt, ...) \
-	error("%i:%i: " COLOR_ERROR "lex-error: " COLOR_NONE fmt, lexer->line, lexer->count, ##__VA_ARGS__)
+	error("%s:%i:%i: " COLOR_ERROR "lex-error: " COLOR_NONE fmt, lexer->filename, lexer->line, lexer->count, ##__VA_ARGS__)
 
 static int is_alpha(char ch);
 static int is_number(char ch);
