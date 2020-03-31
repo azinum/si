@@ -37,11 +37,10 @@ int safe_string_to_number(char* string, int length, double* number) {
 	double result = 0;
 	char* temp = string_new_copy(string, length);
 	char* end;
-  snprintf(temp, length + 1, "%s", string);	// + 1 null terminator
   result = strtod(temp, &end);
   mfree(temp, length);
   if (*end != '\0')
-		return -1;
+		(void)0; // return -1;
   *number = result;
   return 0;	// No error
 }

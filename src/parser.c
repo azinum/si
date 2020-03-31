@@ -46,7 +46,6 @@ static int get_binop(struct Token token);
 static int get_uop(struct Token token);
 static int block_end(struct Parser* p);
 static int expect(struct Parser* p, enum Token_types expected_type);
-static int expect_skip(struct Parser* p, enum Token_types consume_type, enum Token_types expected_type);
 static void check(struct Parser* p, enum Token_types type);
 static void skip(struct Parser* p);
 static int expression_end(struct Parser* p);
@@ -86,14 +85,6 @@ int block_end(struct Parser* p) {
 
 int expect(struct Parser* p, enum Token_types expected_type) {
 	struct Token token = get_token(p->lexer);
-	return token.type == expected_type;
-}
-
-// Expect a certain token (expected_type) after skipping 0 or more tokens of another type (consume_type)
-int expect_skip(struct Parser* p, enum Token_types consume_type, enum Token_types expected_type) {
-	struct Token token = get_token(p->lexer);
-	while (token.type == consume_type)
-		token = next_token(p->lexer);
 	return token.type == expected_type;
 }
 
