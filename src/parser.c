@@ -12,7 +12,7 @@
 #include "parser.h"
 
 #define parseerror(fmt, ...) \
-	error("%s:%i:%i: " COLOR_ERROR "parse-error: " COLOR_NONE fmt, p->lexer->filename, p->lexer->line, p->lexer->count, ##__VA_ARGS__)
+	(error("%s:%i:%i: " COLOR_ERROR "parse-error: " COLOR_NONE fmt, p->lexer->filename, p->lexer->line, p->lexer->count, ##__VA_ARGS__))
 
 struct Parser {
 	struct Lexer* lexer;
@@ -111,7 +111,7 @@ void check(struct Parser* p, enum Token_types type) {
 // Skip newlines and go to next token
 void skip(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
-	while ((token.type == T_NEWLINE || token.type == T_SEMICOLON))
+	while (token.type == T_SEMICOLON)
 		token = next_token(p->lexer);
 }
 
@@ -130,25 +130,25 @@ int declare_variable(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 	ast_add_node(p->ast, token);	// 'let' token
 	struct Token identifier = next_token(p->lexer); // Skip 'let'
-	if (!expect_skip(p, T_NEWLINE, T_IDENTIFIER)) {
+	if (!expect(p, T_IDENTIFIER)) {
 		parseerror("Expected identifier in declaration\n");
 		return p->status = PARSE_ERR;
 	}
 	ast_add_node(p->ast, identifier); // Add identifier to ast
 	next_token(p->lexer); // Skip identifier
-	if (expect_skip(p, T_NEWLINE, T_ASSIGN)) {  // Variable assignment?
+	if (expect(p, T_ASSIGN)) {  // Variable assignment?
 		struct Token assign_token = get_token(p->lexer);
 		next_token(p->lexer); // Skip '='
-		if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
-			parseerror("Unexpected end of line\n");
+		if (expect(p, T_EOF)) {
+			parseerror("Unexpected EOF\n");
 			return p->status = PARSE_ERR;
 		}
-		statement(p); // Parse the right hand side statement
+		expr(p, 0); // Parse the right hand side expression
 		ast_add_node(p->ast, assign_token);
 		ast_add_node(p->ast, identifier);
 	}
-	if (expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))
-			next_token(p->lexer); // Skip '\n' or ';'
+	if (expect(p, T_SEMICOLON))
+			next_token(p->lexer);
 	return NO_ERR;
 }
 
@@ -166,7 +166,7 @@ int ifstatement(struct Parser* p) {
 	Ast cond_branch = ast_get_last(orig_branch);
 	p->ast = &cond_branch;
 	expr(p, 0);	// Read condition
-	if (!expect_skip(p, T_NEWLINE, T_BLOCKBEGIN)) {
+	if (!expect(p, T_BLOCKBEGIN)) {
 		parseerror("Expected '{' block begin after condition\n");
 		return p->status = PARSE_ERR;
 	}
@@ -194,7 +194,7 @@ int whileloop(struct Parser* p) {
 	Ast cond_branch = ast_get_last(orig_branch);
 	p->ast = &cond_branch;
 	expr(p, 0);	// Read condition
-	if (!expect_skip(p, T_NEWLINE, T_BLOCKBEGIN)) {
+	if (!expect(p, T_BLOCKBEGIN)) {
 		parseerror("Expected '{' block begin\n");
 		return p->status = PARSE_ERR;
 	}
@@ -227,8 +227,8 @@ int breakstat(struct Parser* p) {
 		return p->status = PARSE_ERR;
 	}
 	ast_add_node(p->ast, token);
-	if (!(expect(p, T_NEWLINE) || expect(p, T_SEMICOLON))) {
-		parseerror("Expected new line or semicolon ';'\n");
+	if (!expect(p, T_SEMICOLON)) {
+		parseerror("Expected ';'\n");
 		return p->status = PARSE_ERR;
 	}
 	return NO_ERR;
@@ -241,7 +241,6 @@ int statement(struct Parser* p) {
 			return NO_ERR;
 
 		case T_SEMICOLON:
-		case T_NEWLINE:
 			next_token(p->lexer);
 			break;
 
@@ -260,6 +259,17 @@ int statement(struct Parser* p) {
 		case T_IF:
 			ifstatement(p);
 			break;
+
+		// return ;
+		// return (expr) ;
+		// Output: { (expr) return }
+		case T_RETURN: {
+			struct Token return_node = token;
+			next_token(p->lexer);	// Skip 'return'
+			expr(p, 0);
+			ast_add_node(p->ast, return_node);
+			break;
+		}
 
 		default:
 			expr(p, 0);
@@ -289,17 +299,18 @@ int simple_expr(struct Parser* p) {
 		// Output: { (expr) assign identifier }
 		// No assignment:
 		// Output: { identifier }
+		// TODO: Refactor variable assignment and declaration
 		case T_IDENTIFIER: {
 			struct Token identifier = token;
 			next_token(p->lexer);
-			if (expect_skip(p, T_NEWLINE, T_ASSIGN)) {
+			if (expect(p, T_ASSIGN)) {
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
-				if (expect(p, T_NEWLINE) || expect(p, T_EOF)) {
-					parseerror("Unexpected end of line in variable assignment\n");
+				if (expect(p, T_EOF)) {
+					parseerror("Unexpected EOF in variable assignment\n");
 					return p->status = PARSE_ERR;
 				}
-				statement(p); // Parse the right hand side statement
+				expr(p, 0); // Parse the right hand side expression
 				ast_add_node(p->ast, assign_token);
 			}
 			ast_add_node(p->ast, identifier);
@@ -313,7 +324,7 @@ int simple_expr(struct Parser* p) {
 				parseerror("Expression can't be empty\n");
 				return p->status = PARSE_ERR;
 			}
-			statement(p);
+			expr(p, 0);
 			if (!expression_end(p)) {
 				parseerror("Missing ')' closing parenthesis in expression\n");
 				return p->status = PARSE_ERR;
@@ -321,26 +332,6 @@ int simple_expr(struct Parser* p) {
 			next_token(p->lexer); // Skip ')'
 			break;
 		}
-
-		// return ;
-		// return (expr) ;
-		// Output: { (expr) return }
-		// TODO: Limit the number of return statements to max 1 for each scope (not counting 'trailing' scopes i.e. scopes in scopes)
-		case T_RETURN: {
-			struct Token return_node = token;
-			next_token(p->lexer);	// Skip 'return'
-			expr(p, 0);
-			ast_add_node(p->ast, return_node);
-			break;
-		}
-
-		case T_SEMICOLON:
-		case T_NEWLINE:
-			next_token(p->lexer);
-			break;
-
-		case T_EOF:
-			return p->status;
 
 		default:
 			if (token.length > 0)
@@ -369,7 +360,6 @@ int expr(struct Parser* p, int priority) {
 
 	struct Token token = get_token(p->lexer);
 	int op = get_binop(token);
-
 	while (op != T_NOBINOP && op_priority[op].left > priority) {
 		int next_op;
 		token = get_token(p->lexer);
@@ -381,7 +371,7 @@ int expr(struct Parser* p, int priority) {
 	return op;
 }
 
-int parser_parse(char* input, char* filename, Ast* ast) {
+int parser_parse(char* input, const char* filename, Ast* ast) {
 	struct Lexer lexer = {
 		.index = input,
 		.line = 1,

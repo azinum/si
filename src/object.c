@@ -15,13 +15,8 @@
 struct Object token_to_object(struct Token token) {
 	struct Object object = { .type = token.type };
 	switch (token.type) {
-		case T_NUMBER: {
-			obj_number number;
-			char* num_string = string_new_copy(token.string, token.length);
-			string_to_number(num_string, &number);
-			string_free(num_string);
-			object.value.number = number;
-		}	
+		case T_NUMBER:
+			object.value.number = token.value.number;
 			break;
 
 		case T_IDENTIFIER:

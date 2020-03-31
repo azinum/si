@@ -31,7 +31,6 @@ struct Func_state {
 
 #define UNRESOLVED_JUMP 0
 
-static int optimize_tree(struct VM_state* vm, Ast* ast);
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
 static int patchblock(struct VM_state* vm, int block_size);
@@ -46,38 +45,6 @@ static int store_constant(struct Func_state* state, struct Token constant, Instr
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
-
-int optimize_tree(struct VM_state* vm, Ast* ast) {
-	struct Token* token = NULL;
-	for (int i = 0; i < ast_child_count(ast); i++) {
-		token = ast_get_node_value(ast, i);
-		if (!token)
-			break;
-		switch (token->type) {
-			case T_IF:
-			case T_WHILE: {
-				Ast block = ast_get_node_at(ast, i + 1);
-				int block_size = ast_child_count(&block);
-				Ast* cond_branch = ast_get_node(ast, i);
-				Ast* block_branch = ast_get_node(ast, i + 1);
-				i++;
-				if (!block_size) {
-					compile_warning("Empty block body (omitted)\n");
-					ast_free(cond_branch);
-					ast_free(block_branch);
-					cond_branch = NULL;
-					block_branch = NULL;
-					break;
-				}
-				optimize_tree(vm, block_branch);
-				break;
-			}
-			default:
-				break;
-		}
-	}
-	return NO_ERR;
-}
 
 int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
 	list_push(vm->program, vm->program_size, instruction);
@@ -295,6 +262,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					break;
 				}
 
+				// {assign, identifier}
 				case T_ASSIGN: {
 					struct Token* identifier = ast_get_node_value(ast, ++i);
 					assert(identifier != NULL);
@@ -359,7 +327,6 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	func_state_init(&global_state);
 	global_state.func = vm->global;
 	unsigned int ins_count = 0;
-	optimize_tree(vm, ast);
 	int status = compile(vm, ast, &global_state, &ins_count);
 	add_instruction(vm, I_RETURN, NULL);
 	vm->global = global_state.func;

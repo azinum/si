@@ -49,8 +49,6 @@ enum Token_types {
 	T_BREAK,
 
 	T_BLOCK,
-
-	T_NEWLINE,
 	T_EOF,
 
 	T_COUNT
@@ -63,11 +61,13 @@ enum Token_types {
 #define TOKEN_BREAK "break"
 
 struct Token {
-	int length;
+	int type;
 	char* string;
-	enum Token_types type;
+	int length;
+	union {
+		double number;
+		int integer;
+	} value;
 };
-
-void print_token(const struct Token token);
 
 #endif

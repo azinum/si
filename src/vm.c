@@ -418,7 +418,7 @@ struct VM_state* vm_state_new() {
 	return vm;
 }
 
-int vm_exec(struct VM_state* vm, char* filename, char* input) {
+int vm_exec(struct VM_state* vm, const char* filename, char* input) {
 	assert(input != NULL);
 	assert(vm != NULL);
 	Ast ast = ast_create();

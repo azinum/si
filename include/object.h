@@ -8,7 +8,6 @@
 #include "token.h"
 
 struct VM_state;
-
 typedef double obj_number;
 
 typedef int Instruction;

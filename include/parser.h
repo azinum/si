@@ -5,6 +5,6 @@
 
 typedef struct Node* Ast;
 
-int parser_parse(char* input, char* filename, Ast* ast);
+int parser_parse(char* input, const char* filename, Ast* ast);
 
 #endif

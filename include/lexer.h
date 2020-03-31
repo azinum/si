@@ -9,7 +9,7 @@ struct Lexer {
 	char* index;
 	int line, count;
 	struct Token token;
-	char* filename;
+	const char* filename;
 };
 
 struct Token next_token(struct Lexer* lexer);

@@ -67,7 +67,7 @@ int vm_init(struct VM_state* vm);
 
 struct VM_state* vm_state_new();
 
-int vm_exec(struct VM_state* vm, char* filename, char* input);
+int vm_exec(struct VM_state* vm, const char* filename, char* input);
 
 int vm_disasm(struct VM_state* vm, const char* output_file);
 

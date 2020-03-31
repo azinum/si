@@ -18,12 +18,32 @@ char* string_new_copy(char* old, int length) {
 	return new_string;
 }
 
-void string_to_number(char* string, double* number) {
+int string_to_number(char* string, double* number) {
+	assert(string != NULL);
 	assert(number != NULL);
+	double result = 0;
 	char* end;
-  *number = strtod(string, &end);
+  result = strtod(string, &end);
   if (*end != '\0')
-		(void)0;	// String -> number failed, ignore for now
+		return -1;
+	*number = result;
+	return 0;
+}
+
+// Safe meaning it will terminate when reaching 'length'
+int safe_string_to_number(char* string, int length, double* number) {
+	assert(string != NULL);
+	assert(number != NULL);
+	double result = 0;
+	char* temp = string_new_copy(string, length);
+	char* end;
+  snprintf(temp, length + 1, "%s", string);	// + 1 null terminator
+  result = strtod(temp, &end);
+  mfree(temp, length);
+  if (*end != '\0')
+		return -1;
+  *number = result;
+  return 0;	// No error
 }
 
 void string_free(char* string) {

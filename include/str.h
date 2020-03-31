@@ -7,7 +7,9 @@
 
 char* string_new_copy(char* old, int length);
 
-void string_to_number(char* string, double* number);
+int string_to_number(char* string, double* number);
+
+int safe_string_to_number(char* string, int length, double* number);
 
 void string_free(char* string);
 
