@@ -70,12 +70,8 @@ int patchblock(struct VM_state* vm, int block_size) {
 			}
 			i++;
 		}
-		// Skip any other instruction that isn't a jump
-		// Get that instruction's arg count and jump over it (for if arguments read would cause undefined behaviour)
-		else {
-			unsigned int arg_count = compile_get_ins_arg_count(instruction);
-			i += arg_count;
-		}
+		else // Skip any other instruction that isn't a jump
+			i += compile_get_ins_arg_count(instruction);
 	}
 	return NO_ERR;
 }
@@ -252,17 +248,27 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					break;
 				}
 
-				// {decl, identifier}
+				// decl
+				// identifier
+				// \--> expr
 				case T_DECL: {
 					struct Token* identifier = ast_get_node_value(ast, ++i);
 					assert(identifier != NULL);
 					int result = compile_declvar(vm, state, *identifier);
 					if (result != NO_ERR)
 						return vm->status = result;
+					// Compile the right-hand side expression
+					Ast expr_branch = ast_get_node_at(ast, i);
+					assert(ast_child_count(&expr_branch) > 0);
+					compile(vm, &expr_branch, state, ins_count);
+					Instruction location;
+					assert(get_variable_location(vm, state, *identifier, &location) == NO_ERR);
+					add_instruction(vm, I_ASSIGN, ins_count);
+					add_instruction(vm, location, ins_count);
 					break;
 				}
 
-				// {assign, identifier}
+				// { assign, identifier }
 				case T_ASSIGN: {
 					struct Token* identifier = ast_get_node_value(ast, ++i);
 					assert(identifier != NULL);

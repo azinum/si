@@ -112,34 +112,28 @@ int expression_end(struct Parser* p) {
 }
 
 // let a = <value> ;
-// let a ;
-// Assignment:
-// Output: { decl identifier (expr) assign identifier }
-// No assignment:
-// Output: { decl identifier }
+// Output:
+// \--> decl
+// \--> ident
+//   \--> (expr)
 int declare_variable(struct Parser* p) {
-	struct Token token = get_token(p->lexer);
-	ast_add_node(p->ast, token);	// 'let' token
-	struct Token identifier = next_token(p->lexer); // Skip 'let'
-	if (!expect(p, T_IDENTIFIER)) {
-		parseerror("Expected identifier in declaration\n");
+	struct Token decl_token = get_token(p->lexer);
+	next_token(p->lexer); // Skip 'let'
+	ast_add_node(p->ast, decl_token);
+	struct Token identifier = get_token(p->lexer);
+	ast_add_node(p->ast, identifier);
+	next_token(p->lexer);	// Skip 'identifier'
+	if (!expect(p, T_ASSIGN)) {
+		parseerror("Expected '='\n");
 		return p->status = PARSE_ERR;
 	}
-	ast_add_node(p->ast, identifier); // Add identifier to ast
-	next_token(p->lexer); // Skip identifier
-	if (expect(p, T_ASSIGN)) {  // Variable assignment?
-		struct Token assign_token = get_token(p->lexer);
-		next_token(p->lexer); // Skip '='
-		if (expect(p, T_EOF)) {
-			parseerror("Unexpected EOF\n");
-			return p->status = PARSE_ERR;
-		}
-		expr(p, 0); // Parse the right hand side expression
-		ast_add_node(p->ast, assign_token);
-		ast_add_node(p->ast, identifier);
-	}
-	if (expect(p, T_SEMICOLON))
-			next_token(p->lexer);
+	next_token(p->lexer);	// Skip '='
+	Ast* orig_branch = p->ast;
+	Ast expr_branch = ast_get_last(orig_branch);
+	p->ast = &expr_branch;
+	expr(p, 0);
+	assert(ast_child_count(&expr_branch) > 0);
+	p->ast = orig_branch;
 	return NO_ERR;
 }
 
@@ -286,28 +280,20 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
-		// Assignment:
-		// Output: { (expr) assign identifier }
-		// No assignment:
-		// Output: { identifier }
-		// TODO: Refactor variable assignment and declaration
-		case T_IDENTIFIER: {
-			struct Token identifier = token;
+		case T_IDENTIFIER:
 			next_token(p->lexer);
-			if (expect(p, T_ASSIGN)) {
+			if (expect(p, T_ASSIGN)) {  // Variable assignment?
 				struct Token assign_token = get_token(p->lexer);
 				next_token(p->lexer); // Skip '='
 				if (expect(p, T_EOF)) {
-					parseerror("Unexpected EOF in variable assignment\n");
+					parseerror("Unexpected EOF\n");
 					return p->status = PARSE_ERR;
 				}
 				expr(p, 0); // Parse the right hand side expression
 				ast_add_node(p->ast, assign_token);
 			}
-			ast_add_node(p->ast, identifier);
-			skip(p);
+			ast_add_node(p->ast, token); // Add identifier to ast
 			break;
-		}
 
 		case T_OPENPAREN: {
 			next_token(p->lexer); // Skip '('

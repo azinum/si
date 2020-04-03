@@ -1,7 +1,3 @@
 // test.si
 
-let a = 12
-
-if a {
-	return a
-}
+let a = 0
