@@ -103,7 +103,7 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 }
 
 int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
-	Instruction location;
+	Instruction location = -1;
 	int err = store_variable(vm, state, variable, &location);
 	if (err != NO_ERR) {
 		compile_error("Identifier '%.*s' has already been declared\n", variable.length, variable.string);
@@ -261,8 +261,9 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					Ast expr_branch = ast_get_node_at(ast, i);
 					assert(ast_child_count(&expr_branch) > 0);
 					compile(vm, &expr_branch, state, ins_count);
-					Instruction location;
-					assert(get_variable_location(vm, state, *identifier, &location) == NO_ERR);
+					Instruction location = -1;
+					get_variable_location(vm, state, *identifier, &location);
+					assert(location >= 0);
 					add_instruction(vm, I_ASSIGN, ins_count);
 					add_instruction(vm, location, ins_count);
 					break;
@@ -272,10 +273,11 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				case T_ASSIGN: {
 					struct Token* identifier = ast_get_node_value(ast, ++i);
 					assert(identifier != NULL);
-					Instruction location;
+					Instruction location = -1;
 					int result = get_variable_location(vm, state, *identifier, &location);
 					if (result != NO_ERR)
 						return vm->status = result;
+					assert(location >= 0);
 					add_instruction(vm, I_ASSIGN, ins_count);
 					add_instruction(vm, location, ins_count);
 					break;
