@@ -349,6 +349,7 @@ int expr(struct Parser* p, int priority) {
 }
 
 int parser_parse(char* input, const char* filename, Ast* ast) {
+	(void)skip;
 	struct Lexer lexer = {
 		.index = input,
 		.line = 1,
