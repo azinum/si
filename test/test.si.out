@@ -1,3 +1,11 @@
-[4 instructions, 1 variables, 1 constants]
+[18 instructions, 1 variables, 2 constants]
 0000 pushk         0
 0002 assign        0
+0004 pushvar       0
+0006 if            11
+0008 pushvar       0
+0010 pushk         1
+0012 add
+0013 assign        0
+0015 pushvar       0
+0017 return

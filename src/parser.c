@@ -251,7 +251,8 @@ int statement(struct Parser* p) {
 		case T_RETURN: {
 			struct Token return_node = token;
 			next_token(p->lexer);	// Skip 'return'
-			expr(p, 0);
+			if (!block_end(p))
+				simple_expr(p);
 			ast_add_node(p->ast, return_node);
 			break;
 		}
@@ -275,6 +276,10 @@ int simple_expr(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 
 	switch (token.type) {
+		case T_SEMICOLON:
+			next_token(p->lexer);
+			break;
+
 		case T_NUMBER:
 			next_token(p->lexer);
 			ast_add_node(p->ast, token);
