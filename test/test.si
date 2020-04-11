@@ -1,8 +1,15 @@
 // test.si
 
-let a = 0;
-
+// Normal function
 fn hello {
-	// Memory inside functions aren't free'd as of yet
-	// return a; // compile-error: Undeclared identifier 'a' (because it's unreachable inside of the function)
+	let w = 10
+	return w + 5
+}
+
+// Function in function
+fn a {
+	fn b {
+		return 5
+	}
+	return b
 }

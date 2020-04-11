@@ -333,14 +333,24 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 						compile_error("Function '%.*s' has already been defined\n", identifier->length, identifier->string);
 						return vm->status = result;
 					}
-					struct Object* func = &vm->variables[location];	// Dirty: needs cleanup!
-					assert(func != NULL);
-					func->type = T_FUNCTION;
-					func->value.func = func_state.func;
 					compile(vm, &block, &func_state, &block_size);	// Compile the function body
 					patchblock(vm, block_size);	// Fix the unresolved jump (skip the function block on execution)
+					struct Object* func = &vm->variables[location];	// Dirty: needs cleanup!
+					func->type = T_FUNCTION;
+					func->value.func = func_state.func;	// Apply compile state function to the 'real' function
 					*ins_count += block_size;
-					// printf(COLOR_TYPE "[Function]:" COLOR_NONE " %.*s () addr: %i, block_size: %i\n", identifier->length, identifier->string, func_addr, block_size);	// For debugging purposes
+#ifndef NDEBUG
+					printf(COLOR_TYPE "[Function]:" COLOR_NONE " %.*s()\n"
+						"  addr:      %i, block_size: %i,\n"
+						"  constants: %i, variables:  %i\n",
+						identifier->length,
+						identifier->string,
+						func_addr,
+						block_size,
+						func->value.func.scope.constants_count,
+						ht_num_elements(&func->value.func.scope.var_locations)
+					);
+#endif
 					break;
 				}
 

@@ -107,6 +107,7 @@ inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 static int print_global(struct VM_state* vm);
+static int free_variables(struct VM_state* vm);
 
 int stack_push(struct VM_state* vm, struct Object object) {
 	if (vm->stack_top >= STACK_SIZE) {
@@ -393,6 +394,24 @@ int print_global(struct VM_state* vm) {
 	return NO_ERR;
 }
 
+int free_variables(struct VM_state* vm) {
+	for (int i = 0; i < vm->variable_count; i++) {
+		struct Object* obj = &vm->variables[i];
+		if (obj) {
+			switch (obj->type) {
+				case T_FUNCTION:
+					scope_free(&obj->value.func.scope);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	list_free(vm->variables, vm->variable_count);
+	vm->variable_count = 0;
+	return NO_ERR;
+}
+
 int vm_init(struct VM_state* vm) {
 	assert(vm != NULL);
 	func_init(&vm->global);
@@ -454,8 +473,7 @@ int vm_disasm(struct VM_state* vm, const char* output_file) {
 void vm_state_free(struct VM_state* vm) {
 	assert(vm != NULL);
 	scope_free(&vm->global.scope);
-	list_free(vm->variables, vm->variable_count);
-	vm->variable_count = 0;
+	free_variables(vm);
 	vm->stack_top = 0;
 	vm->status = 0;
 	list_free(vm->program, vm->program_size);
