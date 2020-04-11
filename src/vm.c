@@ -177,11 +177,12 @@ int object_checktrue(const struct Object* object) {
 	assert(object != NULL);
 	switch (object->type) {
 		case T_NUMBER:
-			if (object->value.number != 0)
-				return 1;
+      return object->value.number != 0;
+
+    case T_FUNCTION:
+      return 1;
 
 		case T_NIL:
-		case T_UNKNOWN:
 			return 0;
 
 		default:
@@ -203,12 +204,19 @@ int execute(struct VM_state* vm, struct Function* func) {
 				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-				if (variable->type == T_NIL)
+        // Remove these checks when type checking in the compiler is implemented
+        if (variable->type == T_NIL) {
 					*variable = *top;
+        }
 				else if (!equal_types(variable, top)) {
 					vmerror("Invalid types in assignment\n");
 					return RUNTIME_ERR;
 				}
+        else if (top->type == T_FUNCTION) {
+          vmerror("Only one instance of functions can exist\n");
+          return RUNTIME_ERR;
+        }
+
 				variable->value = top->value;
 				stack_pop(vm);
 				vmbreak;

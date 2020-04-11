@@ -60,6 +60,7 @@ static int block(struct Parser* p);
 static int breakstat(struct Parser* p);
 static int statement(struct Parser* p);
 static int statements(struct Parser* p);
+static int postfix_expr(struct Parser* p);
 static int simple_expr(struct Parser* p);
 static int expr(struct Parser* p, int priority);
 
@@ -148,7 +149,6 @@ int declare_variable(struct Parser* p) {
 	Ast expr_branch = ast_get_last(orig_branch);
 	p->ast = &expr_branch;
 	expr(p, 0);
-	assert(ast_child_count(&expr_branch) > 0);
 	p->ast = orig_branch;
 	return NO_ERR;
 }
@@ -327,6 +327,44 @@ int statements(struct Parser* p) {
 	return p->status;
 }
 
+// { identifier }
+int postfix_expr(struct Parser* p) {
+  struct Token token = get_token(p->lexer);
+  switch (token.type) {
+    case T_IDENTIFIER:
+      next_token(p->lexer);
+      if (expect(p, T_ASSIGN)) {  // Variable assignment?
+        struct Token assign_token = get_token(p->lexer);
+        next_token(p->lexer); // Skip '='
+        expr(p, 0); // Parse the right hand side expression
+        ast_add_node(p->ast, assign_token);
+      }
+      ast_add_node(p->ast, token); // Add identifier to ast
+      break;
+
+    case T_OPENPAREN: {
+      next_token(p->lexer); // Skip '('
+      expr(p, 0);
+      if (!expression_end(p)) {
+        parseerror("Missing ')' closing parenthesis in expression\n");
+        return p->status = PARSE_ERR;
+      }
+      next_token(p->lexer); // Skip ')'
+      break;
+    }
+
+    default: {
+      parseerror("Unexpected symbol");
+      if (token.length > 0)
+        printf(" '%.*s'", token.length, token.string);
+      printf("\n");
+      next_token(p->lexer);
+      return p->status = PARSE_ERR;
+    }
+  }
+  return NO_ERR;
+}
+
 int simple_expr(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 
@@ -340,43 +378,9 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
-		case T_IDENTIFIER:
-			next_token(p->lexer);
-			if (expect(p, T_ASSIGN)) {  // Variable assignment?
-				struct Token assign_token = get_token(p->lexer);
-				next_token(p->lexer); // Skip '='
-				if (expect(p, T_EOF)) {
-					parseerror("Unexpected EOF\n");
-					return p->status = PARSE_ERR;
-				}
-				expr(p, 0); // Parse the right hand side expression
-				ast_add_node(p->ast, assign_token);
-			}
-			ast_add_node(p->ast, token); // Add identifier to ast
-			break;
-
-		case T_OPENPAREN: {
-			next_token(p->lexer); // Skip '('
-			if (expression_end(p)) {
-				parseerror("Expression can't be empty\n");
-				return p->status = PARSE_ERR;
-			}
-			expr(p, 0);
-			if (!expression_end(p)) {
-				parseerror("Missing ')' closing parenthesis in expression\n");
-				return p->status = PARSE_ERR;
-			}
-			next_token(p->lexer); // Skip ')'
-			break;
-		}
-
 		default:
-			if (token.length > 0)
-				parseerror("Unexpected symbol '%.*s'\n", token.length, token.string);
-			else
-				parseerror("Unexpected symbol\n");
-			next_token(p->lexer);
-			return p->status = PARSE_ERR;
+      postfix_expr(p);
+      return p->status;
 	}
 	return p->status;
 }
