@@ -331,6 +331,10 @@ int simple_expr(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 
 	switch (token.type) {
+		case T_SEMICOLON:
+			next_token(p->lexer);
+			break;
+
 		case T_NUMBER:
 			next_token(p->lexer);
 			ast_add_node(p->ast, token);
