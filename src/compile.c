@@ -36,6 +36,7 @@ static int func_state_init(struct Func_state* state);
 static int patchblock(struct VM_state* vm, int block_size);
 static int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
+static int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count);
 static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count);
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count);
@@ -227,6 +228,34 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	return NO_ERR;
 }
 
+// T_FUNC_DEF
+// identifier
+//  \--> ( parameter list )
+// T_BLOCK
+//  \--> { BLOCK }
+int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params, Ast* block, struct Func_state* state, unsigned int* ins_count) {
+  unsigned int block_size = 0;  // The whole function block
+  add_instruction(vm, I_JUMP, &block_size);
+  add_instruction(vm, UNRESOLVED_JUMP, &block_size);
+  Instruction func_addr = vm->program_size;
+  struct Func_state func_state;
+  func_init(&func_state.func);
+  func_state.func.addr = func_addr;
+  Instruction location = -1;
+  int result = store_variable(vm, state, *identifier, &location);
+  if (result != NO_ERR) {
+    compile_error("Function '%.*s' has already been defined\n", identifier->length, identifier->string);
+    return vm->status = result;
+  }
+  compile(vm, block, &func_state, &block_size);  // Compile the function body
+  patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
+  struct Object* func = &vm->variables[location]; // Dirty: needs cleanup!
+  func->type = T_FUNCTION;
+  func->value.func = func_state.func; // Apply compile state function to the 'real' function
+  *ins_count += block_size;
+  return NO_ERR;
+}
+
 int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned int* ins_count) {
 	assert(ins_count != NULL);
 	assert(vm != NULL);
@@ -310,47 +339,12 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					add_instruction(vm, UNRESOLVED_JUMP, ins_count);
 					break;
 
-				// fn
-				// identifier
-				// 	\--> ( parameter list )
-				// T_BLOCK
-				// 	\--> { BLOCK }
 				case T_FUNC_DEF: {
-					unsigned int block_size = 0;	// The whole function define block
-					add_instruction(vm, I_JUMP, &block_size);
-					add_instruction(vm, UNRESOLVED_JUMP, &block_size);
-					Instruction func_addr = vm->program_size;
-					struct Token* identifier = ast_get_node_value(ast, ++i);
-					Ast block = ast_get_node_at(ast, ++i);
-					struct Func_state func_state = {
-						.argc = 0,
-					};
-					func_init(&func_state.func);
-					func_state.func.addr = func_addr;
-					Instruction location = -1;
-					int result = store_variable(vm, state, *identifier, &location);
-					if (result != NO_ERR) {
-						compile_error("Function '%.*s' has already been defined\n", identifier->length, identifier->string);
-						return vm->status = result;
-					}
-					compile(vm, &block, &func_state, &block_size);	// Compile the function body
-					patchblock(vm, block_size);	// Fix the unresolved jump (skip the function block on execution)
-					struct Object* func = &vm->variables[location];	// Dirty: needs cleanup!
-					func->type = T_FUNCTION;
-					func->value.func = func_state.func;	// Apply compile state function to the 'real' function
-					*ins_count += block_size;
-#ifndef NDEBUG
-					printf(COLOR_TYPE "[Function]:" COLOR_NONE " %.*s()\n"
-						"  addr:      %i, block_size: %i,\n"
-						"  constants: %i, variables:  %i\n",
-						identifier->length,
-						identifier->string,
-						func_addr,
-						block_size,
-						func->value.func.scope.constants_count,
-						ht_num_elements(&func->value.func.scope.var_locations)
-					);
-#endif
+          struct Token* identifier = ast_get_node_value(ast, ++i);
+          Ast params = NULL;
+          Ast block = ast_get_node_at(ast, ++i);
+          assert(block != NULL);
+          compile_function(vm, identifier, &params, &block, state, ins_count);
 					break;
 				}
 

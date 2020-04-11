@@ -2,14 +2,14 @@
 
 // Normal function
 fn hello {
-	let w = 10
-	return w + 5
+  let w = 10
+  return w + 5
 }
 
 // Function in function
 fn a {
-	fn b {
-		return 5
-	}
-	return b
+  fn b {
+    return 5
+  }
+  return b
 }
