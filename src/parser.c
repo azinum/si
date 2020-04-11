@@ -42,6 +42,8 @@ static const struct Operator op_priority[] = {
 
 #define UNARY_PRIORITY 12
 
+static int add_token(struct Parser* p, struct Token token);
+static int add_current_token(struct Parser* p);
 static int get_binop(struct Token token);
 static int get_uop(struct Token token);
 static int block_end(struct Parser* p);
@@ -52,12 +54,26 @@ static int expression_end(struct Parser* p);
 static int declare_variable(struct Parser* p);
 static int ifstatement(struct Parser* p);
 static int whileloop(struct Parser* p);
+static int returnstat(struct Parser* p);
+static int funcstat(struct Parser* p);
 static int block(struct Parser* p);
 static int breakstat(struct Parser* p);
 static int statement(struct Parser* p);
 static int statements(struct Parser* p);
 static int simple_expr(struct Parser* p);
 static int expr(struct Parser* p, int priority);
+
+int add_token(struct Parser* p, struct Token token) {
+	ast_add_node(p->ast, token);
+	return NO_ERR;
+}
+
+// Add current token to ast and move on the the next one
+int add_current_token(struct Parser* p) {
+	struct Token token = get_token(p->lexer);
+	next_token(p->lexer);
+	return add_token(p, token);
+}
 
 int get_binop(struct Token token) {
 	if (token.type > T_UNKNOWN && token.type < T_NOBINOP)
@@ -194,13 +210,56 @@ int whileloop(struct Parser* p) {
 	return NO_ERR;
 }
 
+// return ;
+// return (expr) ;
+// Output: { (expr) return }
+// TODO: Fix empty return statements
+int returnstat(struct Parser* p) {
+	struct Token return_node = get_token(p->lexer);
+	next_token(p->lexer);	// Skip 'return'
+	expr(p, 0);
+	ast_add_node(p->ast, return_node);
+	return NO_ERR;
+}
+
+// Ast output:
+// fn
+// identifier
+// 	\--> ( parameter list )
+// T_BLOCK
+// 	\--> { BLOCK }
+int funcstat(struct Parser* p) {
+	Ast* orig_branch = p->ast;
+	add_current_token(p);	// Add and skip 'fn'
+	if (!expect(p, T_IDENTIFIER)) {
+		parseerror("Expected identifier\n");
+		return p->status = PARSE_ERR;
+	}
+	add_current_token(p);	// Add 'identifier'
+	//
+	// TODO: Parse paramlist here
+	//
+	if (!expect(p, T_BLOCKBEGIN)) {	// TODO: Find a way to make error checks shorter
+		parseerror("Expected '{'\n");
+		return p->status = PARSE_ERR;
+	}
+	next_token(p->lexer);	// Skip '{'
+	struct Token block_begin = { .type = T_BLOCK };
+	ast_add_node(orig_branch, block_begin);
+	Ast block_branch = ast_get_last(orig_branch);
+	p->ast = &block_branch;
+	block(p);
+	p->ast = orig_branch;
+	return NO_ERR;
+}
+
 int block(struct Parser* p) {
 	statements(p);
 	if (!expect(p, T_BLOCKEND)) {
 		parseerror("Expected '}' block end\n");
 		return p->status = PARSE_ERR;
 	}
-	next_token(p->lexer);
+	next_token(p->lexer);	// Skip '}'
 	return NO_ERR;
 }
 
@@ -233,6 +292,10 @@ int statement(struct Parser* p) {
 			declare_variable(p);
 			break;
 
+		case T_FUNC_DEF:
+			funcstat(p);
+			break;
+
 		case T_WHILE:
 			whileloop(p);
 			break;
@@ -245,16 +308,9 @@ int statement(struct Parser* p) {
 			ifstatement(p);
 			break;
 
-		// return ;
-		// return (expr) ;
-		// Output: { (expr) return }
-		case T_RETURN: {
-			struct Token return_node = token;
-			next_token(p->lexer);	// Skip 'return'
-			expr(p, 0);
-			ast_add_node(p->ast, return_node);
+		case T_RETURN:
+			returnstat(p);
 			break;
-		}
 
 		default:
 			expr(p, 0);

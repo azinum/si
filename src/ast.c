@@ -104,6 +104,20 @@ Ast ast_get_last(Ast* ast) {
 	return (*ast)->children[child_count - 1];
 }
 
+int ast_remove_node_at(Ast* ast, int index) {
+	assert(!is_empty(*ast));
+	int child_count = ast_child_count(ast);
+	assert(index < child_count);
+	Ast node_to_remove = ast_get_node_at(ast, index);
+	ast_free(&node_to_remove);	// Remove the subtree(s) from this node - if there are any
+	(*ast)->children[index] = NULL;
+	for (int i = index; i < child_count - 1; i++) {
+		(*ast)->children[i] = (*ast)->children[i + 1];
+	}
+	(*ast)->child_count--;
+	return NO_ERR;
+}
+
 int ast_child_count(const Ast* ast) {
 	assert(ast != NULL);
 	if (!(*ast))

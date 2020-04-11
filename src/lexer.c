@@ -86,6 +86,8 @@ struct Token read_symbol(struct Lexer* lexer) {
 		lexer->token.type = T_WHILE;
 	else if (match(lexer->token, TOKEN_BREAK))
 		lexer->token.type = T_BREAK;
+	else if (match(lexer->token, TOKEN_FUNC_DEF))
+		lexer->token.type = T_FUNC_DEF;
 	else
 		lexer->token.type = T_IDENTIFIER;
 	return lexer->token;
@@ -273,8 +275,13 @@ begin_loop:
 				if (is_number(ch)) {
 					return read_number(lexer);
 				}
-				if (is_alpha(ch) || ch == '_') {
+				else if (is_alpha(ch) || ch == '_') {
 					return read_symbol(lexer);
+				}
+				else {
+					lexerror("Unrecognized character\n");
+					lexer->token.type = T_EOF;
+					return lexer->token;
 				}
 				break;
 			}

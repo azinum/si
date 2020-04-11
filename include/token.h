@@ -11,19 +11,19 @@ enum Token_types {
 	T_MULT,
 	T_DIV,
 	T_LT,   // '<'
-  T_GT,   // '>'
-  T_EQ,   // '=='
-  T_LEQ,  // '<='
-  T_GEQ,  // '>='
-  T_NEQ,  // '!='
-  T_MOD,	// '%'
-  T_BAND,		// Bitwise '&'
-  T_BOR,		// '|'
-  T_BXOR,		// '^'
-  T_LEFTSHIFT,	// '<<'
-  T_RIGHTSHIFT,	// '>>'
-  T_AND,	// '&&'
-  T_OR,		// '||'
+	T_GT,   // '>'
+	T_EQ,   // '=='
+	T_LEQ,  // '<='
+	T_GEQ,  // '>='
+	T_NEQ,  // '!='
+	T_MOD,	// '%'
+	T_BAND,		// Bitwise '&'
+	T_BOR,		// '|'
+	T_BXOR,		// '^'
+	T_LEFTSHIFT,	// '<<'
+	T_RIGHTSHIFT,	// '>>'
+	T_AND,	// '&&'
+	T_OR,		// '||'
 	T_NOBINOP,
 	
 	T_NOT,	// '!'
@@ -40,6 +40,7 @@ enum Token_types {
 
 	T_IDENTIFIER,
 	T_NUMBER,
+	T_FUNCTION,
 	T_NIL,
 
 	T_DECL,	// 'let'
@@ -47,6 +48,7 @@ enum Token_types {
 	T_IF,
 	T_WHILE,
 	T_BREAK,
+	T_FUNC_DEF,
 
 	T_BLOCK,
 	T_EOF,
@@ -59,6 +61,7 @@ enum Token_types {
 #define TOKEN_IF "if"
 #define TOKEN_WHILE "while"
 #define TOKEN_BREAK "break"
+#define TOKEN_FUNC_DEF "fn"
 
 struct Token {
 	int type;

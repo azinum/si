@@ -21,6 +21,8 @@ Ast ast_get_node_at(Ast* ast, int index);
 
 Ast ast_get_last(Ast* ast);
 
+int ast_remove_node_at(Ast* ast, int index);
+
 int ast_child_count(const Ast* ast);
 
 Ast* ast_get_node(Ast* ast, int index);

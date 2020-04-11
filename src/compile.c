@@ -310,6 +310,40 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					add_instruction(vm, UNRESOLVED_JUMP, ins_count);
 					break;
 
+				// fn
+				// identifier
+				// 	\--> ( parameter list )
+				// T_BLOCK
+				// 	\--> { BLOCK }
+				case T_FUNC_DEF: {
+					unsigned int block_size = 0;	// The whole function define block
+					add_instruction(vm, I_JUMP, &block_size);
+					add_instruction(vm, UNRESOLVED_JUMP, &block_size);
+					Instruction func_addr = vm->program_size;
+					struct Token* identifier = ast_get_node_value(ast, ++i);
+					Ast block = ast_get_node_at(ast, ++i);
+					struct Func_state func_state = {
+						.argc = 0,
+					};
+					func_init(&func_state.func);
+					func_state.func.addr = func_addr;
+					Instruction location = -1;
+					int result = store_variable(vm, state, *identifier, &location);
+					if (result != NO_ERR) {
+						compile_error("Function '%.*s' has already been defined\n", identifier->length, identifier->string);
+						return vm->status = result;
+					}
+					struct Object* func = &vm->variables[location];	// Dirty: needs cleanup!
+					assert(func != NULL);
+					func->type = T_FUNCTION;
+					func->value.func = func_state.func;
+					compile(vm, &block, &func_state, &block_size);	// Compile the function body
+					patchblock(vm, block_size);	// Fix the unresolved jump (skip the function block on execution)
+					*ins_count += block_size;
+					// printf(COLOR_TYPE "[Function]:" COLOR_NONE " %.*s () addr: %i, block_size: %i\n", identifier->length, identifier->string, func_addr, block_size);	// For debugging purposes
+					break;
+				}
+
 				default: {
 					(void)equal_type;
 					int op = token_to_op(*token);

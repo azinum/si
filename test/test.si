@@ -1,3 +1,8 @@
 // test.si
 
-let a = 0
+let a = 0;
+
+fn hello {
+	// Memory inside functions aren't free'd as of yet
+	// return a; // compile-error: Undeclared identifier 'a' (because it's unreachable inside of the function)
+}
