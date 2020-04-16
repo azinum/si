@@ -1,15 +1,7 @@
 // test.si
 
 // Normal function
-fn hello {
+fn test {
   let w = 10
   return w + 5
-}
-
-// Function in function
-fn a {
-  fn b {
-    return 5
-  }
-  return b
 }

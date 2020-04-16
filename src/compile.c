@@ -29,6 +29,20 @@ struct Func_state {
 #define compile_warning(fmt, ...) \
 	warn(COLOR_WARNING "compile-warning: " COLOR_NONE fmt, ##__VA_ARGS__)
 
+#define checkerror(errcode, fmt, ...) { \
+  if (errcode != NO_ERR) { \
+    compile_error(fmt, ##__VA_ARGS__); \
+    return errcode; \
+  } \
+}
+
+#define doerror(check, ret, fmt, ...) { \
+  if (check) { \
+    compile_error(fmt, ##__VA_ARGS__); \
+    return ret; \
+  } \
+}
+
 #define UNRESOLVED_JUMP 0
 
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
@@ -46,6 +60,7 @@ static int store_constant(struct Func_state* state, struct Token constant, Instr
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int token_to_op(struct Token token);
 static int equal_type(const struct Token* left, const struct Token* right);
+static int branch_type(struct VM_state* vm, struct Func_state* state, Ast branch);
 
 int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
 	list_push(vm->program, vm->program_size, instruction);
@@ -91,10 +106,7 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 	const int* found = ht_lookup(&scope->var_locations, identifier);
 	Instruction location = -1;
 	string_free(identifier);
-	if (!found) {
-		compile_error("Undeclared identifier '%.*s'\n", variable.length, variable.string);
-		return COMPILE_ERR;
-	}
+  doerror(!found, COMPILE_ERR, "Undeclared identifier '%.*s'\n", variable.length, variable.string);
 	// Okay, no errors. Let's continue compiling!
 	location = *found;
 	add_instruction(vm, I_PUSH_VAR, ins_count);
@@ -106,10 +118,7 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
 	Instruction location = -1;
 	int err = store_variable(vm, state, variable, &location);
-	if (err != NO_ERR) {
-		compile_error("Identifier '%.*s' has already been declared\n", variable.length, variable.string);
-		return err;
-	}
+  checkerror(err, "Identifier '%.*s' has already been declared\n", variable.length, variable.string);
 	return NO_ERR;
 }
 
@@ -118,10 +127,7 @@ int get_variable_location(struct VM_state* vm, struct Func_state* state, struct 
 	char* identifier = string_new_copy(variable.string, variable.length);
 	const int* found = ht_lookup(&scope->var_locations, identifier);
 	string_free(identifier);
-	if (!found) {
-		compile_error("No such variable '%.*s'\n", variable.length, variable.string);
-		return COMPILE_ERR;
-	}
+	doerror(!found, COMPILE_ERR, "No such variable '%.*s'\n", variable.length, variable.string);
 	*location = *found;
 	return NO_ERR;
 }
@@ -188,6 +194,26 @@ int equal_type(const struct Token* left, const struct Token* right) {
 	return left->type == right->type;
 }
 
+// Lazy version of checking the branch type is just to
+// see what type the first node of the branch is.
+// If we see a T_IDENTIFIER type then we'll do a lookup of
+// the variable and return the variable's type.
+// (struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
+int branch_type(struct VM_state* vm, struct Func_state* state, Ast branch) {
+  assert(branch != NULL);
+  assert(ast_child_count(&branch) > 0);
+  struct Token* first_node = ast_get_node_value(&branch, 0);
+  if (first_node->type == T_IDENTIFIER) {
+    Instruction location = -1;
+    int result = get_variable_location(vm, state, *first_node, &location);
+    if (result != NO_ERR)
+      return result;
+    struct Object variable = vm->variables[location];
+    return variable.type;
+  }
+  return first_node->type;
+}
+
 // Generated code:
 // COND ...
 // i_if, jump,
@@ -249,7 +275,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   }
   compile(vm, block, &func_state, &block_size);  // Compile the function body
   patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
-  struct Object* func = &vm->variables[location]; // Dirty: needs cleanup!
+  struct Object* func = &vm->variables[location];
   func->type = T_FUNCTION;
   func->value.func = func_state.func; // Apply compile state function to the 'real' function
   *ins_count += block_size;
@@ -286,12 +312,18 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					int result = compile_declvar(vm, state, *identifier);
 					if (result != NO_ERR)
 						return vm->status = result;
-					// Compile the right-hand side expression
-					Ast expr_branch = ast_get_node_at(ast, i);
-					assert(ast_child_count(&expr_branch) > 0);
-					compile(vm, &expr_branch, state, ins_count);
+          Ast expr_branch = ast_get_node_at(ast, i);
+          assert(ast_child_count(&expr_branch) > 0);
+          compile(vm, &expr_branch, state, ins_count);  // Compile the right-hand side expression
 					Instruction location = -1;
 					get_variable_location(vm, state, *identifier, &location);
+          struct Object* variable = &vm->variables[location];
+          int rvalue_type = branch_type(vm, state, expr_branch);
+          if (rvalue_type == T_FUNCTION) {
+            compile_error("Can't assign function to variable\n");
+            return vm->status = COMPILE_ERR;
+          }
+          variable->type = rvalue_type;
 					assert(location >= 0);
 					add_instruction(vm, I_ASSIGN, ins_count);
 					add_instruction(vm, location, ins_count);

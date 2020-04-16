@@ -204,19 +204,10 @@ int execute(struct VM_state* vm, struct Function* func) {
 				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-        // Remove these checks when type checking in the compiler is implemented
-        if (variable->type == T_NIL) {
-					*variable = *top;
-        }
-				else if (!equal_types(variable, top)) {
-					vmerror("Invalid types in assignment\n");
-					return RUNTIME_ERR;
-				}
-        else if (top->type == T_FUNCTION) {
-          vmerror("Only one instance of functions can exist\n");
+        if (!equal_types(variable, top)) {
+          vmerror("Invalid types in assignment\n");
           return RUNTIME_ERR;
         }
-
 				variable->value = top->value;
 				stack_pop(vm);
 				vmbreak;
