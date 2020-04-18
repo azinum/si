@@ -274,6 +274,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
     return vm->status = result;
   }
   compile(vm, block, &func_state, &block_size);  // Compile the function body
+  add_instruction(vm, I_RETURN, &block_size);
   patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
   struct Object* func = &vm->variables[location];
   func->type = T_FUNCTION;

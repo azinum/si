@@ -3,5 +3,20 @@
 // Normal function
 fn test {
   let w = 10
-  return w + 5
+  fn begin {
+    return 1
+  }
+  let res = w + begin;
+  return res
+}
+
+fn hello {
+  let a = 5
+  fn init {
+    return 1
+  }
+  fn test {
+    return 2
+  }
+  return init + test + a
 }

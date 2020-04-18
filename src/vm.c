@@ -195,7 +195,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 #if defined(USE_JUMPTABLE)
 #include "jumptable.h"
 #endif
-	const Instruction* ip = &vm->program[func->addr]; // (vm->prev_ip > 0 ? &vm->program[vm->prev_ip] : &vm->program[func->addr]);
+	Instruction* ip = &vm->program[func->addr];
 	Instruction i = I_EXIT;
 	for (;;) {
 		vmfetch();
@@ -225,7 +225,14 @@ int execute(struct VM_state* vm, struct Function* func) {
 
 			vmcase(I_PUSH_VAR) {
 				int variable = *(ip++);
-				stack_pushvar(vm, &func->scope, variable);
+        struct Object* object = get_variable(vm, &func->scope, variable);
+        if (object->type == T_FUNCTION) { // Temp
+          Instruction* old_ip = ip;
+          execute(vm, &object->value.func);
+          ip = old_ip;
+        }
+        else
+          stack_pushvar(vm, &func->scope, variable);
 				vmbreak;
 			}
 
