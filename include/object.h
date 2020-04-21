@@ -37,6 +37,8 @@ struct Object token_to_object(struct Token token);
 
 int func_init(struct Function* func);
 
+int func_init_with_parent_scope(struct Function* func, struct Scope* parent);
+
 int scope_init(struct Scope* scope, struct Scope* parent);
 
 int scope_free(struct Scope* scope);

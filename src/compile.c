@@ -47,6 +47,7 @@ struct Func_state {
 
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
+static const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier);
 static int patchblock(struct VM_state* vm, int block_size);
 static int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
@@ -71,6 +72,21 @@ int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
 	state->argc = 0;
 	return NO_ERR;
+}
+
+// First check the local scope,
+// if not found then check the parent scope
+const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier) {
+  struct Scope* scope = &state->func.scope;
+  struct Scope* parent_scope = state->func.scope.parent;
+  const int* found = ht_lookup(&scope->var_locations, identifier);
+  if (found) {
+    return found;
+  }
+  if (!parent_scope)
+    return found;
+  found = ht_lookup(&parent_scope->var_locations, identifier);
+  return found;
 }
 
 // Update all goto/break statements in block
@@ -99,11 +115,11 @@ int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token co
 }
 
 int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count) {
-	struct Scope* scope = &state->func.scope;
 	char* identifier = string_new_copy(variable.string, variable.length);
-	const int* found = ht_lookup(&scope->var_locations, identifier);
+	const int* found = variable_lookup(vm, state, identifier);
+  string_free(identifier);
 	Instruction location = -1;
-	string_free(identifier);
+
   doerror(!found, COMPILE_ERR, "Undeclared identifier '%.*s'\n", variable.length, variable.string);
 	// Okay, no errors. Let's continue compiling!
 	location = *found;
@@ -238,7 +254,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   add_instruction(vm, UNRESOLVED_JUMP, &block_size);
   Instruction func_addr = vm->program_size;
   struct Func_state func_state;
-  func_init(&func_state.func);
+  func_init_with_parent_scope(&func_state.func, &state->func.scope);
   func_state.func.addr = func_addr;
   Instruction location = -1;
   int result = store_variable(vm, state, *identifier, &location);

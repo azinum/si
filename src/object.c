@@ -40,10 +40,15 @@ struct Object token_to_object(struct Token token) {
 
 int func_init(struct Function* func) {
 	assert(func != NULL);
-	func->addr = 0;
-	func->stack_offset = 0;
-	scope_init(&func->scope, NULL);
+  func_init_with_parent_scope(func, NULL);
 	return NO_ERR;
+}
+
+int func_init_with_parent_scope(struct Function* func, struct Scope* parent) {
+  assert(func != NULL);
+  func->addr = 0;
+  func->stack_offset = 0;
+  return scope_init(&func->scope, parent);
 }
 
 int scope_init(struct Scope* scope, struct Scope* parent) {
