@@ -20,9 +20,10 @@ struct Scope {
 };
 
 struct Function {
+  struct Scope scope;
 	Instruction addr;
-	int stack_offset;
-	struct Scope scope;
+  int argc;
+	int stack_base_pointer;  // bp + 1 to access the first argument in the function
 };
 
 struct Object {

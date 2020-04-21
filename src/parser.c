@@ -42,7 +42,6 @@ static const struct Operator op_priority[] = {
 
 #define UNARY_PRIORITY 12
 
-static int add_token(struct Parser* p, struct Token token);
 static int add_current_token(struct Parser* p);
 static int get_binop(struct Token token);
 static int get_uop(struct Token token);
@@ -55,6 +54,7 @@ static int declare_variable(struct Parser* p);
 static int ifstatement(struct Parser* p);
 static int whileloop(struct Parser* p);
 static int returnstat(struct Parser* p);
+static int params(struct Parser* p);
 static int funcstat(struct Parser* p);
 static int block(struct Parser* p);
 static int breakstat(struct Parser* p);
@@ -64,16 +64,12 @@ static int postfix_expr(struct Parser* p);
 static int simple_expr(struct Parser* p);
 static int expr(struct Parser* p, int priority);
 
-int add_token(struct Parser* p, struct Token token) {
-	ast_add_node(p->ast, token);
-	return NO_ERR;
-}
-
 // Add current token to ast and move on the the next one
 int add_current_token(struct Parser* p) {
 	struct Token token = get_token(p->lexer);
 	next_token(p->lexer);
-	return add_token(p, token);
+  ast_add_node(p->ast, token);
+	return NO_ERR;
 }
 
 int get_binop(struct Token token) {
@@ -222,6 +218,31 @@ int returnstat(struct Parser* p) {
 	return NO_ERR;
 }
 
+int params(struct Parser* p) {
+  struct Token token = get_token(p->lexer);
+  if (token.type == T_CLOSEDPAREN)  // In case the function has no parameters
+    return NO_ERR;
+  for (;;) {
+    struct Token token = get_token(p->lexer);
+    switch (token.type) {
+      case T_IDENTIFIER: {
+        add_current_token(p);
+        if (expect(p, T_CLOSEDPAREN)) {
+          return NO_ERR;
+        }
+        else if (expect(p, T_COMMA))
+          next_token(p->lexer);
+        break;
+      }
+
+      default:
+        parseerror("Invalid token in paramlist\n");
+        return p->status = PARSE_ERR;
+    }
+  }
+  return NO_ERR;
+}
+
 // Ast output:
 // fn
 // identifier
@@ -236,9 +257,20 @@ int funcstat(struct Parser* p) {
 		return p->status = PARSE_ERR;
 	}
 	add_current_token(p);	// Add 'identifier'
-	//
-	// TODO: Parse paramlist here
-	//
+  // Parse paramlist
+  if (expect(p, T_OPENPAREN)) {
+    next_token(p->lexer); // Skip '('
+    Ast paramlist_branch = ast_get_last(orig_branch);
+    p->ast = &paramlist_branch;
+    params(p);
+    if (!expect(p, T_CLOSEDPAREN)) {
+      parseerror("Expected ')'\n");
+      return p->status = PARSE_ERR;
+    }
+    next_token(p->lexer); // Skip ')'
+    printf("params: %i\n", ast_child_count(&paramlist_branch));
+    p->ast = orig_branch;
+  }
 	if (!expect(p, T_BLOCKBEGIN)) {	// TODO: Find a way to make error checks shorter
 		parseerror("Expected '{'\n");
 		return p->status = PARSE_ERR;

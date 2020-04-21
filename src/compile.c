@@ -20,7 +20,7 @@
 // Compile-time function state
 struct Func_state {
 	struct Function func;
-	int argc;
+  Htable args;
 };
 
 #define compile_error(fmt, ...) \
@@ -47,6 +47,7 @@ struct Func_state {
 
 static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
+static void func_state_free(struct Func_state* state);
 static const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier);
 static int patchblock(struct VM_state* vm, int block_size);
 static int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
@@ -70,8 +71,12 @@ int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* 
 
 int func_state_init(struct Func_state* state) {
 	assert(state != NULL);
-	state->argc = 0;
+  state->args = ht_create_empty();
 	return NO_ERR;
+}
+
+void func_state_free(struct Func_state* state) {
+  ht_free(&state->args);
 }
 
 // First check the local scope,
@@ -79,10 +84,9 @@ int func_state_init(struct Func_state* state) {
 const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier) {
   struct Scope* scope = &state->func.scope;
   struct Scope* parent_scope = state->func.scope.parent;
-  const int* found = ht_lookup(&scope->var_locations, identifier);
-  if (found) {
+  const int* found = ht_lookup(&scope->var_locations, identifier);  // Find the location/index of the variable
+  if (found)
     return found;
-  }
   if (!parent_scope)
     return found;
   found = ht_lookup(&parent_scope->var_locations, identifier);
@@ -254,12 +258,13 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   add_instruction(vm, UNRESOLVED_JUMP, &block_size);
   Instruction func_addr = vm->program_size;
   struct Func_state func_state;
+  func_state_init(&func_state);
   func_init_with_parent_scope(&func_state.func, &state->func.scope);
   func_state.func.addr = func_addr;
   Instruction location = -1;
   int result = store_variable(vm, state, *identifier, &location);
   if (result != NO_ERR) {
-    compile_error("Function '%.*s' has already been defined\n", identifier->length, identifier->string);
+    compile_error("Identifier '%.*s' has already been declared\n", identifier->length, identifier->string);
     return vm->status = result;
   }
   compile(vm, block, &func_state, &block_size);  // Compile the function body
@@ -269,6 +274,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   func->type = T_FUNCTION;
   func->value.func = func_state.func; // Apply compile state function to the 'real' function
   *ins_count += block_size;
+  func_state_free(&func_state);
   return NO_ERR;
 }
 
@@ -390,6 +396,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	int status = compile(vm, ast, &global_state, &ins_count);
 	add_instruction(vm, I_RETURN, NULL);
 	vm->global = global_state.func;
+  func_state_free(&global_state);
 	return status;
 }
 

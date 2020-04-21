@@ -19,16 +19,10 @@ struct Item {
 	int used_slot;
 };
 
-static int is_empty(const Htable* table);
 static unsigned int hash(const Hkey key, unsigned int tablesize);
 static int linear_probe(const Htable* table, const Hkey key, unsigned int* collision_count);
 static int key_compare(const Hkey a, const Hkey b);
 static Htable resize_table(Htable* table, unsigned int new_size);
-
-int is_empty(const Htable* table) {
-	assert(table != NULL);
-	return table->items == NULL;
-}
 
 unsigned int hash(const Hkey key, unsigned int tablesize) {
 	unsigned int hash_number = 5381;
@@ -108,9 +102,14 @@ Htable ht_create_empty() {
 	return table;
 }
 
+int ht_is_empty(const Htable* table) {
+  assert(table != NULL);
+  return table->items == NULL;
+}
+
 unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value) {
 	assert(table != NULL);
-	if (is_empty(table)) {
+	if (ht_is_empty(table)) {
 		Htable new_table = ht_create(HASH_TABLE_INIT_SIZE);
 		if (ht_get_size(&new_table) == HASH_TABLE_INIT_SIZE) {
 			*table = new_table;

@@ -3,10 +3,10 @@
 #ifndef _HASH_H
 #define _HASH_H
 
-#define HTABLE_KEY_SIZE 32
-
-typedef char Hkey[HTABLE_KEY_SIZE];
 typedef int Hvalue;
+#define HTABLE_KEY_SIZE 32 - sizeof(Hvalue)
+typedef char Hkey[HTABLE_KEY_SIZE];
+
 struct Item;
 
 typedef struct {
@@ -21,6 +21,8 @@ typedef struct {
 Htable ht_create(unsigned int size);
 
 Htable ht_create_empty();
+
+int ht_is_empty(const Htable* table);
 
 unsigned int ht_insert_element(Htable* table, const Hkey key, const Hvalue value);
 

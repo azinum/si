@@ -277,6 +277,10 @@ begin_loop:
 				lexer->token.type = T_SEMICOLON;
 				return lexer->token;
 
+      case ',':
+        lexer->token.type = T_COMMA;
+        return lexer->token;
+
 			case '\0':
 				lexer->token.type = T_EOF;
 				return lexer->token;

@@ -37,6 +37,7 @@ enum Token_types {
 	T_BLOCKBEGIN,			// '{'
 	T_BLOCKEND,				// '}'
 	T_SEMICOLON,			// ';'
+  T_COMMA,          // ','
 
 	T_IDENTIFIER,
 	T_NUMBER,
