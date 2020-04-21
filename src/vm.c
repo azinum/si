@@ -204,11 +204,11 @@ int execute(struct VM_state* vm, struct Function* func) {
 				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-        if (!equal_types(variable, top)) {
-          vmerror("Invalid types in assignment\n");
+        if (variable->type == T_FUNCTION) {
+          vmerror("Can't assign function to variable\n");
           return RUNTIME_ERR;
         }
-				variable->value = top->value;
+        *variable = *top;
 				stack_pop(vm);
 				vmbreak;
 			}

@@ -35,6 +35,7 @@
 #define COLOR_ERROR
 #define COLOR_MESSAGE
 #define COLOR_NUMBER
+#define COLOR_TYPE
 #define COLOR_NIL
 #define COLOR_NONE
 

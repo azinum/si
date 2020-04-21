@@ -177,6 +177,11 @@ begin_loop:
 					lexer->index++;
 					return lexer->token;
 				}
+        if (*lexer->index == '<') {
+          lexer->token.type = T_LEFTSHIFT;
+          lexer->index++;
+          return lexer->token;
+        }
 				lexer->token.type = T_LT;
 				return lexer->token;
 			}
@@ -187,6 +192,11 @@ begin_loop:
 					lexer->index++;
 					return lexer->token;
 				}
+        if (*lexer->index == '>') {
+          lexer->token.type = T_RIGHTSHIFT;
+          lexer->index++;
+          return lexer->token;
+        }
 				lexer->token.type = T_GT;
 				return lexer->token;
 			}
@@ -231,7 +241,7 @@ begin_loop:
 
 			case '=': {
 				if (*lexer->index == '=') {
-					lexer->token.type = T_LEQ;
+					lexer->token.type = T_EQ;
 					lexer->index++;
 					return lexer->token;
 				}

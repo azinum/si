@@ -1,33 +1,15 @@
-[51 instructions, 8 variables, 0 constants]
-0000 jump          22
+[23 instructions, 3 variables, 1 constants]
+0000 jump          18
 0002 pushk         0
-0004 assign        1
-0006 jump          5
-0008 pushk         0
-0010 return
-0011 return
-0012 pushvar       1
-0014 pushvar       2
-0016 add
-0017 assign        3
-0019 pushvar       3
-0021 return
-0022 return
-0023 jump          27
-0025 pushk         0
-0027 assign        5
-0029 jump          5
-0031 pushk         0
-0033 return
-0034 return
-0035 jump          5
-0037 pushk         0
-0039 return
-0040 return
-0041 pushvar       6
-0043 pushvar       7
-0045 add
-0046 pushvar       5
-0048 add
-0049 return
-0050 return
+0004 pushk         1
+0006 leftshift
+0007 pushk         2
+0009 pushk         3
+0011 leftshift
+0012 bitwise_or
+0013 assign        1
+0015 pushvar       1
+0017 return
+0018 return
+0019 pushk         0
+0021 assign        2

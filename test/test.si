@@ -1,22 +1,8 @@
 // test.si
 
-// Normal function
 fn test {
-  let w = 10
-  fn begin {
-    return 1
-  }
-  let res = w + begin;
-  return res
+  let rvalue = (1 << 1) | (1 << 3)
+  return rvalue
 }
 
-fn hello {
-  let a = 5
-  fn init {
-    return 1
-  }
-  fn test {
-    return 2
-  }
-  return init + test + a
-}
+let a = 5

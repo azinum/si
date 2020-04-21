@@ -59,8 +59,6 @@ static int get_variable_location(struct VM_state* vm, struct Func_state* state, 
 static int store_constant(struct Func_state* state, struct Token constant, Instruction* location);
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int token_to_op(struct Token token);
-static int equal_type(const struct Token* left, const struct Token* right);
-static int branch_type(struct VM_state* vm, struct Func_state* state, Ast branch);
 
 int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
 	list_push(vm->program, vm->program_size, instruction);
@@ -189,31 +187,6 @@ int token_to_op(struct Token token) {
 	return I_UNKNOWN;
 }
 
-int equal_type(const struct Token* left, const struct Token* right) {
-	assert(left != NULL && right != NULL);
-	return left->type == right->type;
-}
-
-// Lazy version of checking the branch type is just to
-// see what type the first node of the branch is.
-// If we see a T_IDENTIFIER type then we'll do a lookup of
-// the variable and return the variable's type.
-// (struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
-int branch_type(struct VM_state* vm, struct Func_state* state, Ast branch) {
-  assert(branch != NULL);
-  assert(ast_child_count(&branch) > 0);
-  struct Token* first_node = ast_get_node_value(&branch, 0);
-  if (first_node->type == T_IDENTIFIER) {
-    Instruction location = -1;
-    int result = get_variable_location(vm, state, *first_node, &location);
-    if (result != NO_ERR)
-      return result;
-    struct Object variable = vm->variables[location];
-    return variable.type;
-  }
-  return first_node->type;
-}
-
 // Generated code:
 // COND ...
 // i_if, jump,
@@ -318,13 +291,6 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           compile(vm, &expr_branch, state, ins_count);  // Compile the right-hand side expression
 					Instruction location = -1;
 					get_variable_location(vm, state, *identifier, &location);
-          struct Object* variable = &vm->variables[location];
-          int rvalue_type = branch_type(vm, state, expr_branch);
-          if (rvalue_type == T_FUNCTION) {
-            compile_error("Can't assign function to variable\n");
-            return vm->status = COMPILE_ERR;
-          }
-          variable->type = rvalue_type;
 					assert(location >= 0);
 					add_instruction(vm, I_ASSIGN, ins_count);
 					add_instruction(vm, location, ins_count);
@@ -382,7 +348,6 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				}
 
 				default: {
-					(void)equal_type;
 					int op = token_to_op(*token);
 					if (op != I_UNKNOWN) {
 						add_instruction(vm, op, ins_count);
