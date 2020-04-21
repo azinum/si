@@ -40,6 +40,7 @@
 	INS(T, IF) \
 	INS(T, WHILE) \
 	INS(T, JUMP) \
+  INS(T, CALL) \
 \
 	INS(T, EXIT) \
 

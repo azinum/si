@@ -42,6 +42,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"if",
 	"while",
 	"jump",
+  "call",
 
 	"exit",
 };
@@ -225,14 +226,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 
 			vmcase(I_PUSH_VAR) {
 				int variable = *(ip++);
-        struct Object* object = get_variable(vm, &func->scope, variable);
-        if (object->type == T_FUNCTION) { // Temp
-          Instruction* old_ip = ip;
-          execute(vm, &object->value.func);
-          ip = old_ip;
-        }
-        else
-          stack_pushvar(vm, &func->scope, variable);
+        stack_pushvar(vm, &func->scope, variable);
 				vmbreak;
 			}
 
@@ -278,6 +272,18 @@ int execute(struct VM_state* vm, struct Function* func) {
 				vmjump(jump);
 				vmbreak;
 			}
+
+      vmcase(I_CALL) {
+        struct Object* top = stack_gettop(vm);
+        if (top->type != T_FUNCTION) {
+          vmerror("Attempted to call a non-function value\n");
+          return RUNTIME_ERR;
+        }
+        Instruction* old_ip = ip;
+        execute(vm, &top->value.func);
+        ip = old_ip;
+        vmbreak;
+      }
 
 			vmcase(I_ADD)
 				OP_ARITH(+);

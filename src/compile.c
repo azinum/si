@@ -45,7 +45,7 @@ struct Func_state {
 
 #define UNRESOLVED_JUMP 0
 
-static int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
+static int instruction_add(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
 static int func_state_init(struct Func_state* state);
 static void func_state_free(struct Func_state* state);
 static const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier);
@@ -62,7 +62,7 @@ static int store_constant(struct Func_state* state, struct Token constant, Instr
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int token_to_op(struct Token token);
 
-int add_instruction(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
+int instruction_add(struct VM_state* vm, Instruction instruction, unsigned int* ins_count) {
 	list_push(vm->program, vm->program_size, instruction);
 	if (ins_count)
 		(*ins_count)++;
@@ -113,8 +113,8 @@ int patchblock(struct VM_state* vm, int block_size) {
 int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count) {
 	Instruction location = -1;
 	store_constant(state, constant, &location);
-	add_instruction(vm, I_PUSHK, ins_count);
-	add_instruction(vm, location, ins_count);
+	instruction_add(vm, I_PUSHK, ins_count);
+	instruction_add(vm, location, ins_count);
 	return NO_ERR;
 }
 
@@ -127,8 +127,8 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
   doerror(!found, COMPILE_ERR, "Undeclared identifier '%.*s'\n", variable.length, variable.string);
 	// Okay, no errors. Let's continue compiling!
 	location = *found;
-	add_instruction(vm, I_PUSH_VAR, ins_count);
-	add_instruction(vm, location, ins_count);
+	instruction_add(vm, I_PUSH_VAR, ins_count);
+	instruction_add(vm, location, ins_count);
 	assert(location >= 0);
 	return NO_ERR;
 }
@@ -214,8 +214,8 @@ int token_to_op(struct Token token) {
 int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count) {
 	compile(vm, cond, state, ins_count);
 	unsigned int block_size = 0;
-	add_instruction(vm, I_IF, &block_size);
-	add_instruction(vm, UNRESOLVED_JUMP, ins_count);
+	instruction_add(vm, I_IF, &block_size);
+	instruction_add(vm, UNRESOLVED_JUMP, ins_count);
 	Instruction jump_index = vm->program_size - 1;
 	compile(vm, block, state, &block_size);
 	list_assign(vm->program, vm->program_size, jump_index, block_size);
@@ -232,12 +232,12 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 	unsigned int cond_size = 0;
 	unsigned int block_size = 0;
 	compile(vm, cond, state, &cond_size);
-	add_instruction(vm, I_WHILE, &block_size);
-	add_instruction(vm, UNRESOLVED_JUMP, ins_count);
+	instruction_add(vm, I_WHILE, &block_size);
+	instruction_add(vm, UNRESOLVED_JUMP, ins_count);
 	int jump_index = vm->program_size - 1;
 	compile(vm, block, state, &block_size);
-	add_instruction(vm, I_JUMP, &block_size);
-	add_instruction(vm, UNRESOLVED_JUMP, &block_size);
+	instruction_add(vm, I_JUMP, &block_size);
+	instruction_add(vm, UNRESOLVED_JUMP, &block_size);
 	int jumpback_index = vm->program_size - 1;
 	list_assign(vm->program, vm->program_size, jump_index, block_size);
 	list_assign(vm->program, vm->program_size, jumpback_index, -(block_size + cond_size));
@@ -254,8 +254,8 @@ int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_st
 //  \--> { BLOCK }
 int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params, Ast* block, struct Func_state* state, unsigned int* ins_count) {
   unsigned int block_size = 0;  // The whole function block
-  add_instruction(vm, I_JUMP, &block_size);
-  add_instruction(vm, UNRESOLVED_JUMP, &block_size);
+  instruction_add(vm, I_JUMP, &block_size);
+  instruction_add(vm, UNRESOLVED_JUMP, &block_size);
   Instruction func_addr = vm->program_size;
   struct Func_state func_state;
   func_state_init(&func_state);
@@ -268,7 +268,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
     return vm->status = result;
   }
   compile(vm, block, &func_state, &block_size);  // Compile the function body
-  add_instruction(vm, I_RETURN, &block_size);
+  instruction_add(vm, I_RETURN, &block_size);
   patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
   struct Object* func = &vm->variables[location];
   func->type = T_FUNCTION;
@@ -314,8 +314,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					Instruction location = -1;
 					get_variable_location(vm, state, *identifier, &location);
 					assert(location >= 0);
-					add_instruction(vm, I_ASSIGN, ins_count);
-					add_instruction(vm, location, ins_count);
+					instruction_add(vm, I_ASSIGN, ins_count);
+					instruction_add(vm, location, ins_count);
 					break;
 				}
 
@@ -328,13 +328,13 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					if (result != NO_ERR)
 						return vm->status = result;
 					assert(location >= 0);
-					add_instruction(vm, I_ASSIGN, ins_count);
-					add_instruction(vm, location, ins_count);
+					instruction_add(vm, I_ASSIGN, ins_count);
+					instruction_add(vm, location, ins_count);
 					break;
 				}
 
 				case T_RETURN:
-					add_instruction(vm, I_RETURN, ins_count);
+					instruction_add(vm, I_RETURN, ins_count);
 					break;
 
 				case T_IF: {
@@ -356,8 +356,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 				}
 
 				case T_BREAK:
-					add_instruction(vm, I_JUMP, ins_count);
-					add_instruction(vm, UNRESOLVED_JUMP, ins_count);
+					instruction_add(vm, I_JUMP, ins_count);
+					instruction_add(vm, UNRESOLVED_JUMP, ins_count);
 					break;
 
 				case T_FUNC_DEF: {
@@ -369,10 +369,14 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					break;
 				}
 
+        case T_CALL:
+          instruction_add(vm, I_CALL, ins_count);
+          break;
+
 				default: {
 					int op = token_to_op(*token);
 					if (op != I_UNKNOWN) {
-						add_instruction(vm, op, ins_count);
+						instruction_add(vm, op, ins_count);
 						break;
 					}
 					assert(0);
@@ -394,7 +398,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 	global_state.func = vm->global;
 	unsigned int ins_count = 0;
 	int status = compile(vm, ast, &global_state, &ins_count);
-	add_instruction(vm, I_RETURN, NULL);
+	instruction_add(vm, I_RETURN, NULL);
 	vm->global = global_state.func;
   func_state_free(&global_state);
 	return status;

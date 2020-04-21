@@ -1,21 +1,11 @@
-[34 instructions, 6 variables, 1 constants]
+[17 instructions, 3 variables, 2 constants]
 0000 pushk         0
 0002 assign        0
-0004 jump          12
-0006 pushk         0
-0008 assign        2
+0004 pushk         1
+0006 assign        1
+0008 jump          8
 0010 pushvar       0
-0012 pushvar       2
+0012 pushvar       1
 0014 add
 0015 return
 0016 return
-0017 jump          16
-0019 pushk         0
-0021 assign        4
-0023 pushk         1
-0025 assign        5
-0027 pushvar       4
-0029 pushvar       5
-0031 add
-0032 return
-0033 return

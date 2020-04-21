@@ -51,6 +51,7 @@ enum Token_types {
 	T_BREAK,
 	T_FUNC_DEF,
 
+  T_CALL,
 	T_BLOCK,
 	T_EOF,
 

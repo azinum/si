@@ -268,7 +268,6 @@ int funcstat(struct Parser* p) {
       return p->status = PARSE_ERR;
     }
     next_token(p->lexer); // Skip ')'
-    printf("params: %i\n", ast_child_count(&paramlist_branch));
     p->ast = orig_branch;
   }
 	if (!expect(p, T_BLOCKBEGIN)) {	// TODO: Find a way to make error checks shorter
@@ -394,6 +393,29 @@ int postfix_expr(struct Parser* p) {
       return p->status = PARSE_ERR;
     }
   }
+  // identifier '(' args ')'
+  // (expr) '(' args ')'
+  for (;;) {
+    token = get_token(p->lexer);
+    switch (token.type) {
+      // T_CALL
+      // \--> arglist
+      case T_OPENPAREN: {
+        next_token(p->lexer);
+        if (!expect(p, T_CLOSEDPAREN)) {
+          parseerror("Expected ')'\n");
+          return p->status = PARSE_ERR;
+        }
+        next_token(p->lexer);
+        struct Token call_token = { .type = T_CALL };
+        ast_add_node(p->ast, call_token);
+        break;
+      }
+      default:
+        goto done;
+    }
+  }
+done:
   return NO_ERR;
 }
 
@@ -410,9 +432,10 @@ int simple_expr(struct Parser* p) {
 			ast_add_node(p->ast, token);
 			break;
 
-		default:
+		default: {
       postfix_expr(p);
       return p->status;
+    }
 	}
 	return p->status;
 }
