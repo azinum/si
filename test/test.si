@@ -1,11 +1,12 @@
 // test.si
 
-fn a {
-  return 5
+fn trivial {
+  fn init {
+    return 1
+  }
+  fn start {
+    return 2
+  }
+  init()
+  return start
 }
-
-fn main {
-  return a() + 5
-}
-
-main()

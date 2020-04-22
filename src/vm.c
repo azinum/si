@@ -205,7 +205,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 				int var_location = *(ip++);
 				struct Object* variable = get_variable(vm, &func->scope, var_location);
 				const struct Object* top = stack_gettop(vm);
-        if (variable->type == T_FUNCTION) {
+        if (top->type == T_FUNCTION) {
           vmerror("Can't assign function to variable\n");
           return RUNTIME_ERR;
         }
