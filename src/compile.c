@@ -321,12 +321,17 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 
 				// { assign, identifier }
 				case T_ASSIGN: {
-					struct Token* identifier = ast_get_node_value(ast, ++i);
-					assert(identifier != NULL);
+					struct Token* identifier_token = ast_get_node_value(ast, ++i);
+					assert(identifier_token != NULL);
+          char* identifier = string_new_copy(identifier_token->string, identifier_token->length);
 					Instruction location = -1;
-					int result = get_variable_location(vm, state, *identifier, &location);
-					if (result != NO_ERR)
-						return vm->status = result;
+          const int* found = variable_lookup(vm, state, identifier);
+          string_free(identifier);
+					if (!found) {
+            compile_error("%s\n", "No such variable");
+            return vm->status = COMPILE_ERR;
+          }
+          location = *found;
 					assert(location >= 0);
 					instruction_add(vm, I_ASSIGN, ins_count);
 					instruction_add(vm, location, ins_count);

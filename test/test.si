@@ -1,8 +1,11 @@
 // test.si
 
-let a = 2
-let b = 3
-
-fn add(a, b) {
-  return a + b
+fn a {
+  return 5
 }
+
+fn main {
+  return a() + 5
+}
+
+main()

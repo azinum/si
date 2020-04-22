@@ -107,7 +107,7 @@ inline int equal_types(const struct Object* a, const struct Object* b);
 inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
-static int print_global(struct VM_state* vm);
+static int print_state(struct VM_state* vm, struct Function* state);
 static int free_variables(struct VM_state* vm);
 
 int stack_push(struct VM_state* vm, struct Object object) {
@@ -129,7 +129,7 @@ int stack_pop(struct VM_state* vm) {
 }
 
 int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant) {
-	assert(scope->constants_count > constant);
+  assert(scope->constants_count > constant);
 	struct Object object = scope->constants[constant];
 	return stack_push(vm, object);
 }
@@ -197,7 +197,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 #include "jumptable.h"
 #endif
 	Instruction* ip = &vm->program[func->addr];
-	Instruction i = I_EXIT;
+	Instruction i = I_RETURN;
 	for (;;) {
 		vmfetch();
 		vmdispatch(i) {
@@ -275,13 +275,15 @@ int execute(struct VM_state* vm, struct Function* func) {
 
       vmcase(I_CALL) {
         struct Object* top = stack_gettop(vm);
+        stack_pop(vm);
         if (top->type != T_FUNCTION) {
           vmerror("Attempted to call a non-function value\n");
           return RUNTIME_ERR;
         }
         Instruction* old_ip = ip;
-        execute(vm, &top->value.func);
-        ip = old_ip;
+        struct Function func_to_call = top->value.func; // Make a copy of the function instead of using the stack, as the stack will change when calling functions
+        execute(vm, &func_to_call);
+        *ip = *old_ip;
         vmbreak;
       }
 
@@ -389,8 +391,8 @@ int disasm(struct VM_state* vm, FILE* file) {
 	return NO_ERR;
 }
 
-int print_global(struct VM_state* vm) {
-	struct Scope* scope = &vm->global.scope;
+int print_state(struct VM_state* vm, struct Function* func) {
+	struct Scope* scope = &func->scope;
 	printf("{\n");
 	for (int i = 0; i < ht_get_size(&scope->var_locations); i++) {
 		const Hkey* key = ht_lookup_key(&scope->var_locations, i);
@@ -465,7 +467,7 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
 			}
 		}
 		vm->global.addr = vm->program_size;	// We're in interactive mode, move the start posiiton to the last instruction
-		(void)print_global;
+    (void)print_state; // print_state(vm, &vm->global);
 	}
 	ast_free(&ast);
 	return vm->status;
