@@ -42,7 +42,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"if",
 	"while",
 	"jump",
-  "call",
+        "call",
 
 	"exit",
 };
@@ -275,7 +275,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 
       vmcase(I_CALL) {
         struct Object* top = stack_gettop(vm);
-        stack_pop(vm);
+	stack_pop(vm);
         if (top->type != T_FUNCTION) {
           vmerror("Attempted to call a non-function value\n");
           return RUNTIME_ERR;

@@ -16,11 +16,11 @@ INSTALL_TOP=/usr/local
 
 INSTALL_BIN=$(INSTALL_TOP)/bin
 
-LIBS=-lreadline
+LIBS=-lreadline #-largp
 
 LIBS_RELEASE=-lreadline
 
-FLAGS=$(SOURCE_DIR)/*.c -Iinclude -Wall -largp
+FLAGS=$(SOURCE_DIR)/*.c -Iinclude -Wall
 
 FLAGS_DEBUG=-g
 
