@@ -267,12 +267,23 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
     compile_error("Identifier '%.*s' has already been declared\n", identifier->length, identifier->string);
     return vm->status = result;
   }
+  for (int i = 0; i < ast_child_count(params); i++) {
+    const struct Token* value = ast_get_node_value(params, i);
+    char* arg_key = string_new_copy(value->string, value->length);
+    if (ht_lookup(&state->args, arg_key)) {
+      compile_error("Parameter '%s' has already been identified\n", arg_key);
+      string_free(arg_key);
+      return vm->status = COMPILE_ERR;
+    }
+    ht_insert_element(&state->args, arg_key, i);
+    string_free(arg_key);
+  }
   compile(vm, block, &func_state, &block_size);  // Compile the function body
   instruction_add(vm, I_RETURN, &block_size);
   patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
   struct Object* func = &vm->variables[location];
   func->type = T_FUNCTION;
-  func->value.func = func_state.func; // Apply compile state function to the 'real' function
+  func->value.func = func_state.func; // Apply function compile state to the 'real' function
   *ins_count += block_size;
   func_state_free(&func_state);
   return NO_ERR;
@@ -367,7 +378,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 
 				case T_FUNC_DEF: {
           struct Token* identifier = ast_get_node_value(ast, ++i);
-          Ast params = NULL;
+          Ast params = ast_get_node_at(ast, i);
           Ast block = ast_get_node_at(ast, ++i);
           assert(block != NULL);
           compile_function(vm, identifier, &params, &block, state, ins_count);
