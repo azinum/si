@@ -21,7 +21,7 @@ install:
 	cp $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME) $(INSTALL_BIN)/$(PROGRAM_NAME)
 
 uninstall:
-	[ -f $(INSTALL_BIN)/$(PROGRAM_NAME) ] && rm $(INSTALL_BIN)/$(PROGRAM_NAME)
+	rm -f $(INSTALL_BIN)/$(PROGRAM_NAME)
 
 build_debug:
 	$(CC) $(FLAGS) $(FLAGS_LOCAL) $(FLAGS_DEBUG)

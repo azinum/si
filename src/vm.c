@@ -42,7 +42,8 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	"if",
 	"while",
 	"jump",
-        "call",
+	"call",
+	"push_arg",
 
 	"exit",
 };
@@ -275,16 +276,28 @@ int execute(struct VM_state* vm, struct Function* func) {
 
       vmcase(I_CALL) {
         struct Object* top = stack_gettop(vm);
-	stack_pop(vm);
+				stack_pop(vm);
         if (top->type != T_FUNCTION) {
           vmerror("Attempted to call a non-function value\n");
           return RUNTIME_ERR;
         }
         Instruction* old_ip = ip;
-        struct Function func_to_call = top->value.func; // Make a copy of the function instead of using the stack, as the stack will change when calling functions
-        execute(vm, &func_to_call);
+        struct Function function = top->value.func; // Make a copy of the function instead of using the stack, as the stack will change when calling functions
+        int arg_count = function.argc;
+        function.bp = vm->stack_top;
+        assert(vm->stack_top >= arg_count);
+        execute(vm, &function);
+        vm->stack[(function.bp - function.argc)] = *stack_gettop(vm);
+        vm->stack_top -= arg_count;	// Pop off all arguments
         *ip = *old_ip;
         vmbreak;
+      }
+
+      vmcase(I_PUSH_ARG) {
+				int arg_location = *(ip++);
+				struct Object arg = vm->stack[(func->bp - func->argc) + arg_location];
+				stack_push(vm, arg);
+				vmbreak;
       }
 
 			vmcase(I_ADD)

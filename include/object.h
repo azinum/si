@@ -23,7 +23,7 @@ struct Function {
   struct Scope scope;
 	Instruction addr;
   int argc;
-	int stack_base_pointer;  // bp + 1 to access the first argument in the function
+	int bp;  // Stack base pointer. stack_top[(bp - argc) + 0)] to access the first argument in the function
 };
 
 struct Object {

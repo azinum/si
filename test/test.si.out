@@ -1,15 +1,11 @@
-[21 instructions, 3 variables, 0 constants]
-0000 jump          20
-0002 jump          5
-0004 pushk         0
-0006 return
+[16 instructions, 1 variables, 2 constants]
+0000 jump          8
+0002 push_arg      0
+0004 push_arg      1
+0006 add
 0007 return
-0008 jump          5
-0010 pushk         0
-0012 return
-0013 return
-0014 pushvar       1
-0016 call
-0017 pushvar       2
-0019 return
-0020 return
+0008 return
+0009 pushk         0
+0011 pushk         1
+0013 pushvar       0
+0015 call

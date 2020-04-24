@@ -1,12 +1,7 @@
 // test.si
 
-fn trivial {
-  fn init {
-    return 1
-  }
-  fn start {
-    return 2
-  }
-  init()
-  return start
+fn add(a, b) {
+  return a + b
 }
+
+5 6 add()

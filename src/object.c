@@ -47,7 +47,7 @@ int func_init(struct Function* func) {
 int func_init_with_parent_scope(struct Function* func, struct Scope* parent) {
   assert(func != NULL);
   func->addr = 0;
-  func->stack_base_pointer = 0;
+  func->bp = 0;
   return scope_init(&func->scope, parent);
 }
 

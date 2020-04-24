@@ -119,15 +119,19 @@ int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token co
 }
 
 int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count) {
-	char* identifier = string_new_copy(variable.string, variable.length);
-	const int* found = variable_lookup(vm, state, identifier);
-  string_free(identifier);
 	Instruction location = -1;
-
+  Instruction push_instruction = I_PUSH_VAR;
+  char* identifier = string_new_copy(variable.string, variable.length);
+	const int* found = ht_lookup(&state->args, identifier);
+  push_instruction = I_PUSH_ARG;
+  if (!found) {
+    found = variable_lookup(vm, state, identifier);
+    push_instruction = I_PUSH_VAR;
+  }
+  string_free(identifier);
   doerror(!found, COMPILE_ERR, "Undeclared identifier '%.*s'\n", variable.length, variable.string);
-	// Okay, no errors. Let's continue compiling!
 	location = *found;
-	instruction_add(vm, I_PUSH_VAR, ins_count);
+	instruction_add(vm, push_instruction, ins_count);
 	instruction_add(vm, location, ins_count);
 	assert(location >= 0);
 	return NO_ERR;
@@ -267,17 +271,19 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
     compile_error("Identifier '%.*s' has already been declared\n", identifier->length, identifier->string);
     return vm->status = result;
   }
-  for (int i = 0; i < ast_child_count(params); i++) {
+  int arg_count = ast_child_count(params);
+  for (int i = 0; i < arg_count; i++) {
     const struct Token* value = ast_get_node_value(params, i);
     char* arg_key = string_new_copy(value->string, value->length);
-    if (ht_lookup(&state->args, arg_key)) {
+    if (ht_lookup(&func_state.args, arg_key)) {
       compile_error("Parameter '%s' has already been identified\n", arg_key);
       string_free(arg_key);
       return vm->status = COMPILE_ERR;
     }
-    ht_insert_element(&state->args, arg_key, i);
+    ht_insert_element(&func_state.args, arg_key, i);
     string_free(arg_key);
   }
+  func_state.func.argc = arg_count;
   compile(vm, block, &func_state, &block_size);  // Compile the function body
   instruction_add(vm, I_RETURN, &block_size);
   patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
@@ -428,6 +434,7 @@ unsigned int compile_get_ins_arg_count(Instruction instruction) {
 		case I_IF:
 		case I_WHILE:
 		case I_JUMP:
+    case I_PUSH_ARG:
 			return 1;
 		default:
 			return 0;

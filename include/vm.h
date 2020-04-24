@@ -41,6 +41,7 @@
 	INS(T, WHILE) \
 	INS(T, JUMP) \
   INS(T, CALL) \
+  INS(T, PUSH_ARG) \
 \
 	INS(T, EXIT) \
 
