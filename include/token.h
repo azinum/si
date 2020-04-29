@@ -39,9 +39,9 @@ enum Token_types {
 	T_SEMICOLON,			// ';'
   T_COMMA,          // ','
 
-	T_IDENTIFIER,	// 31
-	T_NUMBER,			// 32
-	T_FUNCTION,		// 33
+	T_IDENTIFIER, // 31
+	T_NUMBER,     // 32
+	T_FUNCTION,   // 33
 	T_NIL,
 
 	T_DECL,	// 'let'

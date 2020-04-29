@@ -73,7 +73,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	    stack_pop(vm); \
 	  } \
 		else \
-			vmerror("Invalid types in arithmetic operation (%i -> %i)\n", left->type, right->type); \
+			vmerror("Invalid types in arithmetic operation\n"); \
 	} \
 } \
 
@@ -294,8 +294,8 @@ int execute(struct VM_state* vm, struct Function* func) {
         }
         Instruction* old_ip = ip;
         execute(vm, &function);
-        vm->stack[function.bp - 2] = *stack_gettop(vm);
-        vm->stack_top = function.bp - 1;
+        vm->stack[function.bp - (arg_count+1)] = *stack_gettop(vm);
+        vm->stack_top = function.bp - arg_count;
         *ip = *old_ip;
         vmbreak;
       }

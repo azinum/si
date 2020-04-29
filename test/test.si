@@ -1,5 +1,9 @@
 // test.si
 
+fn add(a, b) {
+  return a + b
+}
+
 fn fib(n) {
   if n <= 2 {
     return n
@@ -7,14 +11,6 @@ fn fib(n) {
   return fib(n - 2) + fib(n - 1)
 }
 
-fn add(a, b) {
-  return a + b
-}
-
-fn sub(a, b) {
-  return a - b
-}
-
-fn callback(event) {
-  return event(10, 5)
+fn a(n) {
+  return n
 }
