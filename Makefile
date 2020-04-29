@@ -5,7 +5,7 @@ include config.mk
 all: prepare local run
 
 clean:
-	rm build/*
+	rm -drf build/*
 
 prepare:
 	@mkdir -p $(BUILD_DIR)

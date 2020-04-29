@@ -55,6 +55,7 @@ static int ifstatement(struct Parser* p);
 static int whileloop(struct Parser* p);
 static int returnstat(struct Parser* p);
 static int params(struct Parser* p);
+static int arglist(struct Parser* p, int* num_args);
 static int funcstat(struct Parser* p);
 static int block(struct Parser* p);
 static int breakstat(struct Parser* p);
@@ -243,6 +244,25 @@ int params(struct Parser* p) {
   return NO_ERR;
 }
 
+int arglist(struct Parser* p, int* num_args) {
+  struct Token token = get_token(p->lexer);
+  if (token.type == T_CLOSEDPAREN)
+    return NO_ERR;
+  for (;;) {
+    (*num_args)++;
+    expr(p, 0);
+    if (expect(p, T_COMMA)) {
+      next_token(p->lexer);
+      continue;
+    }
+    if (expect(p, T_CLOSEDPAREN))
+      return NO_ERR;
+    else
+      return NO_ERR;
+  }
+  return NO_ERR;
+}
+
 // Ast output:
 // fn
 // identifier
@@ -400,15 +420,27 @@ int postfix_expr(struct Parser* p) {
     switch (token.type) {
       // T_CALL
       // \--> arglist
+      // T_NUMBER (num_args)
       case T_OPENPAREN: {
-        next_token(p->lexer);
-        if (!expect(p, T_CLOSEDPAREN)) {
-          parseerror("Expected ')'\n");
-          return p->status = PARSE_ERR;
-        }
         next_token(p->lexer);
         struct Token call_token = { .type = T_CALL };
         ast_add_node(p->ast, call_token);
+        Ast* orig_branch = p->ast;
+        Ast arglist_branch = ast_get_last(orig_branch);
+        p->ast = &arglist_branch;
+        int num_args = 0;
+        arglist(p, &num_args);
+        if (!expect(p, T_CLOSEDPAREN)) {
+          parseerror("Missing ')' closing parenthesis in expression\n");
+          return p->status = PARSE_ERR;
+        }
+        next_token(p->lexer);
+        p->ast = orig_branch;
+        struct Token num_args_token = (struct Token) {
+          .type = T_NUMBER,
+          .value.integer = num_args
+        };
+        ast_add_node(p->ast, num_args_token);
         break;
       }
       default:

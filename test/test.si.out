@@ -1,11 +1,40 @@
-[16 instructions, 1 variables, 2 constants]
-0000 jump          8
+[63 instructions, 4 variables, 0 constants]
+0000 jump          32
 0002 push_arg      0
-0004 push_arg      1
-0006 add
-0007 return
-0008 return
-0009 pushk         0
-0011 pushk         1
-0013 pushvar       0
-0015 call
+0004 pushk         0
+0006 less_equal
+0007 if            4
+0009 push_arg      0
+0011 return
+0012 pushvar       0
+0014 push_arg      0
+0016 pushk         1
+0018 sub
+0019 call          1
+0021 pushvar       0
+0023 push_arg      0
+0025 pushk         2
+0027 sub
+0028 call          1
+0030 add
+0031 return
+0032 return
+0033 jump          8
+0035 push_arg      0
+0037 push_arg      1
+0039 add
+0040 return
+0041 return
+0042 jump          8
+0044 push_arg      0
+0046 push_arg      1
+0048 sub
+0049 return
+0050 return
+0051 jump          11
+0053 push_arg      0
+0055 pushk         0
+0057 pushk         1
+0059 call          2
+0061 return
+0062 return

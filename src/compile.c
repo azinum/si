@@ -391,9 +391,15 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 					break;
 				}
 
-        case T_CALL:
+        case T_CALL: {
+          Ast args_branch = ast_get_node_at(ast, i);
+          compile(vm, &args_branch, state, ins_count);
+          const struct Token* num_args_token = ast_get_node_value(ast, ++i);
+          int num_args = num_args_token->value.integer;
           instruction_add(vm, I_CALL, ins_count);
+          instruction_add(vm, num_args, ins_count);
           break;
+        }
 
 				default: {
 					int op = token_to_op(*token);
@@ -435,6 +441,7 @@ unsigned int compile_get_ins_arg_count(Instruction instruction) {
 		case I_WHILE:
 		case I_JUMP:
     case I_PUSH_ARG:
+    case I_CALL:
 			return 1;
 		default:
 			return 0;

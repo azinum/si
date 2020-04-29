@@ -12,13 +12,13 @@ BUILD_DIR_DEBUG=$(BUILD_DIR)/debug
 
 BUILD_DIR_RELEASE=$(BUILD_DIR)/release
 
-INSTALL_TOP=/usr
+INSTALL_TOP=/usr/local
 
 INSTALL_BIN=$(INSTALL_TOP)/bin
 
-LIBS=-lreadline #-largp
+LIBS=-lreadline -largp
 
-LIBS_RELEASE=-lreadline
+LIBS_RELEASE=-lreadline -largp
 
 FLAGS=$(SOURCE_DIR)/*.c -Iinclude -Wall
 

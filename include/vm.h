@@ -6,7 +6,7 @@
 #include "hash.h"
 #include "object.h"
 
-#define STACK_SIZE 128
+#define STACK_SIZE 512
 
 #define INS(T, I) T##_##I,
 

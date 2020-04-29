@@ -73,7 +73,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 	    stack_pop(vm); \
 	  } \
 		else \
-			vmerror("Invalid types in arithmetic operation\n"); \
+			vmerror("Invalid types in arithmetic operation (%i -> %i)\n", left->type, right->type); \
 	} \
 } \
 
@@ -210,6 +210,10 @@ int execute(struct VM_state* vm, struct Function* func) {
           vmerror("Can't assign function to variable\n");
           return RUNTIME_ERR;
         }
+        if (variable->type == T_FUNCTION) {
+          vmerror("Can't modify function variable\n");
+          return RUNTIME_ERR;
+        }
         *variable = *top;
 				stack_pop(vm);
 				vmbreak;
@@ -274,21 +278,24 @@ int execute(struct VM_state* vm, struct Function* func) {
 				vmbreak;
 			}
 
+      // func, arg1, arg2, ..., CALL, arg_count
       vmcase(I_CALL) {
-        struct Object* top = stack_gettop(vm);
-				stack_pop(vm);
-        if (top->type != T_FUNCTION) {
+        int arg_count = *(ip++);
+        struct Object* obj = stack_get(vm, arg_count);
+        if (obj->type != T_FUNCTION) {
           vmerror("Attempted to call a non-function value\n");
           return RUNTIME_ERR;
         }
-        Instruction* old_ip = ip;
-        struct Function function = top->value.func; // Make a copy of the function instead of using the stack, as the stack will change when calling functions
-        int arg_count = function.argc;
+        struct Function function = obj->value.func;
         function.bp = vm->stack_top;
-        assert(vm->stack_top >= arg_count);
+        if (function.argc != arg_count) {
+          vmerror("Invalid number of arguments\n");
+          return RUNTIME_ERR;
+        }
+        Instruction* old_ip = ip;
         execute(vm, &function);
-        vm->stack[(function.bp - function.argc)] = *stack_gettop(vm);
-        vm->stack_top -= arg_count;	// Pop off all arguments
+        vm->stack[function.bp - 2] = *stack_gettop(vm);
+        vm->stack_top = function.bp - 1;
         *ip = *old_ip;
         vmbreak;
       }
