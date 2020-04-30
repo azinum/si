@@ -1,16 +1,13 @@
 // test.si
 
 fn add(a, b) {
-  return a + b
+  a + b
 }
 
-fn fib(n) {
-  if n <= 2 {
-    return n
-  }
-  return fib(n - 2) + fib(n - 1)
-}
-
-fn a(n) {
-  return n
+fn isqrt(x) {
+  let res = x
+  let xhalf = 0.5 * res
+  res = 1597463007 - (res >> 1)  // 0x5f3759df => 1597463007
+  res = res * (1.5 - xhalf * res * res)
+  return res
 }

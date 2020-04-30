@@ -4,5 +4,5 @@
 #include "si.h"
 
 int main(int argc, char** argv) {
-	return si_exec(argc, argv);
+  return si_exec(argc, argv);
 }
