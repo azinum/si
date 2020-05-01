@@ -3,8 +3,11 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
+#include "file.h"
+#include "buffer.h"
 #include "token.h"
 #include "ast.h"
 #include "lexer.h"
@@ -19,6 +22,7 @@ struct Parser {
   Ast* ast;
   int status;
   int loop; // Are we in a loop block?
+  struct Buffer* buff;
 };
 
 struct Operator {
@@ -48,12 +52,12 @@ static int get_uop(struct Token token);
 static int block_end(struct Parser* p);
 static int expect(struct Parser* p, enum Token_types expected_type);
 static void check(struct Parser* p, enum Token_types type);
-static void skip(struct Parser* p);
 static int expression_end(struct Parser* p);
 static int declare_variable(struct Parser* p);
 static int ifstatement(struct Parser* p);
 static int whileloop(struct Parser* p);
 static int returnstat(struct Parser* p);
+static int importstat(struct Parser* p);
 static int params(struct Parser* p);
 static int arglist(struct Parser* p, int* num_args);
 static int funcstat(struct Parser* p);
@@ -105,19 +109,9 @@ int expect(struct Parser* p, enum Token_types expected_type) {
 void check(struct Parser* p, enum Token_types type) {
   struct Token token = get_token(p->lexer);
   if (token.type != type) {
-    if (token.length > 0)
-      parseerror("Unexpected symbol '%.*s'\n", token.length, token.string);
-    else
-      parseerror("Unexpected symbol\n");
+    parseerror("Unexpected symbol\n");
     p->status = PARSE_ERR;
   }
-}
-
-// Skip newlines and go to next token
-void skip(struct Parser* p) {
-  struct Token token = get_token(p->lexer);
-  while (token.type == T_SEMICOLON)
-    token = next_token(p->lexer);
 }
 
 int expression_end(struct Parser* p) {
@@ -219,6 +213,26 @@ int returnstat(struct Parser* p) {
   return NO_ERR;
 }
 
+// import filename
+int importstat(struct Parser* p) {
+  struct Token token = next_token(p->lexer);
+  next_token(p->lexer); // Skip identifier
+  if (!(token.type == T_IDENTIFIER)) {  // TODO: Change to strings
+    parseerror("Expected identifier\n");
+    return p->status = PARSE_ERR;
+  }
+  char path[PATH_LENGTH_MAX] = {0};
+  snprintf(path, PATH_LENGTH_MAX, "test/%.*s.si", token.length, token.string);
+  char* input = read_file(path);
+  if (!input) {
+    parseerror("'%.*s': No such file\n", token.length, token.string);
+    return p->status = PARSE_ERR;
+  }
+  int status = parser_parse(input, p->buff, path, p->ast);
+  free(input);
+  return status;
+}
+
 int params(struct Parser* p) {
   struct Token token = get_token(p->lexer);
   if (token.type == T_CLOSEDPAREN)  // In case the function has no parameters
@@ -255,10 +269,7 @@ int arglist(struct Parser* p, int* num_args) {
       next_token(p->lexer);
       continue;
     }
-    if (expect(p, T_CLOSEDPAREN))
-      return NO_ERR;
-    else
-      return NO_ERR;
+    return NO_ERR;
   }
   return NO_ERR;
 }
@@ -322,10 +333,6 @@ int breakstat(struct Parser* p) {
     return p->status = PARSE_ERR;
   }
   ast_add_node(p->ast, token);
-  if (!expect(p, T_SEMICOLON)) {
-    parseerror("Expected ';'\n");
-    return p->status = PARSE_ERR;
-  }
   return NO_ERR;
 }
 
@@ -361,6 +368,12 @@ int statement(struct Parser* p) {
 
     case T_RETURN:
       returnstat(p);
+      break;
+
+    case T_IMPORT:
+      (void)importstat;
+      next_token(p->lexer);
+      next_token(p->lexer);
       break;
 
     default:
@@ -405,10 +418,7 @@ int postfix_expr(struct Parser* p) {
     }
 
     default: {
-      parseerror("Unexpected symbol");
-      if (token.length > 0)
-        printf(" '%.*s'", token.length, token.string);
-      printf("\n");
+      parseerror("Unexpected symbol\n");
       next_token(p->lexer);
       return p->status = PARSE_ERR;
     }
@@ -499,8 +509,7 @@ int expr(struct Parser* p, int priority) {
   return op;
 }
 
-int parser_parse(char* input, const char* filename, Ast* ast) {
-  (void)skip;
+int parser_parse(char* input, struct Buffer* buff, const char* filename, Ast* ast) {
   struct Lexer lexer = {
     .index = input,
     .line = 1,
@@ -512,7 +521,8 @@ int parser_parse(char* input, const char* filename, Ast* ast) {
     .lexer = &lexer,
     .ast = ast,
     .status = NO_ERR,
-    .loop = 0
+    .loop = 0,
+    .buff = buff
   };
   next_token(parser.lexer);
   statements(&parser);

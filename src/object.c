@@ -84,6 +84,10 @@ void object_print(const struct Object* object) {
 			printf(COLOR_TYPE "[Function]" COLOR_NONE " (addr: %i)", object->value.func.addr);
 			break;
 
+    case T_CFUNCTION:
+      printf(COLOR_TYPE "[CFunction]" COLOR_NONE " (addr: %p)", object->value.cfunc);
+      break;
+
 		case T_NIL:
 			printf(COLOR_NIL "[Nil]" COLOR_NONE);
 			break;

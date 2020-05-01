@@ -12,10 +12,8 @@ char* read_file(const char* path) {
 	long buffer_size, read_size;
 	FILE* file = fopen(path, "rb");
 
-	if (file == NULL) {
-		printf("'%s': %s\n", path, strerror(errno));
+	if (file == NULL)
 		return NULL;
-	}
 
 	fseek(file, 0, SEEK_END);
 

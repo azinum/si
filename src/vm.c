@@ -3,13 +3,16 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "error.h"
 #include "mem.h"
 #include "list.h"
+#include "buffer.h"
 #include "ast.h"
 #include "parser.h"
 #include "compile.h"
+#include "api.h"
 #include "vm.h"
 
 static const char* ins_descriptions[INSTRUCTION_COUNT] = {
@@ -109,6 +112,7 @@ inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 static int print_state(struct VM_state* vm, struct Function* state);
+static int print_global(struct VM_state* vm);
 static int free_variables(struct VM_state* vm);
 
 int stack_push(struct VM_state* vm, struct Object object) {
@@ -282,6 +286,11 @@ int execute(struct VM_state* vm, struct Function* func) {
       vmcase(I_CALL) {
         int arg_count = *(ip++);
         struct Object* obj = stack_get(vm, arg_count);
+        if (obj->type == T_CFUNCTION) {
+          obj->value.cfunc(vm);
+          stack_pop(vm);
+          vmbreak;
+        }
         if (obj->type != T_FUNCTION) {
           vmerror("Attempted to call a non-function value\n");
           return RUNTIME_ERR;
@@ -428,6 +437,10 @@ int print_state(struct VM_state* vm, struct Function* func) {
   return NO_ERR;
 }
 
+int print_global(struct VM_state* vm) {
+  return print_state(vm, &vm->global);
+}
+
 int free_variables(struct VM_state* vm) {
   for (int i = 0; i < vm->variable_count; i++) {
     struct Object* obj = &vm->variables[i];
@@ -457,6 +470,8 @@ int vm_init(struct VM_state* vm) {
   vm->program_size = 0;
   vm->prev_ip = 0;
   vm->heap_allocated = 0;
+  si_store_number(vm, "M_PI", M_PI);
+  si_store_cfunc(vm, "print_global", print_global);
   return vm->status;
 }
 
@@ -475,7 +490,9 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
   assert(input != NULL);
   assert(vm != NULL);
   Ast ast = ast_create();
-  if (parser_parse(input, filename, &ast) == NO_ERR) {
+  struct Buffer buff;
+  buffer_init(&buff);
+  if (parser_parse(input, &buff, filename, &ast) == NO_ERR) {
     compile_from_tree(vm, &ast);
     if (vm->status == NO_ERR) {
       if (vm->prev_ip != vm->program_size) {  // Has program changed since last vm execution? 
@@ -489,6 +506,7 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
     vm->global.addr = vm->program_size; // We're in interactive mode, move the start posiiton to the last instruction
     (void)print_state; // print_state(vm, &vm->global);
   }
+  buffer_free(&buff);
   ast_free(&ast);
   return vm->status;
 }

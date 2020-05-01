@@ -1,0 +1,17 @@
+// math.si
+
+fn isqrt(x) {
+  let res = x
+  let xhalf = 0.5 * res
+  res = 0x5f3759df - (res >> 1)
+  res = res * (1.5 - xhalf * res * res)
+  return res
+}
+
+fn add(a, b) {
+  return a + b
+}
+
+fn mult(a, b) {
+  return a * b
+}

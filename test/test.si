@@ -1,13 +1,9 @@
 // test.si
 
-fn add(a, b) {
-  a + b
+import math
+import io
+
+fn test(x) {
+  return x << 1
 }
 
-fn isqrt(x) {
-  let res = x
-  let xhalf = 0.5 * res
-  res = 1597463007 - (res >> 1)  // 0x5f3759df => 1597463007
-  res = res * (1.5 - xhalf * res * res)
-  return res
-}

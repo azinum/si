@@ -12,6 +12,8 @@ typedef double obj_number;
 
 typedef int Instruction;
 
+typedef int (*CFunction)(struct VM_state*);
+
 struct Scope {
 	unsigned int constants_count;
 	struct Object* constants;
@@ -30,6 +32,7 @@ struct Object {
 	union value {
 		obj_number number;
 		struct Function func;
+    CFunction cfunc;
 	} value;
 	int type;
 };

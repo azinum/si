@@ -3,8 +3,8 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
-// typedef struct Node* Ast;
+#define PATH_LENGTH_MAX 512
 
-int parser_parse(char* input, const char* filename, Ast* ast);
+int parser_parse(char* input, struct Buffer* buff, const char* filename, Ast* ast);
 
 #endif
