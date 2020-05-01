@@ -1,7 +1,0 @@
-[9 instructions, 3 variables, 0 constants]
-0000 jump          8
-0002 push_arg      0
-0004 pushk         0
-0006 leftshift
-0007 return
-0008 return
