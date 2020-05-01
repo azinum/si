@@ -274,10 +274,12 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   int arg_count = ast_child_count(params);
   for (int i = 0; i < arg_count; i++) {
     const struct Token* value = ast_get_node_value(params, i);
+    assert(value != NULL);
     char* arg_key = string_new_copy(value->string, value->length);
     if (ht_lookup(&func_state.args, arg_key)) {
       compile_error("Parameter '%s' has already been identified\n", arg_key);
       string_free(arg_key);
+      func_state_free(&func_state);
       return vm->status = COMPILE_ERR;
     }
     ht_insert_element(&func_state.args, arg_key, i);

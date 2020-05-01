@@ -3,7 +3,8 @@
 import math
 import io
 
+let g = print_global
+
 fn test(x) {
   return x << 1
 }
-

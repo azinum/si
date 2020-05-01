@@ -298,7 +298,7 @@ int execute(struct VM_state* vm, struct Function* func) {
         struct Function function = obj->value.func;
         function.bp = vm->stack_top;
         if (function.argc != arg_count) {
-          vmerror("Invalid number of arguments\n");
+          vmerror("Invalid number of arguments (should be: %i)\n", function.argc);
           return RUNTIME_ERR;
         }
         Instruction* old_ip = ip;
