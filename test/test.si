@@ -3,8 +3,7 @@
 import math
 import io
 
-let g = print_global
-
-fn test(x) {
-  return x << 1
+fn add(a, b) {
+  print(a, b)
+  return a + b
 }

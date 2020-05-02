@@ -113,6 +113,7 @@ static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 static int print_state(struct VM_state* vm, struct Function* state);
 static int print_global(struct VM_state* vm);
+static int print_object(struct VM_state* vm);
 static int free_variables(struct VM_state* vm);
 
 int stack_push(struct VM_state* vm, struct Object object) {
@@ -285,9 +286,12 @@ int execute(struct VM_state* vm, struct Function* func) {
       // func, arg1, arg2, ..., CALL, arg_count
       vmcase(I_CALL) {
         int arg_count = *(ip++);
+        int bp = vm->stack_top - arg_count;
+        vm->stack_bp = bp;
         struct Object* obj = stack_get(vm, arg_count);
         if (obj->type == T_CFUNCTION) {
           obj->value.cfunc(vm);
+          vm->stack_top = bp;
           stack_pop(vm);
           vmbreak;
         }
@@ -296,22 +300,22 @@ int execute(struct VM_state* vm, struct Function* func) {
           return RUNTIME_ERR;
         }
         struct Function function = obj->value.func;
-        function.bp = vm->stack_top;
+        function.bp = bp;
         if (function.argc != arg_count) {
           vmerror("Invalid number of arguments (should be: %i)\n", function.argc);
           return RUNTIME_ERR;
         }
         Instruction* old_ip = ip;
         execute(vm, &function);
-        vm->stack[function.bp - (arg_count+1)] = *stack_gettop(vm);
-        vm->stack_top = function.bp - arg_count;
+        vm->stack[function.bp - 1] = *stack_gettop(vm);
+        vm->stack_top = function.bp;
         *ip = *old_ip;
         vmbreak;
       }
 
       vmcase(I_PUSH_ARG) {
         int arg_location = *(ip++);
-        struct Object arg = vm->stack[(func->bp - func->argc) + arg_location];
+        struct Object arg = vm->stack[func->bp + arg_location];
         stack_push(vm, arg);
         vmbreak;
       }
@@ -438,7 +442,21 @@ int print_state(struct VM_state* vm, struct Function* func) {
 }
 
 int print_global(struct VM_state* vm) {
-  return print_state(vm, &vm->global);
+  print_state(vm, &vm->global);
+  return 0;
+}
+
+int print_object(struct VM_state* vm) {
+  int arg_count = vm->stack_top - vm->stack_bp;
+  for (int i = 0; i < arg_count; i++) {
+    struct Object* obj = &vm->stack[vm->stack_bp + i];
+    if (obj) {
+      object_print(obj);
+      printf("  ");
+    }
+  }
+  printf("\n");
+  return 0;
 }
 
 int free_variables(struct VM_state* vm) {
@@ -465,13 +483,15 @@ int vm_init(struct VM_state* vm) {
   vm->variables = NULL;
   vm->variable_count = 0;
   vm->stack_top = 0;
+  vm->stack_bp = 0;
   vm->status = NO_ERR;
   vm->program = NULL;
   vm->program_size = 0;
   vm->prev_ip = 0;
   vm->heap_allocated = 0;
   si_store_number(vm, "M_PI", M_PI);
-  si_store_cfunc(vm, "print_global", print_global);
+  si_store_cfunc(vm, "print", print_object);
+  (void)print_global;
   return vm->status;
 }
 
@@ -504,7 +524,6 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
       }
     }
     vm->global.addr = vm->program_size; // We're in interactive mode, move the start posiiton to the last instruction
-    (void)print_state; // print_state(vm, &vm->global);
   }
   buffer_free(&buff);
   ast_free(&ast);

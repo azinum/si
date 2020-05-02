@@ -58,6 +58,7 @@ struct VM_state {
 	int variable_count;
 	struct Object stack[STACK_SIZE];
 	int stack_top;
+  int stack_bp;
 	int status;
 	Instruction* program;
 	int program_size;
