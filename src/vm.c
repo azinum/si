@@ -216,7 +216,7 @@ int execute(struct VM_state* vm, struct Function* func) {
           return RUNTIME_ERR;
         }
         if (variable->type == T_FUNCTION) {
-          vmerror("Can't modify function variable\n");
+          vmerror("Can't modify function\n");
           return RUNTIME_ERR;
         }
         *variable = *top;

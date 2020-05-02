@@ -80,16 +80,21 @@ void func_state_free(struct Func_state* state) {
 }
 
 // First check the local scope,
-// if not found then check the parent scope
+// then the parent scope,
+// and finally the global scope
 const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier) {
   struct Scope* scope = &state->func.scope;
   struct Scope* parent_scope = state->func.scope.parent;
+  struct Scope* global_scope = &vm->global.scope;
   const int* found = ht_lookup(&scope->var_locations, identifier);  // Find the location/index of the variable
   if (found)
     return found;
   if (!parent_scope)
     return found;
   found = ht_lookup(&parent_scope->var_locations, identifier);
+  if (found)
+    return found;
+  found = ht_lookup(&global_scope->var_locations, identifier);
   return found;
 }
 

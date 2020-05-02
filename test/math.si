@@ -8,10 +8,9 @@ fn isqrt(x) {
   return res
 }
 
-fn add(a, b) {
-  return a + b
-}
-
-fn mult(a, b) {
-  return a * b
+fn fib(n) {
+  if n < 2 {
+    return n
+  }
+  return fib(n-2) + fib(n-1)
 }
