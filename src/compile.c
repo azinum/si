@@ -90,7 +90,7 @@ const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const 
   if (found)
     return found;
   if (!parent_scope)
-    return found;
+    return NULL;
   found = ht_lookup(&parent_scope->var_locations, identifier);
   if (found)
     return found;

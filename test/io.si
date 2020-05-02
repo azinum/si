@@ -1,5 +1,6 @@
 // io.si
 
 fn io_print(what) {
-  return what
+  print(what)
+  return 0
 }

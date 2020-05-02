@@ -8,7 +8,7 @@
 #include "error.h"
 #include "mem.h"
 #include "list.h"
-#include "buffer.h"
+#include "strarr.h"
 #include "ast.h"
 #include "parser.h"
 #include "compile.h"
@@ -288,7 +288,7 @@ int execute(struct VM_state* vm, struct Function* func) {
         int arg_count = *(ip++);
         int bp = vm->stack_top - arg_count;
         vm->stack_bp = bp;
-        struct Object* obj = stack_get(vm, arg_count);
+        const struct Object* obj = stack_get(vm, arg_count);
         if (obj->type == T_CFUNCTION) {
           obj->value.cfunc(vm);
           vm->stack_top = bp;
@@ -491,6 +491,7 @@ int vm_init(struct VM_state* vm) {
   vm->heap_allocated = 0;
   si_store_number(vm, "M_PI", M_PI);
   si_store_cfunc(vm, "print", print_object);
+  si_store_cfunc(vm, "g", print_global);
   (void)print_global;
   return vm->status;
 }
@@ -510,9 +511,9 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
   assert(input != NULL);
   assert(vm != NULL);
   Ast ast = ast_create();
-  struct Buffer buff;
-  buffer_init(&buff);
-  if (parser_parse(input, &buff, filename, &ast) == NO_ERR) {
+  struct Str_arr str_arr;
+  strarr_init(&str_arr);
+  if (parser_parse(input, &str_arr, filename, &ast) == NO_ERR) {
     compile_from_tree(vm, &ast);
     if (vm->status == NO_ERR) {
       if (vm->prev_ip != vm->program_size) {  // Has program changed since last vm execution? 
@@ -525,7 +526,7 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
     }
     vm->global.addr = vm->program_size; // We're in interactive mode, move the start posiiton to the last instruction
   }
-  buffer_free(&buff);
+  strarr_free(&str_arr);
   ast_free(&ast);
   return vm->status;
 }

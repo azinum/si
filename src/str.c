@@ -9,7 +9,7 @@
 #include "mem.h"
 #include "str.h"
 
-char* string_new_copy(char* old, int length) {
+char* string_new_copy(const char* old, int length) {
 	int new_length = length + 1;	/* +1 for null terminator */
 	char* new_string = mmalloc(sizeof(char) * new_length);
 	if (!new_string) return NULL;

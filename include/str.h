@@ -5,7 +5,7 @@
 
 #include "config.h"
 
-char* string_new_copy(char* old, int length);
+char* string_new_copy(const char* old, int length);
 
 int string_to_number(char* string, double* number);
 

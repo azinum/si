@@ -1,19 +1,6 @@
 // test.si
 
-import math
-import io
-
-fn a {
-  let x = 0
-  let y = 0
-  fn init {
-    x = 12
-    y = 15
-    print(x, y)
-    return 0
-  }
-  return init()
-}
+import depend
 
 fn add(a, b) {
   return a + b

@@ -7,7 +7,7 @@
 
 #include "config.h"
 #include "file.h"
-#include "buffer.h"
+#include "strarr.h"
 #include "token.h"
 #include "ast.h"
 #include "lexer.h"
@@ -22,7 +22,7 @@ struct Parser {
   Ast* ast;
   int status;
   int loop; // Are we in a loop block?
-  struct Buffer* buff;
+  struct Str_arr* str_arr;
 };
 
 struct Operator {
@@ -228,7 +228,7 @@ int importstat(struct Parser* p) {
     parseerror("'%.*s': No such file\n", token.length, token.string);
     return p->status = PARSE_ERR;
   }
-  int status = parser_parse(input, p->buff, path, p->ast);
+  int status = parser_parse(input, p->str_arr, path, p->ast);
   free(input);
   return status;
 }
@@ -371,9 +371,7 @@ int statement(struct Parser* p) {
       break;
 
     case T_IMPORT:
-      (void)importstat;
-      next_token(p->lexer);
-      next_token(p->lexer);
+      importstat(p);
       break;
 
     default:
@@ -509,9 +507,10 @@ int expr(struct Parser* p, int priority) {
   return op;
 }
 
-int parser_parse(char* input, struct Buffer* buff, const char* filename, Ast* ast) {
+int parser_parse(char* input, struct Str_arr* str_arr, const char* filename, Ast* ast) {
+  strarr_append(str_arr, input);
   struct Lexer lexer = {
-    .index = input,
+    .index = strarr_top(str_arr),
     .line = 1,
     .count = 0,
     .token = (struct Token) {0},
@@ -522,7 +521,7 @@ int parser_parse(char* input, struct Buffer* buff, const char* filename, Ast* as
     .ast = ast,
     .status = NO_ERR,
     .loop = 0,
-    .buff = buff
+    .str_arr = str_arr
   };
   next_token(parser.lexer);
   statements(&parser);
