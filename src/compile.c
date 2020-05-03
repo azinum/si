@@ -274,7 +274,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   int result = store_variable(vm, state, *identifier, &location);
   if (result != NO_ERR) {
     compile_error("Identifier '%.*s' has already been declared\n", identifier->length, identifier->string);
-    return vm->status = result;
+    return result;
   }
   int arg_count = ast_child_count(params);
   for (int i = 0; i < arg_count; i++) {
@@ -285,7 +285,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
       compile_error("Parameter '%s' has already been identified\n", arg_key);
       string_free(arg_key);
       func_state_free(&func_state);
-      return vm->status = COMPILE_ERR;
+      return COMPILE_ERR;
     }
     ht_insert_element(&func_state.args, arg_key, i);
     string_free(arg_key);
@@ -319,7 +319,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
         case T_IDENTIFIER: {
           int result = compile_pushvar(vm, state, *token, ins_count);
           if (result != NO_ERR)
-            return vm->status = result;
+            return result;
           break;
         }
 
@@ -331,7 +331,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           assert(identifier != NULL);
           int result = compile_declvar(vm, state, *identifier);
           if (result != NO_ERR)
-            return vm->status = result;
+            return result;
           Ast expr_branch = ast_get_node_at(ast, i);
           assert(ast_child_count(&expr_branch) > 0);
           compile(vm, &expr_branch, state, ins_count);  // Compile the right-hand side expression
@@ -353,7 +353,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           string_free(identifier);
           if (!found) {
             compile_error("%s\n", "No such variable");
-            return vm->status = COMPILE_ERR;
+            return COMPILE_ERR;
           }
           location = *found;
           assert(location >= 0);
@@ -394,7 +394,9 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           Ast params = ast_get_node_at(ast, i);
           Ast block = ast_get_node_at(ast, ++i);
           assert(block != NULL);
-          compile_function(vm, identifier, &params, &block, state, ins_count);
+          int status = compile_function(vm, identifier, &params, &block, state, ins_count);
+          if (status != NO_ERR)
+            return status;
           break;
         }
 
@@ -416,7 +418,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           }
           assert(0);
           compile_error("%s\n", "Invalid instruction");
-          return vm->status = COMPILE_ERR;
+          return COMPILE_ERR;
         }
       }
     }
@@ -431,12 +433,17 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
   struct Func_state global_state;
   func_state_init(&global_state);
   global_state.func = vm->global;
+  unsigned int ins_count_before = vm->program_size;
   unsigned int ins_count = 0;
   int status = compile(vm, ast, &global_state, &ins_count);
+  if (status != NO_ERR) {
+    unsigned int ins_count_diff = vm->program_size - ins_count_before;
+    list_shrink(vm->program, vm->program_size, ins_count_diff);
+  }
   instruction_add(vm, I_RETURN, NULL);
   vm->global = global_state.func;
   func_state_free(&global_state);
-  return status;
+  return NO_ERR;
 }
 
 unsigned int compile_get_ins_arg_count(Instruction instruction) {

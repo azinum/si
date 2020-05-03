@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 #include "error.h"
 #include "mem.h"
@@ -489,7 +488,6 @@ int vm_init(struct VM_state* vm) {
   vm->program_size = 0;
   vm->prev_ip = 0;
   vm->heap_allocated = 0;
-  si_store_number(vm, "M_PI", M_PI);
   si_store_cfunc(vm, "print", print_object);
   si_store_cfunc(vm, "g", print_global);
   (void)print_global;
