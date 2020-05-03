@@ -2,6 +2,9 @@
 
 import depend
 
-fn add(a, b) {
-  return a + b
+fn add3(a, b, c) {
+  fn add(a, b) {
+    return a + b
+  }
+  return add(a, b) + c
 }

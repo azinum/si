@@ -203,6 +203,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 #endif
   Instruction* ip = &vm->program[func->addr];
   Instruction i = I_RETURN;
+  int stack_bp = vm->stack_bp;
   for (;;) {
     vmfetch();
     vmdispatch(i) {
@@ -299,22 +300,21 @@ int execute(struct VM_state* vm, struct Function* func) {
           return RUNTIME_ERR;
         }
         struct Function function = obj->value.func;
-        function.bp = bp;
         if (function.argc != arg_count) {
           vmerror("Invalid number of arguments (should be: %i)\n", function.argc);
           return RUNTIME_ERR;
         }
         Instruction* old_ip = ip;
         execute(vm, &function);
-        vm->stack[function.bp - 1] = *stack_gettop(vm);
-        vm->stack_top = function.bp;
+        vm->stack[bp - 1] = *stack_gettop(vm);
+        vm->stack_top = bp;
         *ip = *old_ip;
         vmbreak;
       }
 
       vmcase(I_PUSH_ARG) {
         int arg_location = *(ip++);
-        struct Object arg = vm->stack[func->bp + arg_location];
+        struct Object arg = vm->stack[stack_bp + arg_location];
         stack_push(vm, arg);
         vmbreak;
       }
