@@ -6,3 +6,13 @@ fn start {
   let result = math_fib(7)
   return result
 }
+
+fn x() {
+  return 1
+}
+
+let i = 0
+while i < 510 {
+  x()
+  i = i + 1
+}
