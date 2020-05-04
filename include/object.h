@@ -15,25 +15,25 @@ typedef int Instruction;
 typedef int (*CFunction)(struct VM_state*);
 
 struct Scope {
-	unsigned int constants_count;
-	struct Object* constants;
-	Htable var_locations;
-	struct Scope* parent;
+  unsigned int constants_count;
+  struct Object* constants;
+  Htable var_locations;
+  struct Scope* parent;
 };
 
 struct Function {
   struct Scope scope;
-	Instruction addr;
+  Instruction addr;
   int argc;
 };
 
 struct Object {
-	union value {
-		obj_number number;
-		struct Function func;
+  union value {
+    obj_number number;
+    struct Function func;
     CFunction cfunc;
-	} value;
-	int type;
+  } value;
+  int type;
 };
 
 struct Object token_to_object(struct Token token);

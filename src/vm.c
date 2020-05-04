@@ -12,6 +12,7 @@
 #include "parser.h"
 #include "compile.h"
 #include "api.h"
+#include "module.h"
 #include "vm.h"
 
 static const char* ins_descriptions[INSTRUCTION_COUNT] = {
@@ -110,9 +111,6 @@ inline int equal_types(const struct Object* a, const struct Object* b);
 inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
-static int print_state(struct VM_state* vm, struct Function* state);
-static int print_global(struct VM_state* vm);
-static int print_object(struct VM_state* vm);
 static int free_variables(struct VM_state* vm);
 
 int stack_push(struct VM_state* vm, struct Object object) {
@@ -211,6 +209,10 @@ int execute(struct VM_state* vm, struct Function* func) {
         int var_location = *(ip++);
         struct Object* variable = get_variable(vm, &func->scope, var_location);
         const struct Object* top = stack_gettop(vm);
+        if (!top) {
+          // TEMP
+          vmbreak;
+        }
         if (top->type == T_FUNCTION) {
           vmerror("Can't assign function to variable\n");
           return RUNTIME_ERR;
@@ -423,40 +425,6 @@ int disasm(struct VM_state* vm, FILE* file) {
   return NO_ERR;
 }
 
-int print_state(struct VM_state* vm, struct Function* func) {
-  struct Scope* scope = &func->scope;
-  printf("{\n");
-  for (int i = 0; i < ht_get_size(&scope->var_locations); i++) {
-    const Hkey* key = ht_lookup_key(&scope->var_locations, i);
-    const Hvalue* value = ht_lookup_byindex(&scope->var_locations, i);
-    if (key != NULL && value != NULL) {
-      printf("  %s: ", *key);
-      struct Object* object = get_variable(vm, scope, *value);
-      object_print(object);
-      printf(",\n");
-    }
-  }
-  printf("}\n");
-  return NO_ERR;
-}
-
-int print_global(struct VM_state* vm) {
-  print_state(vm, &vm->global);
-  return 0;
-}
-
-int print_object(struct VM_state* vm) {
-  int arg_count = vm->stack_top - vm->stack_bp;
-  for (int i = 0; i < arg_count; i++) {
-    struct Object* obj = &vm->stack[vm->stack_bp + i];
-    if (obj) {
-      object_print(obj);
-      printf("  ");
-    }
-  }
-  printf("\n");
-  return 0;
-}
 
 int free_variables(struct VM_state* vm) {
   for (int i = 0; i < vm->variable_count; i++) {
@@ -488,9 +456,7 @@ int vm_init(struct VM_state* vm) {
   vm->program_size = 0;
   vm->prev_ip = 0;
   vm->heap_allocated = 0;
-  si_store_cfunc(vm, "print", print_object);
-  si_store_cfunc(vm, "g", print_global);
-  (void)print_global;
+  module_load(vm, basemod());
   return vm->status;
 }
 
