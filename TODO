@@ -1,4 +1,3 @@
 
 - Restructure the api (where do we put stack manipulation functions etc)
 - Script importing via strings instead of identifiers.
-- Calling functions enough times in a loop (511 to be exact, the stack size is 512 so this makes sense) will give a stack overflow error. This happens becuase the functions return value is still on the stack. A dirty way to prevent this is to assign the return value to a temporary variable. Variable assignments internally pop the stack, so for each loop the stack is decremented to its' original position.

@@ -1,18 +1,22 @@
 // test.si
 
-import math
+// import math
 
-fn start {
-  let result = math_fib(7)
-  return result
+fn _scope {
+  fn a1 { }
+  fn a2 { }
+
+  let some_value = 5
+
+  fn get_value {
+    let _some_value = some_value
+    fn x {
+      return _some_value
+    }
+    return x()
+  }
+
+  return get_value()
 }
 
-fn x() {
-  return 1
-}
-
-let i = 0
-while i < 510 {
-  x()
-  i = i + 1
-}
+_scope()

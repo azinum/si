@@ -1,4 +1,4 @@
-// basemod.c
+// libbase.c
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,7 +7,7 @@
 #include "vm.h"
 #include "object.h"
 #include "hash.h"
-#include "module.h"
+#include "lib.h"
 
 int print_state(struct VM_state* vm, struct Function* func) {
   struct Scope* scope = &func->scope;
@@ -43,12 +43,12 @@ static int base_print_global(struct VM_state* vm) {
 }
 
 
-static struct Module_def basemod_funcs[] = {
+static struct Lib_def basemod_funcs[] = {
   {"print", base_print},
   {"print_global", base_print_global},
   {NULL, NULL},
 };
 
-extern struct Module_def* basemod() {
+extern struct Lib_def* libbase() {
   return basemod_funcs;
 }

@@ -1,0 +1,1 @@
+- Undefined behaviour when doing lookup of global variables (only happens when inside function scopes that are at least 2 levels deep so that the parent scope is not the global scope).

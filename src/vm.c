@@ -12,7 +12,7 @@
 #include "parser.h"
 #include "compile.h"
 #include "api.h"
-#include "module.h"
+#include "lib.h"
 #include "vm.h"
 
 static const char* ins_descriptions[INSTRUCTION_COUNT] = {
@@ -456,7 +456,7 @@ int vm_init(struct VM_state* vm) {
   vm->program_size = 0;
   vm->prev_ip = 0;
   vm->heap_allocated = 0;
-  module_load(vm, basemod());
+  lib_load(vm, libbase());
   return vm->status;
 }
 
