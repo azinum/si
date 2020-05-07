@@ -338,6 +338,7 @@ int breakstat(struct Parser* p) {
 
 int statement(struct Parser* p) {
   struct Token token = get_token(p->lexer);
+  unsigned char expect_semicolon = 0;
   switch (token.type) {
     case T_EOF:
       return NO_ERR;
@@ -348,6 +349,7 @@ int statement(struct Parser* p) {
 
     case T_DECL:
       declare_variable(p);
+      expect_semicolon = 1;
       break;
 
     case T_FUNC_DEF:
@@ -360,6 +362,7 @@ int statement(struct Parser* p) {
 
     case T_BREAK:
       breakstat(p);
+      expect_semicolon = 1;
       break;
 
     case T_IF:
@@ -368,18 +371,28 @@ int statement(struct Parser* p) {
 
     case T_RETURN:
       returnstat(p);
+      expect_semicolon = 1;
       break;
 
     case T_IMPORT:
       importstat(p);
+      expect_semicolon = 1;
       break;
 
     default:
       expr(p, 0);
+      expect_semicolon = 1;
       break;
   }
   if (p->status != NO_ERR)
     return p->status;
+  if (expect_semicolon) {
+    if (!expect(p, T_SEMICOLON)) {
+      parseerror("Expected ';'\n");
+      return p->status = PARSE_ERR;
+    }
+    next_token(p->lexer);
+  }
   return p->status;
 }
 

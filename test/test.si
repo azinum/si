@@ -1,22 +1,12 @@
 // test.si
 
-// import math
+import math;
 
-fn _scope {
-  fn a1 { }
-  fn a2 { }
+let some_value = 5;
 
-  let some_value = 5
-
-  fn get_value {
-    let _some_value = some_value
-    fn x {
-      return _some_value
-    }
-    return x()
+fn add(a, b) {
+  fn mult(a, b) {
+    return a * b;
   }
-
-  return get_value()
+  return a + b + mult(a, b);
 }
-
-_scope()
