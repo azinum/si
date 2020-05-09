@@ -1,12 +1,28 @@
 // test.si
 
-import math;
+// import math;
+
+let value = 12;
+
+fn x { return value; }
+
+fn y { return value - 1; }
 
 let some_value = 5;
 
-fn add(a, b) {
-  fn mult(a, b) {
-    return a * b;
+fn test {
+  fn get_value {
+    let a = 5;
+    let b = 7;
+    let p = print;
+    return a + b;
   }
-  return a + b + mult(a, b);
+  fn get_value2 {
+    let a = 1;
+    let b = 2;
+    return a + b;
+  }
+  return get_value();
 }
+
+print_recursive();

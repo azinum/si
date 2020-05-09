@@ -9,8 +9,9 @@
 #include "hash.h"
 #include "lib.h"
 
-int print_state(struct VM_state* vm, struct Function* func) {
-  struct Scope* scope = &func->scope;
+int print_state(struct VM_state* vm, struct Scope* scope) {
+  if (!scope)
+    return 0;
   printf("{\n");
   for (int i = 0; i < ht_get_size(&scope->var_locations); i++) {
     const Hkey* key = ht_lookup_key(&scope->var_locations, i);
@@ -22,6 +23,31 @@ int print_state(struct VM_state* vm, struct Function* func) {
       printf(",\n");
     }
   }
+  printf("}\n");
+  return 0;
+}
+
+int print_recursive(struct VM_state* vm, struct Scope* scope, int level) {
+  if (!scope)
+    return 0;
+  printf("{\n");
+  for (int i = 0; i < ht_get_size(&scope->var_locations); i++) {
+    const Hkey* key = ht_lookup_key(&scope->var_locations, i);
+    const Hvalue* value = ht_lookup_byindex(&scope->var_locations, i);
+    if (key != NULL && value != NULL) {
+      for (int i = 0; i < level; i++) printf("  ");
+      printf("  %s: ", *key);
+      struct Object* object = &vm->variables[*value];
+      if (object->type == T_FUNCTION) {
+        print_recursive(vm, &object->value.func.scope, level + 1);
+      }
+      else {
+        object_print(object);
+        printf(",\n");
+      }
+    }
+  }
+  for (int i = 0; i < level; i++) printf("  ");
   printf("}\n");
   return 0;
 }
@@ -38,14 +64,18 @@ static int base_print(struct VM_state* vm) {
 }
 
 static int base_print_global(struct VM_state* vm) {
-  print_state(vm, &vm->global);
+  print_state(vm, &vm->global.scope);
   return 0;
 }
 
-
+static int base_print_recursive(struct VM_state* vm) {
+  print_recursive(vm, &vm->global.scope, 0);
+  return 0;
+}
 static struct Lib_def basemod_funcs[] = {
   {"print", base_print},
   {"print_global", base_print_global},
+  {"print_recursive", base_print_recursive},
   {NULL, NULL},
 };
 
