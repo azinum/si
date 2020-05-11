@@ -1,10 +1,21 @@
 // math.si
 
-fn math_isqrt(x) {
-  let res = x;
+fn math_isqrt(n) {
+  let res = n;
   let xhalf = 0.5 * res;
   res = 0x5f3759df - (res >> 1);
   res = res * (1.5 - xhalf * res * res);
+  return res;
+}
+
+fn math_sqrt(n) {
+  let res = 1;
+
+  let i = 0;
+  while i < n {
+    i = i + 1;
+    res = 0.5 * (res + n / res);
+  }
   return res;
 }
 
