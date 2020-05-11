@@ -19,7 +19,9 @@
 
 // Compile-time function state
 struct Func_state {
-  struct Function func;
+  struct Function* func;
+  struct Function* global;
+  struct Function local;
   Htable args;
 };
 
@@ -46,7 +48,7 @@ struct Func_state {
 #define UNRESOLVED_JUMP 0
 
 static int instruction_add(struct VM_state* vm, Instruction instruction, unsigned int* ins_count);
-static int func_state_init(struct Func_state* state);
+static int func_state_init(struct Func_state* state, struct Function* global, int in_global_scope);
 static void func_state_free(struct Func_state* state);
 static const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier);
 static int patchblock(struct VM_state* vm, int block_size);
@@ -69,9 +71,14 @@ int instruction_add(struct VM_state* vm, Instruction instruction, unsigned int* 
   return NO_ERR;
 }
 
-int func_state_init(struct Func_state* state) {
+int func_state_init(struct Func_state* state, struct Function* global, int in_global_scope) {
   assert(state != NULL);
   state->args = ht_create_empty();
+  if (!in_global_scope)
+    state->func = &state->local;
+  else
+    state->func = global;
+  state->global = global;
   return NO_ERR;
 }
 
@@ -83,20 +90,25 @@ void func_state_free(struct Func_state* state) {
 // then the parent scope,
 // and finally the global scope
 const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier) {
-  struct Scope* scope = &state->func.scope;
-  struct Scope* parent_scope = state->func.scope.parent;
-  struct Scope* global_scope = &vm->global.scope;
+  struct Scope* scope = &state->func->scope;
+  struct Scope* parent_scope = state->func->scope.parent;
+  struct Scope* global_scope = &state->global->scope;
   assert(scope != NULL);
   assert(global_scope != NULL);
-  const int* found = ht_lookup(&scope->var_locations, identifier);  // Find the location/index of the variable
-  if (found)
-    return found;
-  if (parent_scope) {
-    found = ht_lookup(&parent_scope->var_locations, identifier);
+  {
+    const int* found = ht_lookup(&scope->var_locations, identifier);  // Find the location/index of the variable
     if (found)
       return found;
   }
-  found = ht_lookup(&global_scope->var_locations, identifier);
+
+  {
+    if (parent_scope) {
+      const int* found = ht_lookup(&parent_scope->var_locations, identifier);
+      if (found)
+        return found;
+    }
+  }
+  const int* found = ht_lookup(&global_scope->var_locations, identifier);
   return found;
 }
 
@@ -152,7 +164,7 @@ int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token 
 }
 
 int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location) {
-  struct Scope* scope = &state->func.scope;
+  struct Scope* scope = &state->func->scope;
   char* identifier = string_new_copy(variable.string, variable.length);
   const int* found = ht_lookup(&scope->var_locations, identifier);
   string_free(identifier);
@@ -163,7 +175,7 @@ int get_variable_location(struct VM_state* vm, struct Func_state* state, struct 
 
 int store_constant(struct Func_state* state, struct Token constant, Instruction* location) {
   assert(location != NULL);
-  struct Scope* scope = &state->func.scope;
+  struct Scope* scope = &state->func->scope;
   *location = scope->constants_count;
   struct Object object = token_to_object(constant);
   list_push(scope->constants, scope->constants_count, object);
@@ -172,7 +184,7 @@ int store_constant(struct Func_state* state, struct Token constant, Instruction*
 
 int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location) {
   assert(location != NULL);
-  struct Scope* scope = &state->func.scope;
+  struct Scope* scope = &state->func->scope;
   char* identifier = string_new_copy(variable.string, variable.length);
   if (ht_element_exists(&scope->var_locations, identifier)) {
     string_free(identifier);
@@ -269,9 +281,9 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   instruction_add(vm, UNRESOLVED_JUMP, &block_size);
   Instruction func_addr = vm->program_size;
   struct Func_state func_state;
-  func_state_init(&func_state);
-  func_init_with_parent_scope(&func_state.func, &state->func.scope);
-  func_state.func.addr = func_addr;
+  func_state_init(&func_state, state->global, 0);
+  func_init_with_parent_scope(func_state.func, &state->func->scope);
+  func_state.func->addr = func_addr;
   Instruction location = -1;
   int status = store_variable(vm, state, *identifier, &location);
   if (status != NO_ERR) {
@@ -292,13 +304,13 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
     ht_insert_element(&func_state.args, arg_key, i);
     string_free(arg_key);
   }
-  func_state.func.argc = arg_count;
+  func_state.func->argc = arg_count;
   compile(vm, block, &func_state, &block_size);  // Compile the function body
   instruction_add(vm, I_RETURN, &block_size);
   patchblock(vm, block_size); // Fix the unresolved jump (skip the function block)
   struct Object* func = &vm->variables[location];
   func->type = T_FUNCTION;
-  func->value.func = func_state.func; // Apply function compile state to the 'real' function
+  func->value.func = *func_state.func; // Apply function compile state to the 'real' function
   *ins_count += block_size;
   func_state_free(&func_state);
   return NO_ERR;
@@ -431,14 +443,14 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 int compile_from_tree(struct VM_state* vm, Ast* ast) {
   assert(ast != NULL);
   assert(vm != NULL);
-  if (ast_is_empty(*ast)) return NO_ERR;
+  if (ast_is_empty(*ast))
+    return NO_ERR;
   struct Func_state global_state;
-  func_state_init(&global_state);
-  global_state.func = vm->global;
+  func_state_init(&global_state, &vm->global, 1);
+  global_state.global = &vm->global;
   unsigned int ins_count = 0;
   compile(vm, ast, &global_state, &ins_count);
   instruction_add(vm, I_RETURN, NULL);
-  vm->global = global_state.func;
   func_state_free(&global_state);
   return vm->status;
 }

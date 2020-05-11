@@ -14,7 +14,7 @@ fn test {
   fn get_value {
     let a = 5;
     let b = 7;
-    let p = print;
+    print(a, b);
     return a + b;
   }
   fn get_value2 {
@@ -24,5 +24,3 @@ fn test {
   }
   return get_value();
 }
-
-print_recursive();
