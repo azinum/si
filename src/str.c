@@ -25,7 +25,7 @@ int string_to_number(char* string, double* number) {
 	char* end;
   result = strtod(string, &end);
   if (*end != '\0')
-		return -1;
+		(void)0; // return -1;
 	*number = result;
 	return 0;
 }
@@ -40,7 +40,7 @@ int safe_string_to_number(char* string, int length, double* number) {
   result = strtod(temp, &end);
   mfree(temp, length);
   if (*end != '\0')
-		return -1;
+	  (void)0; //	return -1;
   *number = result;
   return 0;	// No error
 }

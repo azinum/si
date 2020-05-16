@@ -17,7 +17,7 @@ INSTALL_TOP=/usr/local
 INSTALL_BIN=$(INSTALL_TOP)/bin
 
 # argp needs to be linked on mac
-LIBS=-lreadline -largp
+LIBS=-lreadline# -largp
 
 LIBS_RELEASE=-lreadline -largp
 
