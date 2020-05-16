@@ -1,6 +1,7 @@
 // test.si
 
 import math;
+import basic_tests;
 
 let value = 12;
 

@@ -96,3 +96,21 @@ void object_print(const struct Object* object) {
 			break;
 	}
 }
+
+inline int object_checktrue(const struct Object* object) {
+  assert(object != NULL);
+  switch (object->type) {
+    case T_NUMBER:
+      return object->value.number != 0;
+
+    case T_FUNCTION:
+      return 1;
+
+    case T_NIL:
+      return 0;
+
+    default:
+      assert(0);
+      return 0;
+  }
+}

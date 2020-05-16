@@ -108,7 +108,6 @@ inline struct Object* stack_gettop(struct VM_state* vm);
 inline struct Object* stack_get(struct VM_state* vm, int offset);
 inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var);
 inline int equal_types(const struct Object* a, const struct Object* b);
-inline int object_checktrue(const struct Object* object);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 static int free_variables(struct VM_state* vm);
@@ -177,23 +176,6 @@ int equal_types(const struct Object* a, const struct Object* b) {
   return a->type == b->type;
 }
 
-int object_checktrue(const struct Object* object) {
-  assert(object != NULL);
-  switch (object->type) {
-    case T_NUMBER:
-      return object->value.number != 0;
-
-    case T_FUNCTION:
-      return 1;
-
-    case T_NIL:
-      return 0;
-
-    default:
-      assert(0);
-      return 0;
-  }
-}
 
 int execute(struct VM_state* vm, struct Function* func) {
 #if defined(USE_JUMPTABLE)

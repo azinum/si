@@ -72,10 +72,21 @@ static int base_print_recursive(struct VM_state* vm) {
   print_recursive(vm, &vm->global.scope, 0);
   return 0;
 }
+
+static int base_assert(struct VM_state* vm) {
+  struct Object* obj = &vm->stack[vm->stack_bp];
+  if (!object_checktrue(obj)) {
+    printf("Assertion failed!\n");
+    return 0;
+  }
+  return 0;
+}
+
 static struct Lib_def basemod_funcs[] = {
   {"print", base_print},
   {"print_global", base_print_global},
   {"print_recursive", base_print_recursive},
+  {"assert", base_assert},
   {NULL, NULL},
 };
 

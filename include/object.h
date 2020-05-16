@@ -50,4 +50,6 @@ void object_printline(const struct Object* object);
 
 void object_print(const struct Object* object);
 
+extern int object_checktrue(const struct Object* object);
+
 #endif
