@@ -225,7 +225,7 @@ int importstat(struct Parser* p) {
   snprintf(path, PATH_LENGTH_MAX, "test/%.*s.si", token.length, token.string);
   char* input = read_file(path);
   if (!input) {
-    parseerror("'%.*s': No such file\n", token.length, token.string);
+    parseerror("'%s': No such file\n", path);
     return p->status = PARSE_ERR;
   }
   int status = parser_parse(input, p->str_arr, path, p->ast);
