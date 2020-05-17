@@ -46,6 +46,8 @@ void next(struct Lexer* lexer) {
   lexer->token.string = lexer->index++;
   lexer->token.length = 0;
   lexer->count++;
+  lexer->token.count = lexer->count;
+  lexer->token.line = lexer->line;
 }
 
 struct Token read_number(struct Lexer* lexer) {

@@ -31,19 +31,8 @@ struct Func_state {
 #define compile_warning(fmt, ...) \
   warn(COLOR_WARNING "compile-warning: " COLOR_NONE fmt, ##__VA_ARGS__)
 
-#define checkerror(errcode, fmt, ...) { \
-  if (errcode != NO_ERR) { \
-    compile_error(fmt, ##__VA_ARGS__); \
-    return errcode; \
-  } \
-}
-
-#define doerror(check, ret, fmt, ...) { \
-  if (check) { \
-    compile_error(fmt, ##__VA_ARGS__); \
-    return ret; \
-  } \
-}
+#define compile_error2(token, fmt, ...) \
+  error("%i:%i: " COLOR_ERROR "compile-error: " COLOR_NONE fmt, token->line, token->count, ##__VA_ARGS__)
 
 #define UNRESOLVED_JUMP 0
 
@@ -148,7 +137,10 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
     push_instruction = I_PUSH_VAR;
   }
   string_free(identifier);
-  doerror(!found, COMPILE_ERR, "Undeclared identifier '%.*s'\n", variable.length, variable.string);
+  if (!found) {
+    compile_error2((&variable), "Undeclared identifier '%.*s'\n", variable.length, variable.string);
+    return COMPILE_ERR;
+  }
   location = *found;
   instruction_add(vm, push_instruction, ins_count);
   instruction_add(vm, location, ins_count);
@@ -159,7 +151,10 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
   Instruction location = -1;
   int err = store_variable(vm, state, variable, &location);
-  checkerror(err, "Identifier '%.*s' has already been declared\n", variable.length, variable.string);
+  if (err != NO_ERR) {
+    compile_error2((&variable), "Identifier '%.*s' has already been declared\n", variable.length, variable.string);
+    return err;
+  }
   return NO_ERR;
 }
 
@@ -168,7 +163,10 @@ int get_variable_location(struct VM_state* vm, struct Func_state* state, struct 
   char* identifier = string_new_copy(variable.string, variable.length);
   const int* found = ht_lookup(&scope->var_locations, identifier);
   string_free(identifier);
-  doerror(!found, COMPILE_ERR, "No such variable '%.*s'\n", variable.length, variable.string);
+  if (!found) {
+    compile_error2((&variable), "No such variable '%.*s'\n", variable.length, variable.string);
+    return COMPILE_ERR;
+  }
   *location = *found;
   return NO_ERR;
 }
@@ -287,7 +285,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
   Instruction location = -1;
   int status = store_variable(vm, state, *identifier, &location);
   if (status != NO_ERR) {
-    compile_error("Identifier '%.*s' has already been declared\n", identifier->length, identifier->string);
+    compile_error2(identifier, "Identifier '%.*s' has already been declared\n", identifier->length, identifier->string);
     return vm->status = status;
   }
   int arg_count = ast_child_count(params);
@@ -296,7 +294,7 @@ int compile_function(struct VM_state* vm, struct Token* identifier, Ast* params,
     assert(value != NULL);
     char* arg_key = string_new_copy(value->string, value->length);
     if (ht_lookup(&func_state.args, arg_key)) {
-      compile_error("Parameter '%s' has already been identified\n", arg_key);
+      compile_error2(value, "Parameter '%s' has already been identified\n", arg_key);
       string_free(arg_key);
       func_state_free(&func_state);
       return vm->status = COMPILE_ERR;
@@ -366,7 +364,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           const int* found = variable_lookup(vm, state, identifier);
           string_free(identifier);
           if (!found) {
-            compile_error("%s\n", "No such variable");
+            compile_error2(identifier_token, "%s\n", "No such variable");
             return vm->status = COMPILE_ERR;
           }
           location = *found;
@@ -431,7 +429,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
             break;
           }
           assert(0);
-          compile_error("%s\n", "Invalid instruction");
+          compile_error2(token, "%s\n", "Invalid instruction");
           return vm->status = COMPILE_ERR;
         }
       }

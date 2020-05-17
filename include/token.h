@@ -72,6 +72,8 @@ struct Token {
   int type;
   char* string;
   int length;
+  int count;
+  int line;
   union {
     double number;
     int integer;
