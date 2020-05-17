@@ -7,6 +7,7 @@
 #include "list.h"
 #include "object.h"
 #include "error.h"
+#include "stack.h"
 
 #include "api.h"
 

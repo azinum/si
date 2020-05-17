@@ -8,6 +8,9 @@
 
 #define STACK_SIZE 512
 
+#define vmerror(fmt, ...) \
+  error(COLOR_ERROR "runtime-error: " COLOR_NONE fmt, ##__VA_ARGS__)
+
 #define INS(T, I) T##_##I,
 
 #define INSTRUCTIONS(T) \

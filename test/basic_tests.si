@@ -2,4 +2,10 @@
 
 assert(1 == 1);
 assert(1 != 0);
+let z = 1;
+assert(z == 1);
+assert(z != 0);
+z = z + 1;
+assert(z == 2);
+assert(z != 1);
 

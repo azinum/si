@@ -13,6 +13,7 @@
 #include "compile.h"
 #include "api.h"
 #include "lib.h"
+#include "stack.h"
 #include "vm.h"
 
 static const char* ins_descriptions[INSTRUCTION_COUNT] = {
@@ -50,9 +51,6 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 
   "exit",
 };
-
-#define vmerror(fmt, ...) \
-  error(COLOR_ERROR "runtime-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
 #define vmdispatch(instruction) switch (instruction)
 #define vmcase(c) case c:
@@ -98,72 +96,11 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
 
 #define OP_SAMETYPE(LEFT, RIGHT, TYPE) (LEFT.type == TYPE && RIGHT.type == TYPE)
 
-inline int stack_push(struct VM_state* vm, struct Object object);
-inline int stack_pop(struct VM_state* vm);
-inline int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant);
-inline int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var);
-inline int stack_reset(struct VM_state* vm);
-inline int stack_print_top(struct VM_state* vm);
-inline struct Object* stack_gettop(struct VM_state* vm);
-inline struct Object* stack_get(struct VM_state* vm, int offset);
 inline struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var);
 inline int equal_types(const struct Object* a, const struct Object* b);
 static int execute(struct VM_state* vm, struct Function* func);
 static int disasm(struct VM_state* vm, FILE* file);
 static int free_variables(struct VM_state* vm);
-
-int stack_push(struct VM_state* vm, struct Object object) {
-  if (vm->stack_top >= STACK_SIZE) {
-    vmerror("Stack overflow\n");
-    return vm->status = STACK_ERR;
-  }
-  vm->stack[vm->stack_top++] = object;
-  return NO_ERR;
-}
-
-int stack_pop(struct VM_state* vm) {
-  if (vm->stack_top <= 0) {
-    vmerror("Can't pop stack\n");
-    return vm->status = STACK_ERR;
-  }
-  vm->stack_top--;
-  return NO_ERR;
-}
-
-int stack_pushk(struct VM_state* vm, struct Scope* scope, int constant) {
-  assert(scope->constants_count > constant);
-  struct Object object = scope->constants[constant];
-  return stack_push(vm, object);
-}
-
-int stack_pushvar(struct VM_state* vm, struct Scope* scope, int var) {
-  assert(vm->variable_count > var);
-  struct Object object = vm->variables[var];
-  return stack_push(vm, object);
-}
-
-int stack_reset(struct VM_state* vm) {
-  vm->stack_top = 0;
-  return NO_ERR;
-}
-
-int stack_print_top(struct VM_state* vm) {
-  struct Object* top = stack_gettop(vm);
-  if (top)
-    object_printline(top);
-  return NO_ERR;
-}
-
-struct Object* stack_gettop(struct VM_state* vm) {
-  return stack_get(vm, 0);
-}
-
-struct Object* stack_get(struct VM_state* vm, int offset) {
-  int index = vm->stack_top - (offset + 1); // offset 0 is top of stack
-  if (index >= 0)
-    return &vm->stack[index];
-  return NULL;
-}
 
 struct Object* get_variable(struct VM_state* vm, struct Scope* scope, int var) {
   assert(var >= 0 && vm->variable_count > var);
