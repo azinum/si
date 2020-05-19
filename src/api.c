@@ -38,3 +38,12 @@ int si_store_cfunc(struct VM_state* vm, const char* name, CFunction cfunc) {
   };
   return si_store_object(vm, scope, name, object);
 }
+
+int si_push_number(struct VM_state* vm, obj_number number) {
+  struct Object obj = (struct Object) {
+    .type = T_NUMBER,
+    .value.number = number
+  };
+  stack_push(vm, obj);
+  return 0;
+}

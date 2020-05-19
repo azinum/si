@@ -211,7 +211,12 @@ int execute(struct VM_state* vm, struct Function* func) {
         vm->stack_bp = bp;
         const struct Object* obj = stack_get(vm, arg_count);
         if (obj->type == T_CFUNCTION) {
-          obj->value.cfunc(vm);
+          int result = obj->value.cfunc(vm);
+          if (result == 1) {
+            struct Object* top = stack_gettop(vm);
+            vm->stack[bp + 1] = *top; // NOTE(lucas): The return value lies on the top of the stack after a C function call - might change later
+            object_printline(top);
+          }
           vm->stack_top = bp;
           stack_pop(vm);
           vmbreak;
@@ -376,6 +381,7 @@ int vm_init(struct VM_state* vm) {
   vm->prev_ip = 0;
   vm->heap_allocated = 0;
   lib_load(vm, libbase());
+  lib_load(vm, libmath());
   return vm->status;
 }
 

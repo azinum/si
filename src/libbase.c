@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "si.h"
-#include "vm.h"
-#include "object.h"
 #include "hash.h"
 #include "api.h"
 #include "lib.h"

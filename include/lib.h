@@ -11,6 +11,7 @@ struct Lib_def {
 };
 
 extern struct Lib_def* libbase();
+extern struct Lib_def* libmath();
 
 int lib_load(struct VM_state* vm, struct Lib_def* lib);
 
