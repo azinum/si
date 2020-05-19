@@ -214,11 +214,13 @@ int execute(struct VM_state* vm, struct Function* func) {
           int result = obj->value.cfunc(vm);
           if (result == 1) {
             struct Object* top = stack_gettop(vm);
-            vm->stack[bp + 1] = *top; // NOTE(lucas): The return value lies on the top of the stack after a C function call - might change later
-            object_printline(top);
+            vm->stack[bp - 1] = *top; // NOTE(lucas): The return value lies on the top of the stack after a C function call - might change later
+            vm->stack_top = bp;
           }
-          vm->stack_top = bp;
-          stack_pop(vm);
+          else {
+            vm->stack_top = bp;
+            stack_pop(vm);
+          }
           vmbreak;
         }
         if (obj->type != T_FUNCTION) {
