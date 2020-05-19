@@ -3,27 +3,16 @@
 import math;
 import basic_tests;
 
-let value = 12;
-
-fn x { return value; }
-
-fn y { return value - 1; }
 
 let some_value = 5;
 
-fn test {
-  fn get_value {
-    let a = 5;
-    let b = 7;
-    print(a, b);
-    return a + b;
+fn test(a) {
+  fn get_value(to_add) {
+    return some_value + to_add;
   }
-  fn get_value2 {
-    let a = 1;
-    let b = 2;
-    return a + b;
+  if a == 0 {
+    return get_value(5);
   }
-  return get_value();
+  return get_value(10);
 }
-
 

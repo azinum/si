@@ -7,6 +7,7 @@
 #include "vm.h"
 #include "object.h"
 #include "hash.h"
+#include "api.h"
 #include "lib.h"
 
 int print_state(struct VM_state* vm, struct Scope* scope) {
@@ -54,6 +55,10 @@ int print_recursive(struct VM_state* vm, struct Scope* scope, int level) {
 
 static int base_print(struct VM_state* vm) {
   int arg_count = vm->stack_top - vm->stack_bp;
+  if (arg_count <= 0) {
+    si_error("Missing arguments\n");
+    return 0;
+  }
   for (int i = 0; i < arg_count; i++) {
     struct Object* obj = &vm->stack[vm->stack_bp + i];
     object_print(obj);
@@ -82,7 +87,7 @@ static int base_assert(struct VM_state* vm) {
   return 0;
 }
 
-static struct Lib_def basemod_funcs[] = {
+static struct Lib_def baselib_funcs[] = {
   {"print", base_print},
   {"print_global", base_print_global},
   {"print_recursive", base_print_recursive},
@@ -91,5 +96,5 @@ static struct Lib_def basemod_funcs[] = {
 };
 
 extern struct Lib_def* libbase() {
-  return basemod_funcs;
+  return baselib_funcs;
 }
