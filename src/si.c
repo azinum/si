@@ -38,49 +38,6 @@ struct Args {
   int bytecode_out;
 };
 
-#if defined(USE_ARGP)
-
-#include <argp.h>
-
-static char args_doc[] = "";
-static char doc[] = "si - simple interpreter";
-
-static struct argp_option options[] = {
-  {"interactive",   'i',  0,        0,    "run interactive mode after executing script"},
-  {"no-warn",       'w',  0,        0,    "disable warnings"},
-  {"bytecode-out",  'o',  0,        0,    "output byte code to file"},
-  { 0 },
-};
-
-
-static error_t parse_option(int key, char* arg, struct argp_state* state) {
-  struct Args* arguments = state->input;
-  int arg_count = state->argc - state->next;
-  char** args = state->argv + state->next;
-  (void)arg_count;
-  (void)args;
-  switch (key) {
-    case 'i':
-      arguments->interactive_mode = 1;
-      break;
-    case 'w':
-      arguments->show_warnings = 0;
-      break;
-    case 'o':
-      arguments->bytecode_out = 1;
-      break;
-    default:
-      if (arg)
-        arguments->input_file = arg;
-      break;
-  }
-  return 0;
-}
-
-#else // USE_ARGP
-
-#endif // USE_ARGP
-
 void signal_exit(int x) {
   printf("Enter ^D to exit\n");
 }
@@ -88,7 +45,6 @@ void signal_exit(int x) {
 static void args_parse(struct Args* arguments, int argc, char** argv) {
   for (int i = 0; i < argc; i++) {
     char* arg = argv[i];
-    char* str = NULL;
     if (arg[0] == '-') {
       if (arg[1] == '-') {
         continue;
