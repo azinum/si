@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <signal.h>
-#include <argp.h>
 
 #include "error.h"
 #include "mem.h"
@@ -32,6 +31,17 @@
 
 #endif
 
+struct Args {
+  char* input_file;
+  int show_warnings;
+  int interactive_mode;
+  int bytecode_out;
+};
+
+#if defined(USE_ARGP)
+
+#include <argp.h>
+
 static char args_doc[] = "";
 static char doc[] = "si - simple interpreter";
 
@@ -42,12 +52,6 @@ static struct argp_option options[] = {
   { 0 },
 };
 
-struct Args {
-  char* input_file;
-  int show_warnings;
-  int interactive_mode;
-  int bytecode_out;
-};
 
 static error_t parse_option(int key, char* arg, struct argp_state* state) {
   struct Args* arguments = state->input;
@@ -73,8 +77,40 @@ static error_t parse_option(int key, char* arg, struct argp_state* state) {
   return 0;
 }
 
+#else // USE_ARGP
+
+#endif // USE_ARGP
+
 void signal_exit(int x) {
   printf("Enter ^D to exit\n");
+}
+
+static void args_parse(struct Args* arguments, int argc, char** argv) {
+  for (int i = 0; i < argc; i++) {
+    char* arg = argv[i];
+    char* str = NULL;
+    if (arg[0] == '-') {
+      if (arg[1] == '-') {
+        continue;
+      }
+      switch (arg[1]) {
+        case 'i':
+          arguments->interactive_mode = 1;
+          break;
+        case 'w':
+          arguments->show_warnings = 0;
+          break;
+        case 'o':
+          arguments->bytecode_out = 1;
+          break;
+        default:
+          break;
+      }
+    }
+    else {
+      arguments->input_file = arg;
+    }
+  }
 }
 
 int user_input(struct VM_state* vm) {
@@ -100,14 +136,18 @@ int user_input(struct VM_state* vm) {
 
 int si_exec(int argc, char** argv) {
   (void)signal_exit;  // signal(SIGINT, signal_exit);
-  struct argp argp = {options, parse_option, args_doc, doc};
   struct Args arguments = {
     .input_file = NULL,
     .show_warnings = 1,
-    .interactive_mode = 0,
+    .interactive_mode = 1,
     .bytecode_out = 0
   };
+#if defined(USE_ARGP)
+  struct argp argp = {options, parse_option, args_doc, doc};
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
+#else
+  args_parse(&arguments, argc, argv);
+#endif
   error_init(arguments.show_warnings);
   struct VM_state vm;
   vm_init(&vm);
