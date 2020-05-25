@@ -48,7 +48,7 @@ static int alloc_count() {
 
 #endif
 
-void print_memory_info() {
+void memory_print_info() {
 	memory_info();
 }
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "mem.h"
 #include "hash.h"
 #include "api.h"
 #include "lib.h"
@@ -52,6 +53,11 @@ static int base_print_state(struct VM_state* vm) {
   return 0;
 }
 
+static int base_print_mem(struct VM_state* vm) {
+  memory_print_info();
+  return 0;
+}
+
 static int base_assert(struct VM_state* vm) {
   struct Object* obj = &vm->stack[vm->stack_bp];
   if (!object_checktrue(obj)) {
@@ -64,6 +70,7 @@ static int base_assert(struct VM_state* vm) {
 static struct Lib_def baselib_funcs[] = {
   {"print", base_print},
   {"print_state", base_print_state},
+  {"print_mem", base_print_mem},
   {"assert", base_assert},
   {NULL, NULL},
 };

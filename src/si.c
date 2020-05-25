@@ -98,12 +98,7 @@ int si_exec(int argc, char** argv) {
     .interactive_mode = 1,
     .bytecode_out = 0
   };
-#if defined(USE_ARGP)
-  struct argp argp = {options, parse_option, args_doc, doc};
-  argp_parse(&argp, argc, argv, 0, 0, &arguments);
-#else
   args_parse(&arguments, argc, argv);
-#endif
   error_init(arguments.show_warnings);
   struct VM_state vm;
   vm_init(&vm);

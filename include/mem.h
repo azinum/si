@@ -3,7 +3,7 @@
 #ifndef _MEM_H
 #define _MEM_H
 
-void print_memory_info();
+void memory_print_info();
 
 int memory_alloc_count();
 

@@ -301,7 +301,7 @@ int funcstat(struct Parser* p) {
     next_token(p->lexer); // Skip ')'
     p->ast = orig_branch;
   }
-  if (!expect(p, T_BLOCKBEGIN)) { // TODO: Find a way to make error checks shorter
+  if (!expect(p, T_BLOCKBEGIN)) {
     parseerror("Expected '{'\n");
     return p->status = PARSE_ERR;
   }
@@ -386,13 +386,15 @@ int statement(struct Parser* p) {
   }
   if (p->status != NO_ERR)
     return p->status;
-  if (expect_semicolon) {
+  /*if (expect_semicolon) { // Temporary
     if (!expect(p, T_SEMICOLON)) {
       parseerror("Expected ';'\n");
       return p->status = PARSE_ERR;
     }
     next_token(p->lexer);
-  }
+  }*/
+  if (expect(p, T_SEMICOLON))
+    next_token(p->lexer);
   return p->status;
 }
 
