@@ -217,12 +217,12 @@ int returnstat(struct Parser* p) {
 int importstat(struct Parser* p) {
   struct Token token = next_token(p->lexer);
   next_token(p->lexer); // Skip identifier
-  if (!(token.type == T_IDENTIFIER)) {  // TODO: Change to strings
-    parseerror("Expected identifier\n");
+  if (!(token.type == T_STRING)) {
+    parseerror("Expected string\n");
     return p->status = PARSE_ERR;
   }
   char path[PATH_LENGTH_MAX] = {0};
-  snprintf(path, PATH_LENGTH_MAX, "test/%.*s.si", token.length, token.string);
+  snprintf(path, PATH_LENGTH_MAX, "%.*s", token.length, token.string);
   char* input = read_file(path);
   if (!input) {
     parseerror("'%s': No such file\n", path);
@@ -386,7 +386,7 @@ int statement(struct Parser* p) {
   }
   if (p->status != NO_ERR)
     return p->status;
-  /*if (expect_semicolon) { // Temporary
+  /*if (expect_semicolon) { // Temporary, might add a T_ENDSTATEMENT here to see where our statements ends
     if (!expect(p, T_SEMICOLON)) {
       parseerror("Expected ';'\n");
       return p->status = PARSE_ERR;
@@ -476,13 +476,18 @@ done:
 
 int simple_expr(struct Parser* p) {
   struct Token token = get_token(p->lexer);
-
   switch (token.type) {
     case T_SEMICOLON:
       next_token(p->lexer);
       break;
 
     case T_NUMBER:
+      next_token(p->lexer);
+      ast_add_node(p->ast, token);
+      break;
+
+    case T_STRING:
+      printf("%s: T_STRING:: %.*s\n", __FUNCTION__, token.length, token.string);
       next_token(p->lexer);
       ast_add_node(p->ast, token);
       break;

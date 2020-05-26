@@ -82,7 +82,6 @@ struct Token read_symbol(struct Lexer* lexer) {
     lexer->count++;
   }
   lexer->token.length = lexer->index - lexer->token.string;
-  // Needs cleanup!
   if (match(lexer->token, TOKEN_DECL))
     lexer->token.type = T_DECL;
   else if (match(lexer->token, TOKEN_RETURN))
@@ -146,6 +145,27 @@ begin_loop:
       case '*':
         lexer->token.type = T_MULT;
         return lexer->token;
+
+      case '"':
+      case '\'': {
+        char to_match = ch;
+        while (1) {
+          if ((*lexer->index) == '\0') {
+            lexerror("Unfinished string; missing terminating character (%c)\n", to_match);
+            break;
+          }
+          if ((*lexer->index) == to_match) {
+            break;
+          }
+          lexer->index++;
+          lexer->count++;
+        }
+        lexer->token.string++;
+        lexer->token.length = lexer->index - lexer->token.string;
+        lexer->token.type = T_STRING;
+        lexer->index++;
+        return lexer->token;
+      }
 
       case '/': {
         if (*lexer->index == '/') { // Single line comment

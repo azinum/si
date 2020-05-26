@@ -1,8 +1,7 @@
 // test.si
 
-import math;
-import basic_tests;
-
+import "test/math.si";
+import "test/basic_tests.si"
 
 let some_value = 5;
 

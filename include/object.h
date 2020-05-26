@@ -30,6 +30,10 @@ struct Function {
 struct Object {
   union value {
     obj_number number;
+    struct {
+      char* data;
+      int length;
+    } str;
     struct Function func;
     CFunction cfunc;
   } value;

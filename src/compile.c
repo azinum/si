@@ -323,6 +323,9 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
         case T_NUMBER:
           compile_pushk(vm, state, *token, ins_count);
           break;
+        // {string}
+        case T_STRING:
+          break;
 
         case T_IDENTIFIER: {
           int status = compile_pushvar(vm, state, *token, ins_count);

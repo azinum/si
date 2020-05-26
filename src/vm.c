@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "error.h"
+#include "str.h"
 #include "mem.h"
 #include "list.h"
 #include "strarr.h"
@@ -360,6 +361,14 @@ int free_variables(struct VM_state* vm) {
         case T_FUNCTION:
           scope_free(&obj->value.func.scope);
           break;
+
+        case T_STRING: {
+          if (obj->value.str.data != NULL) {
+            string_free(obj->value.str.data);
+            obj->value.str.length = 0;
+          }
+          break;
+        }
         default:
           break;
       }

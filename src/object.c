@@ -15,16 +15,19 @@
 struct Object token_to_object(struct Token token) {
 	struct Object object = { .type = token.type };
 	switch (token.type) {
-		case T_IDENTIFIER:
+		case T_NUMBER:
+			object.value.number = token.value.number;
+			break;
+
+    case T_STRING:
+      break;
+
+    case T_IDENTIFIER:
 			object.type = T_NIL;
 			break;
 
 		case T_FUNCTION:
 			object.type = T_FUNCTION;
-			break;
-
-		case T_NUMBER:
-			object.value.number = token.value.number;
 			break;
 
 		case T_NIL:
@@ -79,6 +82,10 @@ void object_print(const struct Object* object) {
 			printf(COLOR_NUMBER "%.10g" COLOR_NONE, object->value.number);
 			break;
 
+    case T_STRING:
+      printf(COLOR_STRING "%.*s" COLOR_NONE, object->value.str.length, object->value.str.data);
+      break;
+
 		case T_FUNCTION:
 			printf(COLOR_TYPE "[Function]" COLOR_NONE " (addr: %i)", object->value.func.addr);
 			break;
@@ -102,6 +109,9 @@ inline int object_checktrue(const struct Object* object) {
   switch (object->type) {
     case T_NUMBER:
       return object->value.number != 0;
+
+    case T_STRING:
+      return object->value.str.data != NULL;
 
     case T_FUNCTION:
       return 1;
