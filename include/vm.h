@@ -5,6 +5,7 @@
 
 #include "hash.h"
 #include "object.h"
+#include "strarr.h"
 
 #define STACK_SIZE 512
 
@@ -58,6 +59,7 @@ enum VM_instructions {
 struct VM_state {
   struct Function global;
   struct Object* variables;
+  struct Str_arr buffers;
   int variable_count;
   struct Object stack[STACK_SIZE];
   int stack_top;

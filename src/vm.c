@@ -364,8 +364,9 @@ int free_variables(struct VM_state* vm) {
 
         case T_STRING: {
           if (obj->value.str.data != NULL) {
-            string_free(obj->value.str.data);
-            obj->value.str.length = 0;
+            // NOTE(lucas): Strings are stored in the buffer array (vm->buffers)
+            // string_free(obj->value.str.data);
+            // obj->value.str.length = 0;
           }
           break;
         }
@@ -384,6 +385,7 @@ int vm_init(struct VM_state* vm) {
   func_init(&vm->global);
   vm->variables = NULL;
   vm->variable_count = 0;
+  strarr_init(&vm->buffers);
   vm->stack_top = 0;
   vm->stack_bp = 0;
   vm->status = NO_ERR;
@@ -446,6 +448,7 @@ void vm_state_free(struct VM_state* vm) {
   assert(vm != NULL);
   scope_free(&vm->global.scope);
   free_variables(vm);
+  strarr_free(&vm->buffers);
   vm->stack_top = 0;
   vm->status = 0;
   list_free(vm->program, vm->program_size);

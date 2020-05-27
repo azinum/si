@@ -8,4 +8,5 @@ assert(z != 0);
 z = z + 1;
 assert(z == 2);
 assert(z != 1);
-
+let s = "Hello";
+assert(s);

@@ -40,7 +40,7 @@ struct Object {
   int type;
 };
 
-struct Object token_to_object(struct Token token);
+struct Object token_to_object(struct VM_state* vm, struct Token token);
 
 int func_init(struct Function* func);
 

@@ -487,7 +487,6 @@ int simple_expr(struct Parser* p) {
       break;
 
     case T_STRING:
-      printf("%s: T_STRING:: %.*s\n", __FUNCTION__, token.length, token.string);
       next_token(p->lexer);
       ast_add_node(p->ast, token);
       break;

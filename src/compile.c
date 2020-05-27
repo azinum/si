@@ -49,7 +49,7 @@ static int compile_pushk(struct VM_state* vm, struct Func_state* state, struct T
 static int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token variable, unsigned int* ins_count);
 static int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable);
 static int get_variable_location(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
-static int store_constant(struct Func_state* state, struct Token constant, Instruction* location);
+static int store_constant(struct VM_state* vm, struct Func_state* state, struct Token constant, Instruction* location);
 static int store_variable(struct VM_state* vm, struct Func_state* state, struct Token variable, Instruction* location);
 static int token_to_op(struct Token token);
 
@@ -116,7 +116,7 @@ int patchblock(struct VM_state* vm, int block_size) {
 
 int compile_pushk(struct VM_state* vm, struct Func_state* state, struct Token constant, unsigned int* ins_count) {
   Instruction location = -1;
-  store_constant(state, constant, &location);
+  store_constant(vm, state, constant, &location);
   instruction_add(vm, I_PUSHK, ins_count);
   instruction_add(vm, location, ins_count);
   return NO_ERR;
@@ -167,11 +167,11 @@ int get_variable_location(struct VM_state* vm, struct Func_state* state, struct 
   return NO_ERR;
 }
 
-int store_constant(struct Func_state* state, struct Token constant, Instruction* location) {
+int store_constant(struct VM_state* vm, struct Func_state* state, struct Token constant, Instruction* location) {
   assert(location != NULL);
   struct Scope* scope = &state->func->scope;
   *location = scope->constants_count;
-  struct Object object = token_to_object(constant);
+  struct Object object = token_to_object(vm, constant);
   list_push(scope->constants, scope->constants_count, object);
   return NO_ERR;
 }
@@ -185,7 +185,7 @@ int store_variable(struct VM_state* vm, struct Func_state* state, struct Token v
     return ERR;
   }
   else {
-    struct Object object = token_to_object(variable);
+    struct Object object = token_to_object(vm, variable);
     *location = vm->variable_count;
     ht_insert_element(&scope->var_locations, identifier, *location);
     list_push(vm->variables, vm->variable_count, object);
@@ -319,12 +319,9 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
     token = ast_get_node_value(ast, i);
     if (token) {
       switch (token->type) {
-        // {number}
+        case T_STRING:
         case T_NUMBER:
           compile_pushk(vm, state, *token, ins_count);
-          break;
-        // {string}
-        case T_STRING:
           break;
 
         case T_IDENTIFIER: {

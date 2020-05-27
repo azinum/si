@@ -14,6 +14,8 @@ int strarr_append(struct Str_arr* arr, const char* str);
 
 char* strarr_top(struct Str_arr* arr);
 
+char** strarr_top_addr(struct Str_arr* arr);
+
 void strarr_free(struct Str_arr* arr);
 
 #endif

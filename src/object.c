@@ -10,17 +10,28 @@
 #include "vm.h"
 #include "token.h"
 #include "str.h"
+#include "strarr.h"
 #include "object.h"
 
-struct Object token_to_object(struct Token token) {
+struct Object token_to_object(struct VM_state* vm, struct Token token) {
 	struct Object object = { .type = token.type };
 	switch (token.type) {
 		case T_NUMBER:
 			object.value.number = token.value.number;
 			break;
 
-    case T_STRING:
+    case T_STRING: {
+      // NOTE(lucas): We are doing a string copy here and in the strarr_append function too.
+      char* copy = string_new_copy(token.string, token.length);
+      int length = token.length;
+      strarr_append(&vm->buffers, copy);
+      char* top = strarr_top(&vm->buffers);
+      assert(top != NULL);
+      object.value.str.data = top;
+      object.value.str.length = length;
+      string_nfree(copy, length);
       break;
+    }
 
     case T_IDENTIFIER:
 			object.type = T_NIL;

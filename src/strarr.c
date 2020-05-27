@@ -42,6 +42,13 @@ char* strarr_top(struct Str_arr* arr) {
   return NULL;
 }
 
+char** strarr_top_addr(struct Str_arr* arr) {
+  assert(arr != NULL);
+  if (arr->count > 0)
+    return &arr->strings[arr->count - 1];
+  return arr->strings;
+}
+
 void strarr_free(struct Str_arr* arr) {
   assert(arr != NULL);
   if (!arr->strings)

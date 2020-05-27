@@ -50,3 +50,8 @@ void string_free(char* string) {
 	unsigned int length = strlen(string) + 1;
 	mfree(string, length * sizeof(char));
 }
+
+void string_nfree(char* string, int length) {
+  assert(string != NULL);
+  mfree(string, length * sizeof(char));
+}

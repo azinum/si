@@ -1,7 +1,7 @@
 // test.si
 
 import "test/math.si";
-import "test/basic_tests.si"
+import "test/basic_tests.si";
 
 let some_value = 5;
 
@@ -15,3 +15,5 @@ fn test(a) {
   return get_value(10);
 }
 
+let str = "Hello,";
+print(str, "Sailor!");
