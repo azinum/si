@@ -34,7 +34,7 @@ int print_state(struct VM_state* vm, struct Scope* scope, int level) {
 }
 
 static int base_print(struct VM_state* vm) {
-  int arg_count = vm->stack_top - vm->stack_bp;
+  int arg_count = si_get_argc(vm);
   if (arg_count <= 0) {
     si_error("Missing arguments\n");
     return 0;
@@ -42,7 +42,23 @@ static int base_print(struct VM_state* vm) {
   for (int i = 0; i < arg_count; i++) {
     struct Object* obj = &vm->stack[vm->stack_bp + i];
     object_print(obj);
-    printf("  ");
+    printf(" ");
+  }
+  printf("\n");
+  return 0;
+}
+
+// Printing 'raw' just means don't use colors
+static int base_print_raw(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count <= 0) {
+    si_error("Missing arguments\n");
+    return 0;
+  }
+  for (int i = 0; i < arg_count; i++) {
+    struct Object* obj = &vm->stack[vm->stack_bp + i];
+    object_print_raw(obj);
+    printf(" ");
   }
   printf("\n");
   return 0;
@@ -69,6 +85,7 @@ static int base_assert(struct VM_state* vm) {
 
 static struct Lib_def baselib_funcs[] = {
   {"print", base_print},
+  {"printr", base_print_raw},
   {"print_state", base_print_state},
   {"print_mem", base_print_mem},
   {"assert", base_assert},

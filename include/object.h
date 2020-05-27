@@ -52,7 +52,11 @@ int scope_free(struct Scope* scope);
 
 void object_printline(const struct Object* object);
 
+void object_printline_raw(const struct Object* object);
+
 void object_print(const struct Object* object);
+
+void object_print_raw(const struct Object* object);
 
 extern int object_checktrue(const struct Object* object);
 

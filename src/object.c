@@ -86,6 +86,12 @@ void object_printline(const struct Object* object) {
 	printf("\n");
 }
 
+void object_printline_raw(const struct Object* object) {
+  assert(object != NULL);
+  object_print_raw(object);
+  printf("\n");
+}
+
 void object_print(const struct Object* object) {
 	assert(object != NULL);
 	switch (object->type) {
@@ -111,6 +117,35 @@ void object_print(const struct Object* object) {
 
 		default:
 			printf(COLOR_TYPE "[Undefined]" COLOR_NONE);
+			break;
+	}
+}
+
+void object_print_raw(const struct Object* object) {
+  assert(object != NULL);
+	switch (object->type) {
+		case T_NUMBER:
+			printf("%.10g", object->value.number);
+			break;
+
+    case T_STRING:
+      printf("%.*s", object->value.str.length, object->value.str.data);
+      break;
+
+		case T_FUNCTION:
+			printf("[Function] (addr: %i)", object->value.func.addr);
+			break;
+
+    case T_CFUNCTION:
+      printf("[CFunction] (addr: %p)", object->value.cfunc);
+      break;
+
+		case T_NIL:
+			printf("[Nil]");
+			break;
+
+		default:
+			printf("[Undefined]");
 			break;
 	}
 }

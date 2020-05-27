@@ -15,5 +15,15 @@ fn test(a) {
   return get_value(10);
 }
 
-let str = "Hello,";
-print(str, "Sailor!");
+fn whoami(name, age) {
+  print("Hello! My name is", name, "and I'm", age, "years old!");
+  return 0;
+}
+
+fn whoami2(name, age) {
+  printr("Hello! My name is", name, "and I'm", age, "years old!");
+  return 0;
+}
+
+whoami("Bob", 38);
+whoami2("Tom", 25);

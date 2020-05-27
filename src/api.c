@@ -47,3 +47,7 @@ int si_push_number(struct VM_state* vm, obj_number number) {
   stack_push(vm, obj);
   return 0;
 }
+
+int si_get_argc(struct VM_state* vm) {
+  return vm->stack_top - vm->stack_bp;
+}
