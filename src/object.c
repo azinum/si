@@ -124,30 +124,30 @@ void object_print(const struct Object* object) {
 void object_print_raw(const struct Object* object) {
   assert(object != NULL);
 	switch (object->type) {
-		case T_NUMBER:
-			printf("%.10g", object->value.number);
-			break;
+    case T_NUMBER:
+      printf("%.10g", object->value.number);
+      break;
 
     case T_STRING:
       printf("%.*s", object->value.str.length, object->value.str.data);
       break;
 
-		case T_FUNCTION:
-			printf("[Function] (addr: %i)", object->value.func.addr);
-			break;
+    case T_FUNCTION:
+      printf("[Function] (addr: %i)", object->value.func.addr);
+      break;
 
     case T_CFUNCTION:
       printf("[CFunction] (addr: %p)", object->value.cfunc);
       break;
 
-		case T_NIL:
-			printf("[Nil]");
-			break;
+    case T_NIL:
+      printf("[Nil]");
+      break;
 
-		default:
-			printf("[Undefined]");
-			break;
-	}
+    default:
+      printf("[Undefined]");
+      break;
+  }
 }
 
 inline int object_checktrue(const struct Object* object) {
