@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "str.h"
 #include "mem.h"
 #include "hash.h"
 #include "api.h"
@@ -48,19 +49,59 @@ static int base_print(struct VM_state* vm) {
   return 0;
 }
 
-// Printing 'raw' just means don't use colors
-static int base_print_raw(struct VM_state* vm) {
+static int base_printf(struct VM_state* vm) {
   int arg_count = si_get_argc(vm);
   if (arg_count <= 0) {
     si_error("Missing arguments\n");
     return 0;
   }
-  for (int i = 0; i < arg_count; i++) {
-    struct Object* obj = &vm->stack[vm->stack_bp + i];
-    object_print_raw(obj);
-    printf(" ");
+  struct Object* format = &vm->stack[vm->stack_bp];
+  if (format->type != T_STRING) {
+    si_error("Expected argument of type string\n");
+    return 0;
   }
-  printf("\n");
+  int num_args_used = 0;
+  char* copy = string_new_copy(format->value.str.data, format->value.str.length);
+  for (int i = 0; i < format->value.str.length; i++) {
+    if (copy[i] == '\\') {  // This is an escape sequence
+      switch (copy[++i]) {
+        case 'a':
+          printf("\a");
+          break;
+        case 'e':
+          printf("\e");
+          break;
+        case 'n':
+          printf("\n");
+          break;
+        case 'r':
+          printf("\r");
+          break;
+        case 't':
+          printf("\t");
+          break;
+        default:
+          printf("%c", copy[i]);
+          break;
+      }
+      continue;
+    }
+    if (copy[i] == '%') {
+      if (num_args_used + 1 < arg_count) {
+        struct Object* arg = &vm->stack[vm->stack_bp + num_args_used + 1];
+        num_args_used++;
+        object_print_raw(arg);
+      }
+      else {
+        si_error("More format '%%' than data arguments\n");
+        goto done;
+      }
+      continue;
+    }
+    printf("%c", copy[i]);
+  }
+done:
+  string_nfree(copy, format->value.str.length);
   return 0;
 }
 
@@ -85,7 +126,7 @@ static int base_assert(struct VM_state* vm) {
 
 static struct Lib_def baselib_funcs[] = {
   {"print", base_print},
-  {"printr", base_print_raw},
+  {"printf", base_printf},
   {"print_state", base_print_state},
   {"print_mem", base_print_mem},
   {"assert", base_assert},

@@ -3,27 +3,11 @@
 import "test/math.si";
 import "test/basic_tests.si";
 
-let some_value = 5;
 
-fn test(a) {
-  fn get_value(to_add) {
-    return some_value + to_add;
-  }
-  if a == 0 {
-    return get_value(5);
-  }
-  return get_value(10);
-}
-
-fn whoami(name, age) {
-  print("Hello! My name is", name, "and I'm", age, "years old!");
+fn test(name, age, thing) {
+  printf("Hello, this is % and I'm % years old. Thing: '%'\n", name, age, thing);
   return 0;
 }
 
-fn whoami2(name, age) {
-  printr("Hello! My name is", name, "and I'm", age, "years old!");
-  return 0;
-}
-
-whoami("Bob", 38);
-whoami2("Tom", 25);
+test("Bob", 32, test);
+test("Alex", 27, fib);
