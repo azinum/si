@@ -3,11 +3,5 @@
 import "test/math.si";
 import "test/basic_tests.si";
 
-
-fn test(name, age, thing) {
-  printf("Hello, this is % and I'm % years old. Thing: '%'\n", name, age, thing);
-  return 0;
-}
-
-test("Bob", 32, test);
-test("Alex", 27, fib);
+printf("This is a %!colored%! word!\n", 32, 0);
+printf("This is also a %!colored%! word!\n", "31", "0");

@@ -68,9 +68,6 @@ static int base_printf(struct VM_state* vm) {
         case 'a':
           printf("\a");
           break;
-        case 'e':
-          printf("\e");
-          break;
         case 'n':
           printf("\n");
           break;
@@ -87,14 +84,27 @@ static int base_printf(struct VM_state* vm) {
       continue;
     }
     if (copy[i] == '%') {
+      struct Object* arg = NULL;
       if (num_args_used + 1 < arg_count) {
-        struct Object* arg = &vm->stack[vm->stack_bp + num_args_used + 1];
+        arg = &vm->stack[vm->stack_bp + num_args_used + 1];
         num_args_used++;
-        object_print_raw(arg);
       }
       else {
         si_error("More format '%%' than data arguments\n");
         goto done;
+      }
+      switch (copy[i + 1]) {
+        case '!': {
+          if (arg->type == T_STRING)
+            printf("\x1B[%.*sm", arg->value.str.length, arg->value.str.data);
+          else if (arg->type == T_NUMBER)
+            printf("\x1B[%im", (int)arg->value.number);
+          i++;
+          break;
+        }
+        default:
+          object_print_raw(arg);
+          break;
       }
       continue;
     }
