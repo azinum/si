@@ -2,13 +2,6 @@
 
 #include <stdio.h>
 
-#include "vm.h"
-#include "hash.h"
-#include "list.h"
-#include "object.h"
-#include "error.h"
-#include "stack.h"
-
 #include "api.h"
 
 int si_store_object(struct VM_state* vm, struct Scope* scope, const char* name, struct Object object) {

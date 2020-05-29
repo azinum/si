@@ -3,11 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "str.h"
-#include "mem.h"
-#include "hash.h"
-#include "api.h"
-#include "lib.h"
+#include "si.h"
 
 int print_state(struct VM_state* vm, struct Scope* scope, int level) {
   if (!scope)

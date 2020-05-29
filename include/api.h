@@ -3,10 +3,14 @@
 #ifndef _API_H
 #define _API_H
 
+#include "vm.h"
 #include "error.h"
+#include "list.h"
 #include "object.h"
 #include "stack.h"
-#include "vm.h"
+#include "hash.h"
+#include "str.h"
+#include "lib.h"
 
 #define si_error(fmt, ...) \
   error("%s: " COLOR_ERROR "api-error: " COLOR_NONE fmt, __FUNCTION__,  ##__VA_ARGS__)

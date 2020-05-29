@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "api.h"
-#include "lib.h"
 
 int fib(int n) {
   if (n <= 2)
