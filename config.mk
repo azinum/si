@@ -1,3 +1,4 @@
+# Makefile
 # si - simple interpreter
 
 PROGRAM_NAME=si
@@ -12,15 +13,17 @@ BUILD_DIR_DEBUG=$(BUILD_DIR)/debug
 
 BUILD_DIR_RELEASE=$(BUILD_DIR)/release
 
+BUILD_DIR_LIB=$(BUILD_DIR)/shared
+
 INSTALL_TOP=/usr/local
 
 INSTALL_BIN=$(INSTALL_TOP)/bin
 
-LIBS=-lreadline
+LIBS=-lreadline -ldl
 
-LIBS_RELEASE=-lreadline
+LIBS_RELEASE=-lreadline -ldl
 
-FLAGS=$(SOURCE_DIR)/*.c -Iinclude -Wall
+FLAGS=$(SOURCE_DIR)/*.c -Iinclude -Wall -rdynamic
 
 FLAGS_DEBUG=-g
 
@@ -31,3 +34,9 @@ FLAGS_RELEASE=-o $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME) -O2 -Werror $(LIBS_RELEASE
 FLAGS_MINIMAL_BUILD=-o $(BUILD_DIR_DEBUG)/$(PROGRAM_NAME) -Os
 
 CC=clang
+
+LIB_NAME=lib$(PROGRAM_NAME)
+
+LIB_PATH=/usr/lib
+
+FLAGS_LIB=-shared -fPIC -o $(BUILD_DIR_LIB)/$(LIB_NAME).so -D NDEBUG

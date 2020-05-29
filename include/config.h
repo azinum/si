@@ -36,6 +36,7 @@
 #define COLOR_ERROR
 #define COLOR_MESSAGE
 #define COLOR_NUMBER
+#define COLOR_STRING
 #define COLOR_TYPE
 #define COLOR_NIL
 #define COLOR_NONE
@@ -43,6 +44,8 @@
 #endif
 
 #define INPUT_MAX 128
+
+#define PATH_LENGTH_MAX 512
 
 #define HASH_TABLE_INIT_SIZE 7
 

@@ -53,6 +53,7 @@ enum Token_types {
   T_BREAK,
   T_FUNC_DEF,
   T_IMPORT,
+  T_LOAD,
 
   T_CALL,
   T_BLOCK,
@@ -67,7 +68,8 @@ enum Token_types {
 #define TOKEN_WHILE "while"
 #define TOKEN_BREAK "break"
 #define TOKEN_FUNC_DEF "fn"
-#define TOKEN_IMPORT  "import"
+#define TOKEN_IMPORT "import"
+#define TOKEN_LOAD "load"
 
 struct Token {
   int type;

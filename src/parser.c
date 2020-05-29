@@ -58,6 +58,7 @@ static int ifstatement(struct Parser* p);
 static int whileloop(struct Parser* p);
 static int returnstat(struct Parser* p);
 static int importstat(struct Parser* p);
+static int loadstat(struct Parser* p);
 static int params(struct Parser* p);
 static int arglist(struct Parser* p, int* num_args);
 static int funcstat(struct Parser* p);
@@ -216,8 +217,8 @@ int returnstat(struct Parser* p) {
 // import filename
 int importstat(struct Parser* p) {
   struct Token token = next_token(p->lexer);
-  next_token(p->lexer); // Skip identifier
-  if (!(token.type == T_STRING)) {
+  next_token(p->lexer);
+  if (token.type != T_STRING) {
     parseerror("Expected string\n");
     return p->status = PARSE_ERR;
   }
@@ -231,6 +232,18 @@ int importstat(struct Parser* p) {
   int status = parser_parse(input, p->str_arr, path, p->ast);
   free(input);
   return status;
+}
+
+int loadstat(struct Parser* p) {
+  struct Token token = get_token(p->lexer);
+  ast_add_node(p->ast, token);
+  struct Token path_token = next_token(p->lexer);
+  if (path_token.type != T_STRING) {
+    parseerror("Expected string\n");
+    return p->status = PARSE_ERR;
+  }
+  ast_add_node(p->ast, token);
+  return NO_ERR;
 }
 
 int params(struct Parser* p) {
@@ -376,6 +389,11 @@ int statement(struct Parser* p) {
 
     case T_IMPORT:
       importstat(p);
+      expect_semicolon = 1;
+      break;
+
+    case T_LOAD:
+      loadstat(p);
       expect_semicolon = 1;
       break;
 

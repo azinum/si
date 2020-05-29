@@ -3,5 +3,6 @@
 import "test/math.si";
 import "test/basic_tests.si";
 
-printf("This is a %!colored%! word!\n", 32, 0);
-printf("This is also a %!colored%! word!\n", "31", "0");
+load "lib/libtest";
+
+test();

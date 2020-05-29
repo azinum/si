@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <dlfcn.h>
 
 #include "error.h"
 #include "config.h"
@@ -415,6 +416,26 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           int num_args = num_args_token->value.integer;
           instruction_add(vm, I_CALL, ins_count);
           instruction_add(vm, num_args, ins_count);
+          break;
+        }
+
+        case T_LOAD: {
+          ++i;
+          struct Token* path_token = ast_get_node_value(ast, ++i);
+          assert(path_token != NULL);
+          char path[PATH_LENGTH_MAX] = {0};
+          snprintf(path, PATH_LENGTH_MAX, "./%.*s.so", path_token->length, path_token->string);
+          void* lib_handle = dlopen(path, RTLD_LAZY);
+          if (!lib_handle) {
+            compile_error2(path_token, "Failed to open library '%s'; %s\n", path, dlerror());
+            return vm->status = COMPILE_ERR;
+          }
+          CFunction init = dlsym(lib_handle, "init");
+          if (!init) {
+            compile_error2(path_token, "Failed to find symbol 'init'\n");
+            return vm->status = COMPILE_ERR;
+          }
+          init(vm);
           break;
         }
 

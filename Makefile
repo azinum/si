@@ -11,6 +11,7 @@ prepare:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR_DEBUG)
 	@mkdir -p $(BUILD_DIR_RELEASE)
+	@mkdir -p $(BUILD_DIR_LIB)
 
 local:
 	$(CC) $(FLAGS) $(FLAGS_LOCAL)
@@ -19,6 +20,11 @@ install:
 	$(CC) $(FLAGS) $(FLAGS_RELEASE)
 	chmod o+x $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME)
 	cp $(BUILD_DIR_RELEASE)/$(PROGRAM_NAME) $(INSTALL_BIN)/$(PROGRAM_NAME)
+
+shared:
+	$(CC) $(FLAGS) $(FLAGS_LIB)
+	chmod o+x $(BUILD_DIR_LIB)/$(LIB_NAME).so
+	cp $(BUILD_DIR_LIB)/$(LIB_NAME).so $(LIB_PATH)/
 
 uninstall:
 	rm -f $(INSTALL_BIN)/$(PROGRAM_NAME)
