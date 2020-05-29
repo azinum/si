@@ -39,4 +39,6 @@ LIB_NAME=lib$(PROGRAM_NAME)
 
 LIB_PATH=/usr/lib
 
+LIB_INCLUDE_PATH=/usr/include/$(PROGRAM_NAME)
+
 FLAGS_LIB=-shared -fPIC -o $(BUILD_DIR_LIB)/$(LIB_NAME).so -D NDEBUG

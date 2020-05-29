@@ -4,5 +4,3 @@ import "test/math.si";
 import "test/basic_tests.si";
 
 load "lib/libtest";
-
-test();

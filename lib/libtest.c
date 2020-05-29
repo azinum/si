@@ -1,5 +1,5 @@
 // libtest.c
-// clang libtest.c -Iinclude -Wall -shared -fPIC -o libtest.so -Lbuild/shared/si
+// clang libtest.c -I/usr/include/si -Wall -shared -fPIC -o libtest.so -L/usr/lib/si
 
 #include <si.h>
 #include <stdio.h>

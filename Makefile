@@ -25,6 +25,8 @@ shared:
 	$(CC) $(FLAGS) $(FLAGS_LIB)
 	chmod o+x $(BUILD_DIR_LIB)/$(LIB_NAME).so
 	cp $(BUILD_DIR_LIB)/$(LIB_NAME).so $(LIB_PATH)/
+	mkdir -p $(LIB_INCLUDE_PATH)
+	cp -r $(INCLUDE_DIR)/* $(LIB_INCLUDE_PATH)/
 
 uninstall:
 	rm -f $(INSTALL_BIN)/$(PROGRAM_NAME)
