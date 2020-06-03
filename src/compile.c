@@ -424,7 +424,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           struct Token* path_token = ast_get_node_value(ast, ++i);
           assert(path_token != NULL);
           char path[PATH_LENGTH_MAX] = {0};
-          snprintf(path, PATH_LENGTH_MAX, "./%.*s.so", path_token->length, path_token->string);
+          snprintf(path, PATH_LENGTH_MAX, "./lib/lib%.*s.so", path_token->length, path_token->string);
           void* lib_handle = dlopen(path, RTLD_LAZY);
           if (!lib_handle) {
             compile_error2(path_token, "Failed to open library '%s'; %s\n", path, dlerror());

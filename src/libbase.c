@@ -111,6 +111,12 @@ done:
   return 0;
 }
 
+static int base_rand(struct VM_state* vm) {
+  double result  = rand();
+  si_push_number(vm, result);
+  return 1;
+}
+
 static int base_print_state(struct VM_state* vm) {
   print_state(vm, &vm->global.scope, 0);
   return 0;
@@ -133,6 +139,7 @@ static int base_assert(struct VM_state* vm) {
 static struct Lib_def baselib_funcs[] = {
   {"print", base_print},
   {"printf", base_printf},
+  {"rand", base_rand},
   {"print_state", base_print_state},
   {"print_mem", base_print_mem},
   {"assert", base_assert},
