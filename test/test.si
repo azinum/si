@@ -1,15 +1,6 @@
 // test.si
 
-import "test/math.si";
-import "test/basic_tests.si";
+// import "test/math.si";
+// import "test/basic_tests.si";
 
-load "test";
-
-fn random(min, max) {
-  return (rand() % (max + 1)) - (rand() % (min + 1));
-}
-
-fn a() {
-  let result = random(0, 10);
-  return result;
-}
+a();

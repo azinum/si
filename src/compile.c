@@ -134,11 +134,9 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
     push_instruction = I_PUSH_VAR;
   }
   string_free(identifier);
-  // NOTE(lucas): Instruction rollback on error.
   if (!found) {
     compile_error2((&variable), "Undeclared identifier '%.*s'\n", variable.length, variable.string);
-    list_shrink(vm->program, vm->program_size, 1);  // Remove I_PUSH_VAR or I_PUSH_ARG instruction
-    return NO_ERR;
+    return COMPILE_ERR;
   }
   location = *found;
   instruction_add(vm, push_instruction, ins_count);
