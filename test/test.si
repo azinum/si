@@ -1,7 +1,7 @@
 // test.si
 
-//import "test/math.si";
-// import "test/basic_tests.si";
+import "test/math.si";
+import "test/basic_tests.si";
 
 load "test";
 

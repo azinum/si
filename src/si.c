@@ -91,7 +91,7 @@ int user_input(struct VM_state* vm) {
 }
 
 int si_exec(int argc, char** argv) {
-  (void)signal_exit;  // signal(SIGINT, signal_exit);
+  signal(SIGINT, signal_exit);
   struct Args arguments = {
     .input_file = NULL,
     .show_warnings = 1,
