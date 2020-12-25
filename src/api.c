@@ -44,3 +44,9 @@ int si_push_number(struct VM_state* vm, obj_number number) {
 int si_get_argc(struct VM_state* vm) {
   return vm->stack_top - vm->stack_bp;
 }
+
+struct Object* si_get_arg(struct VM_state* vm, int num_arg) {
+  struct Object* arg = NULL;
+  arg = &vm->stack[vm->stack_bp + num_arg];
+  return arg;
+}

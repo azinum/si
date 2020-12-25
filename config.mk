@@ -37,8 +37,8 @@ CC=gcc
 
 LIB_NAME=lib$(PROGRAM_NAME)
 
-LIB_PATH=/usr/lib
+LIB_PATH=/usr/local/lib
 
-LIB_INCLUDE_PATH=/usr/include/$(PROGRAM_NAME)
+LIB_INCLUDE_PATH=/usr/local/include/$(PROGRAM_NAME)
 
 FLAGS_LIB=-shared -fPIC -o $(BUILD_DIR_LIB)/$(LIB_NAME).so -D NDEBUG

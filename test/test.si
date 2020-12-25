@@ -1,6 +1,5 @@
 // test.si
 
-// import "test/math.si";
+import "test/math.si";
 // import "test/basic_tests.si";
 
-a();

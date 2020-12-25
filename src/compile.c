@@ -29,8 +29,8 @@ struct Func_state {
 #define compile_error(fmt, ...) \
   error(COLOR_ERROR "compile-error: " COLOR_NONE fmt, ##__VA_ARGS__)
 
-#define compile_warning(fmt, ...) \
-  warn(COLOR_WARNING "compile-warning: " COLOR_NONE fmt, ##__VA_ARGS__)
+#define compile_warning(token, fmt, ...) \
+  warn("%i:%i: " COLOR_WARNING "compile-warning: " COLOR_NONE fmt, token->line, token->count, ##__VA_ARGS__)
 
 #define compile_error2(token, fmt, ...) \
   error("%i:%i: " COLOR_ERROR "compile-error: " COLOR_NONE fmt, token->line, token->count, ##__VA_ARGS__)
@@ -148,8 +148,11 @@ int compile_pushvar(struct VM_state* vm, struct Func_state* state, struct Token 
 int compile_declvar(struct VM_state* vm, struct Func_state* state, struct Token variable) {
   Instruction location = -1;
   int err = store_variable(vm, state, variable, &location);
-  if (err != NO_ERR) {
-    compile_error2((&variable), "Identifier '%.*s' has already been declared\n", variable.length, variable.string);
+  if (err == WARN) {
+    compile_warning((&variable), "Variable '%.*s' has already been declared\n", variable.length, variable.string);
+  }
+  else if (err != NO_ERR) {
+    compile_error2((&variable), "Failed to declare variable '%.*s'\n", variable.length, variable.string);
     return err;
   }
   return NO_ERR;
@@ -183,7 +186,7 @@ int store_variable(struct VM_state* vm, struct Func_state* state, struct Token v
   char* identifier = string_new_copy(variable.string, variable.length);
   if (ht_element_exists(&scope->var_locations, identifier)) {
     string_free(identifier);
-    return ERR;
+    return WARN;
   }
   else {
     struct Object object = token_to_object(vm, variable);

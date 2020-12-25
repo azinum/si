@@ -12,7 +12,9 @@ enum Error_codes {
 	REALLOC_ERR,
 	COMPILE_ERR,
 	STACK_ERR,
-	RUNTIME_ERR
+	RUNTIME_ERR,
+
+  WARN,
 };
 
 void error_init(int show_warnings);

@@ -127,6 +127,26 @@ static int base_print_mem(struct VM_state* vm) {
   return 0;
 }
 
+// index(string, index)
+static int base_index(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count < 2) {
+    si_error("Missing arguments\n");
+    return 0;
+  }
+  struct Object* arg_a = si_get_arg(vm, 0);
+  const struct Object* arg_b = si_get_arg(vm, 1);
+  if (!(arg_a->type == T_STRING && arg_b->type == T_NUMBER)) {
+    si_error("Invalid argument types (should be: T_STRING, T_NUMBER)\n");
+    return 0;
+  }
+  int index = (int)arg_b->value.number;
+  if (index >= 0 && index < arg_a->value.str.length) {
+    printf("%c\n", arg_a->value.str.data[index]);
+  }
+  return 0;
+}
+
 static int base_assert(struct VM_state* vm) {
   struct Object* obj = &vm->stack[vm->stack_bp];
   if (!object_checktrue(obj)) {
@@ -142,6 +162,7 @@ static struct Lib_def baselib_funcs[] = {
   {"rand", base_rand},
   {"print_state", base_print_state},
   {"print_mem", base_print_mem},
+  {"index", base_index},
   {"assert", base_assert},
   {NULL, NULL},
 };

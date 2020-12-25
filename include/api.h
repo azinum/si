@@ -25,4 +25,6 @@ int si_push_number(struct VM_state* vm, obj_number number);
 
 int si_get_argc(struct VM_state* vm);
 
+struct Object* si_get_arg(struct VM_state* vm, int num_arg);
+
 #endif
