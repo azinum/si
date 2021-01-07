@@ -51,6 +51,17 @@ int si_push_number(struct VM_state* vm, obj_number number) {
   return 0;
 }
 
+int si_push_object(struct VM_state* vm, struct Object object) {
+  stack_push(vm, object);
+  return 0;
+}
+
+int si_push_nil(struct VM_state* vm) {
+  struct Object nil_object = { .type = T_NIL };
+  stack_push(vm, nil_object);
+  return 0;
+}
+
 int si_get_argc(struct VM_state* vm) {
   return vm->stack_top - vm->stack_bp;
 }

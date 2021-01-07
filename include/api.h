@@ -25,6 +25,10 @@ int si_store_cfunc(struct VM_state* vm, const char* name, CFunction cfunc);
 
 int si_push_number(struct VM_state* vm, obj_number number);
 
+int si_push_object(struct VM_state* vm, struct Object object);
+
+int si_push_nil(struct VM_state* vm);
+
 int si_get_argc(struct VM_state* vm);
 
 struct Object* si_get_arg(struct VM_state* vm, int num_arg);

@@ -1,15 +1,20 @@
 // test.si
 
-import "test/math.si";
-import "test/basic_tests.si";
+// import "test/math.si";
+// import "test/basic_tests.si";
 
 load "test";
 
-fn random(min, max) {
-  return (rand() % (max + 1)) - (rand() % (min + 1));
+let l = list(1, 2, 3, "test")
+list_push(l, "value")
+
+
+let count = 0
+let length = list_length(l)
+while count < length {
+  let item = list_index(l, count)
+  print(item)
+  count = count + 1
 }
 
-fn a() {
-  let result = random(0, 10);
-  return result;
-}
+list_free(l)

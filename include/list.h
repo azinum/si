@@ -41,6 +41,7 @@
 	if ((list) != NULL) { \
 		mfree(list, count * sizeof(*list)); \
 		count = 0; \
+    list = NULL; \
 	}\
 }
 

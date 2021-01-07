@@ -44,6 +44,7 @@ enum Token_types {
   T_STRING,     // 33
   T_FUNCTION,   // 34
   T_CFUNCTION,
+  T_LIST,
   T_NIL,
 
   T_DECL, // 'let'

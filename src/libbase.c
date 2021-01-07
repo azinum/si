@@ -156,6 +156,122 @@ static int base_assert(struct VM_state* vm) {
   return 0;
 }
 
+// list(...)
+// TODO(lucas): Need to have a way of passing references to variables in functions!
+static int base_list(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  struct Object object = (struct Object) {
+    .value.list = mmalloc(sizeof(struct List)),
+    .type = T_LIST
+  };
+  object.value.list->data = NULL;
+  object.value.list->length = 0;
+
+  for (int i = 0; i < arg_count; i++) {
+    struct Object* item = si_get_arg(vm, i);
+    assert(item);
+    list_push(object.value.list->data, object.value.list->length, *item);
+  }
+  si_push_object(vm, object);
+  return 1;
+}
+
+// NOTE(lucas): We are freeing the list, not the contents of the list
+// NOTE(lucas): Be sure to not use the list after you have free'd it. Also do free it, ya know.
+static int base_list_free(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count != 1) {
+    si_error("Missing argument\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  if (arg->type != T_LIST) {
+    si_error("Object is not a list\n");
+    return 0;
+  }
+  assert(arg->value.list != NULL);
+  list_free(arg->value.list->data, arg->value.list->length);
+  mfree(arg->value.list, 1);
+  return 0;
+}
+
+static int base_list_empty(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count != 1) {
+    si_error("Missing argument\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  if (arg->type != T_LIST) {
+    si_error("Object is not a list\n");
+    return 0;
+  }
+  assert(arg->value.list != NULL);
+  list_free(arg->value.list->data, arg->value.list->length);
+  return 0;
+}
+
+static int base_list_push(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count < 2) {
+    si_error("Missing arguments (T_LIST, object)\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  struct Object* item = si_get_arg(vm, 1);
+  if (arg->type != T_LIST) {
+    si_error("Object is not a list\n");
+    return 0;
+  }
+  struct List* list = arg->value.list;
+  list_push(list->data, list->length, *item);
+  return 0;
+}
+
+static int base_list_index(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count < 2) {
+    si_error("Missing arguments (T_LIST, T_NUMBER)\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  struct Object* index = si_get_arg(vm, 1);
+  if (arg->type != T_LIST) {
+    si_error("Object is not a list\n");
+    return 0;
+  }
+  if (index->type != T_NUMBER) {
+    si_push_nil(vm);
+    return 1;
+  }
+  struct List* list = arg->value.list;
+  int index_value = (int)index->value.number;
+  if (index_value < 0 || index_value >= list->length) {
+    si_error("List index out of range\n");
+    si_push_nil(vm);
+    return 1;
+  }
+  struct Object item = list->data[index_value];
+  si_push_object(vm, item);
+  return 1;
+}
+
+static int base_list_length(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count != 1) {
+    si_error("Missing argument\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  if (arg->type != T_LIST) {
+    si_error("Object is not a list\n");
+    return 0;
+  }
+  struct List* list = arg->value.list;
+  si_push_number(vm, list->length);
+  return 1;
+}
+
 static struct Lib_def baselib_funcs[] = {
   {"print", base_print},
   {"printf", base_printf},
@@ -164,6 +280,14 @@ static struct Lib_def baselib_funcs[] = {
   {"print_mem", base_print_mem},
   {"index", base_index},
   {"assert", base_assert},
+
+  {"list", base_list},
+  {"list_free", base_list_free},
+  {"list_empty", base_list_empty},
+  {"list_push", base_list_push},
+  {"list_index", base_list_index},
+  {"list_length", base_list_length},
+
   {NULL, NULL},
 };
 

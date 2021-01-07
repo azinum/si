@@ -115,6 +115,10 @@ void object_print(const struct Object* object) {
 			printf(COLOR_NIL "[Nil]" COLOR_NONE);
 			break;
 
+		case T_LIST:
+			printf(COLOR_TYPE "[List] " COLOR_NONE "(of length: %i)", object->value.list->length);
+			break;
+
 		default:
 			printf(COLOR_TYPE "[Undefined]" COLOR_NONE);
 			break;
@@ -144,6 +148,10 @@ void object_print_raw(const struct Object* object) {
       printf("[Nil]");
       break;
 
+    case T_LIST:
+      printf("[List] (of length: %i)", object->value.list->length);
+      break;
+
     default:
       printf("[Undefined]");
       break;
@@ -164,6 +172,9 @@ inline int object_checktrue(const struct Object* object) {
 
     case T_NIL:
       return 0;
+
+    case T_LIST:
+      return object->value.list->length != 0;
 
     default:
       assert(0);

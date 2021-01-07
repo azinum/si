@@ -27,6 +27,11 @@ struct Function {
   int argc;
 };
 
+struct List {
+  struct Object* data;
+  int length;
+};
+
 struct Object {
   union value {
     obj_number number;
@@ -34,6 +39,7 @@ struct Object {
       char* data;
       int length;
     } str;
+    struct List* list;
     struct Function func;
     CFunction cfunc;
   } value;
