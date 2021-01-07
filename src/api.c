@@ -23,6 +23,16 @@ int si_store_number(struct VM_state* vm, const char* name, double number) {
   return si_store_object(vm, scope, name, object);
 }
 
+int si_store_string(struct VM_state* vm, const char* name, char* string, int length) {
+  struct Scope* scope = &vm->global.scope;
+  struct Object object = {
+    .type = T_STRING,
+    .value.str.data = string,
+    .value.str.length = length,
+  };
+  return si_store_object(vm, scope, name, object);
+}
+
 int si_store_cfunc(struct VM_state* vm, const char* name, CFunction cfunc) {
   struct Scope* scope = &vm->global.scope;
   struct Object object = {

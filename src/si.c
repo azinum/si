@@ -102,6 +102,8 @@ int si_exec(int argc, char** argv) {
   error_init(arguments.show_warnings);
   struct VM_state vm;
   vm_init(&vm);
+  si_store_string(&vm, "version", SI_VERSION, strlen(SI_VERSION));
+
   if (arguments.input_file) {
     char* input = read_file(arguments.input_file);
     if (input) {

@@ -19,6 +19,8 @@ int si_store_object(struct VM_state* vm, struct Scope* scope, const char* name, 
 
 int si_store_number(struct VM_state* vm, const char* name, double number);
 
+int si_store_string(struct VM_state* vm, const char* name, char* string, int length);
+
 int si_store_cfunc(struct VM_state* vm, const char* name, CFunction cfunc);
 
 int si_push_number(struct VM_state* vm, obj_number number);

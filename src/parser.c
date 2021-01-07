@@ -353,6 +353,7 @@ int statement(struct Parser* p) {
   struct Token token = get_token(p->lexer);
   unsigned char expect_semicolon = 0;
   (void)expect_semicolon; // Unused; hide warning
+
   switch (token.type) {
     case T_EOF:
       return NO_ERR;
