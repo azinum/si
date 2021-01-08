@@ -511,6 +511,11 @@ int simple_expr(struct Parser* p) {
       ast_add_node(p->ast, token);
       break;
 
+    case T_NIL:
+      next_token(p->lexer);
+      ast_add_node(p->ast, token);
+      break;
+
     default: {
       postfix_expr(p);
       return p->status;

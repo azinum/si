@@ -325,6 +325,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
       switch (token->type) {
         case T_STRING:
         case T_NUMBER:
+        case T_NIL:
           compile_pushk(vm, state, *token, ins_count);
           break;
 

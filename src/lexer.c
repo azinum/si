@@ -98,6 +98,8 @@ struct Token read_symbol(struct Lexer* lexer) {
     lexer->token.type = T_IMPORT;
   else if (match(lexer->token, TOKEN_LOAD))
     lexer->token.type = T_LOAD;
+  else if (match(lexer->token, TOKEN_NIL))
+    lexer->token.type = T_NIL;
   else
     lexer->token.type = T_IDENTIFIER;
   return lexer->token;

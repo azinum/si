@@ -26,7 +26,7 @@
 } \
 
 #define list_shrink(list, count, num) { \
-	assert(count - num >= 0); \
+	assert((count - num) >= 0); \
 	list_realloc(list, count, count - num); \
 }
  

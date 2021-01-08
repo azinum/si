@@ -156,6 +156,17 @@ static int base_assert(struct VM_state* vm) {
   return 0;
 }
 
+static int base_introspect_type(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count != 1) {
+    si_error("Missing argument\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  si_push_number(vm, arg->type);
+  return 1;
+}
+
 // list(...)
 // TODO(lucas): Need to have a way of passing references to variables in functions!
 static int base_list(struct VM_state* vm) {
@@ -228,6 +239,23 @@ static int base_list_push(struct VM_state* vm) {
   return 0;
 }
 
+static int base_list_pop(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count != 1) {
+    si_error("Missing argument\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  if (arg->type != T_LIST) {
+    si_error("Object is not a list\n");
+    return 0;
+  }
+  struct List* list = arg->value.list;
+  if (list->length > 0) {
+    list_shrink(list->data, list->length, 1);
+  }
+  return 0;
+}
 static int base_list_index(struct VM_state* vm) {
   int arg_count = si_get_argc(vm);
   if (arg_count < 2) {
@@ -280,11 +308,13 @@ static struct Lib_def baselib_funcs[] = {
   {"print_mem", base_print_mem},
   {"index", base_index},
   {"assert", base_assert},
+  {"introspect_type", base_introspect_type},
 
   {"list", base_list},
   {"list_free", base_list_free},
   {"list_empty", base_list_empty},
   {"list_push", base_list_push},
+  {"list_pop", base_list_pop},
   {"list_index", base_list_index},
   {"list_length", base_list_length},
 

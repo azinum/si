@@ -3,18 +3,27 @@
 // import "test/math.si";
 // import "test/basic_tests.si";
 
-load "test";
+load "test"
 
-let l = list(1, 2, 3, "test")
-list_push(l, "value")
-
-
-let count = 0
-let length = list_length(l)
-while count < length {
-  let item = list_index(l, count)
-  print(item)
-  count = count + 1
+fn equal_type(a, b) {
+  return introspect_type(a) == introspect_type(b)
 }
 
-list_free(l)
+fn a {
+  let value = rand() % 5
+  if value < 3 {
+    return value
+  }
+  return nil
+}
+
+let val = a()
+printf("val: %\n", val)
+
+if equal_type(val, nil) {
+  return "Nil"
+}
+if equal_type(val, 0) {
+  return "Number"
+}
+

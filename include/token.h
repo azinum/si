@@ -71,6 +71,7 @@ enum Token_types {
 #define TOKEN_FUNC_DEF "fn"
 #define TOKEN_IMPORT "import"
 #define TOKEN_LOAD "load"
+#define TOKEN_NIL "nil"
 
 struct Token {
   int type;
