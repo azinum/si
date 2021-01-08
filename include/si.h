@@ -6,8 +6,6 @@
 #include "config.h"
 #include "api.h"
 
-#define SI_VERSION "0.1"
-
 int si_exec(int argc, char** argv);
 
 #endif

@@ -43,7 +43,7 @@ void signal_exit(int x) {
 }
 
 static void args_parse(struct Args* arguments, int argc, char** argv) {
-  for (int i = 0; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     char* arg = argv[i];
     if (arg[0] == '-') {
       if (arg[1] == '-') {
@@ -117,8 +117,12 @@ int si_exec(int argc, char** argv) {
       free(input);
     }
   }
-  if (arguments.interactive_mode || argc <= 1)
+  if (arguments.interactive_mode || argc <= 1) {
+    if (!arguments.input_file) {
+      fprintf(stdout, "%s\n", MESSAGE_TITLE);
+    }
     user_input(&vm);
+  }
   vm_state_free(&vm);
   return NO_ERR;
 }

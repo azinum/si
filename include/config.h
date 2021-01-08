@@ -3,7 +3,9 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define SI_VERSION "0.1"
 #define PROMPT "> "
+#define MESSAGE_TITLE "si - simple interpreter (version " SI_VERSION ")"
 
 #if defined(USE_COLORS)
 
