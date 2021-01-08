@@ -1,29 +1,37 @@
 // test.si
 
-// import "test/math.si";
-// import "test/basic_tests.si";
+// TODO(lucas): Import weirdness! Sometimes we fail when declaring new variables here after importing files.
+// import "test/misc.si"
 
-load "test"
+let list_of_names = list(
+  "Bob",
+  "Lucas",
+  "Gabriella",
+  "Brendan",
+  "Ressie",
+  "Karrie",
+  "Billy",
+  "Norbert",
+  "Lillie",
+  "Alfred"
+)
 
-fn equal_type(a, b) {
-  return introspect_type(a) == introspect_type(b)
-}
-
-fn a {
-  let value = rand() % 5
-  if value < 3 {
-    return value
+// Use functions as tables
+fn table {
+  fn get_random_name {
+    list_index(list_of_names, rand() % list_length(list_of_names))
   }
-  return nil
-}
 
-let val = a()
-printf("val: %\n", val)
+  let name = get_random_name()
+  let age = 1 + rand() % 100
+  return 0
+} table()
 
-if equal_type(val, nil) {
-  return "Nil"
-}
-if equal_type(val, 0) {
-  return "Number"
-}
+printf(
+  "My name is % and I'm % years old.\n",
+  _index(table, "name"),
+  _index(table, "age")
+)
 
+list_free(list_of_names)
+return nil

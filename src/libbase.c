@@ -147,6 +147,28 @@ static int base_index(struct VM_state* vm) {
   return 0;
 }
 
+// _index(function/scope, string)
+static int base__index(struct VM_state* vm) {
+  int arg_count = si_get_argc(vm);
+  if (arg_count < 2) {
+    si_error("Missing arguments\n");
+    return 0;
+  }
+  struct Object* arg = si_get_arg(vm, 0);
+  const struct Object* str = si_get_arg(vm, 1);
+  if (!(arg->type == T_FUNCTION && str->type == T_STRING)) {
+    si_error("Invalid argument types (should be: T_FUNCTION, T_STRING)\n");
+    return 0;
+  }
+  struct Scope* scope = &arg->value.func.scope;
+  const int* found = ht_lookup(&scope->var_locations, str->value.str.data);
+  if (found) {
+    si_push_object(vm, vm->variables[*found]);
+    return 1;
+  }
+  return 0;
+}
+
 static int base_assert(struct VM_state* vm) {
   struct Object* obj = &vm->stack[vm->stack_bp];
   if (!object_checktrue(obj)) {
@@ -239,6 +261,7 @@ static int base_list_push(struct VM_state* vm) {
   return 0;
 }
 
+// TODO(lucas): Something is iffy here, fix! It goes wrong when trying to pop lists which contains only 1 element.
 static int base_list_pop(struct VM_state* vm) {
   int arg_count = si_get_argc(vm);
   if (arg_count != 1) {
@@ -256,6 +279,7 @@ static int base_list_pop(struct VM_state* vm) {
   }
   return 0;
 }
+
 static int base_list_index(struct VM_state* vm) {
   int arg_count = si_get_argc(vm);
   if (arg_count < 2) {
@@ -307,6 +331,7 @@ static struct Lib_def baselib_funcs[] = {
   {"print_state", base_print_state},
   {"print_mem", base_print_mem},
   {"index", base_index},
+  {"_index", base__index},
   {"assert", base_assert},
   {"introspect_type", base_introspect_type},
 

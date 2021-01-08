@@ -1,0 +1,5 @@
+// misc.si
+
+fn equal_type(a, b) {
+  return introspect_type(a) == introspect_type(b)
+}

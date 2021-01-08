@@ -326,6 +326,7 @@ int execute(struct VM_state* vm, struct Function* func) {
 
       vmcase(I_UNKNOWN)
         assert(0);
+        vmbreak;
 
       vmcase(I_EXIT)
         goto done_exec;
