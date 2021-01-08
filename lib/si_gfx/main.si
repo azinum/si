@@ -1,0 +1,35 @@
+#!/usr/local/bin/si
+
+load "./libsi_gfx"
+
+fn main {
+  let x = 25
+  let y = 25
+  let x_speed = 0.06
+  let y_speed = 0.02
+
+  gfx_createwindow("Graphics Test", 800, 600)
+  print_mem()
+  let is_running = 1
+  while is_running {
+    if gfx_pollevent() == 1 {
+      is_running = 0
+    }
+
+    x = x + x_speed
+    y = y + y_speed
+
+    if x > 800 { x_speed = 0-x_speed }
+    if x < 0 { x_speed = 0-x_speed }
+    if y > 600 { y_speed = 0-y_speed }
+    if y < 0 { y_speed = 0-y_speed }
+
+    gfx_drawrect(x, y, 64, 64, 255, 100, 80)
+    gfx_swapbuffers()
+  }
+  gfx_destroywindow()
+  print("Exit game...")
+  return 0
+}
+
+return main()

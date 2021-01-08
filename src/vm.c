@@ -459,4 +459,8 @@ void vm_state_free(struct VM_state* vm) {
     mfree(vm, sizeof(struct VM_state));
   vm->heap_allocated = 0;
   assert(memory_alloc_count() == 0);
+  if (memory_alloc_count() != 0) {
+    // TODO(lucas): Make this more descriptive
+    si_error("Memory leak!\n");
+  }
 }

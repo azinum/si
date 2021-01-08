@@ -166,7 +166,8 @@ static int base__index(struct VM_state* vm) {
     si_push_object(vm, vm->variables[*found]);
     return 1;
   }
-  return 0;
+  si_push_nil(vm);
+  return 1;
 }
 
 static int base_assert(struct VM_state* vm) {

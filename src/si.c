@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <signal.h>
+#include <time.h>
+#include <string.h>
 
 #include "error.h"
 #include "mem.h"
