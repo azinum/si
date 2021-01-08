@@ -1,13 +1,9 @@
+#!/usr/local/bin/si
+
 // test.si
-
-import "test/misc.si"
-
-let a = 12
 
 fn add(a, b) {
   a + b
 }
-
-let q = a + 3
 
 return add(2, 3)

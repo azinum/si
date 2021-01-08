@@ -98,7 +98,7 @@ int si_exec(int argc, char** argv) {
   struct Args arguments = {
     .input_file = NULL,
     .show_warnings = 1,
-    .interactive_mode = 1,
+    .interactive_mode = 0,
     .bytecode_out = 0
   };
   args_parse(&arguments, argc, argv);
