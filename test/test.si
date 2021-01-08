@@ -1,37 +1,13 @@
 // test.si
 
-// TODO(lucas): Import weirdness! Sometimes we fail when declaring new variables here after importing files.
-// import "test/misc.si"
+import "test/misc.si"
 
-let list_of_names = list(
-  "Bob",
-  "Lucas",
-  "Gabriella",
-  "Brendan",
-  "Ressie",
-  "Karrie",
-  "Billy",
-  "Norbert",
-  "Lillie",
-  "Alfred"
-)
+let a = 12
 
-// Use functions as tables
-fn table {
-  fn get_random_name {
-    list_index(list_of_names, rand() % list_length(list_of_names))
-  }
+fn add(a, b) {
+  a + b
+}
 
-  let name = get_random_name()
-  let age = 1 + rand() % 100
-  return 0
-} table()
+let q = a + 3
 
-printf(
-  "My name is % and I'm % years old.\n",
-  _index(table, "name"),
-  _index(table, "age")
-)
-
-list_free(list_of_names)
-return nil
+return add(2, 3)

@@ -554,12 +554,15 @@ int expr(struct Parser* p, int priority) {
 int parser_parse(char* input, struct Str_arr* str_arr, const char* filename, Ast* ast) {
   strarr_append(str_arr, input);
   struct Lexer lexer = {
-    .index = strarr_top(str_arr),
+    .index = &strarr_top(str_arr)[0],
     .line = 1,
     .count = 0,
     .token = (struct Token) {0},
     .filename = filename,
   };
+#if 0
+  printf("Parsing file: %s, index: %i\n", filename, str_arr->count);
+#endif
   struct Parser parser = {
     .lexer = &lexer,
     .ast = ast,

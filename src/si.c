@@ -71,7 +71,7 @@ static void args_parse(struct Args* arguments, int argc, char** argv) {
   }
 }
 
-int user_input(struct VM_state* vm) {
+int user_input(struct VM_state* vm, struct Str_arr* str_arr) {
   assert(vm != NULL);
   char input[INPUT_MAX] = {0};
   char* buffer = input;
@@ -80,7 +80,7 @@ int user_input(struct VM_state* vm) {
   char filename[] = "stdin";
   while (is_running) {
     if (readinput(buffer, PROMPT)) {
-      status = vm_exec(vm, filename, buffer);
+      status = vm_exec(vm, filename, buffer, str_arr);
       if (status != NO_ERR)
         return status;
       addhistory(buffer);
@@ -105,12 +105,13 @@ int si_exec(int argc, char** argv) {
   error_init(arguments.show_warnings);
   struct VM_state vm;
   vm_init(&vm);
-  si_store_string(&vm, "version", SI_VERSION, strlen(SI_VERSION));
+  struct Str_arr str_arr; // NOTE(lucas): We store all import strings here
+  strarr_init(&str_arr);
 
   if (arguments.input_file) {
     char* input = read_file(arguments.input_file);
     if (input) {
-      vm_exec(&vm, arguments.input_file, input);
+      vm_exec(&vm, arguments.input_file, input, &str_arr);
       if (arguments.bytecode_out) {
         char out_filename[INPUT_MAX];
         sprintf(out_filename, "%s.out", arguments.input_file);
@@ -123,8 +124,9 @@ int si_exec(int argc, char** argv) {
     if (!arguments.input_file) {
       fprintf(stdout, "%s\n", MESSAGE_TITLE);
     }
-    user_input(&vm);
+    user_input(&vm, &str_arr);
   }
+  strarr_free(&str_arr);
   vm_state_free(&vm);
   return NO_ERR;
 }

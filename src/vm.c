@@ -410,13 +410,11 @@ struct VM_state* vm_state_new() {
   return vm;
 }
 
-int vm_exec(struct VM_state* vm, const char* filename, char* input) {
+int vm_exec(struct VM_state* vm, const char* filename, char* input, struct Str_arr* str_arr) {
   assert(input != NULL);
   assert(vm != NULL);
   Ast ast = ast_create();
-  struct Str_arr str_arr;
-  strarr_init(&str_arr);
-  if (parser_parse(input, &str_arr, filename, &ast) == NO_ERR) {
+  if (parser_parse(input, str_arr, filename, &ast) == NO_ERR) {
     compile_from_tree(vm, &ast);
     if (vm->status == NO_ERR) {
       if (vm->prev_ip != vm->program_size) {  // Has program changed since last vm execution? 
@@ -429,7 +427,6 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input) {
     }
     vm->global.addr = vm->program_size; // We're in interactive mode, move the start posiiton to the last instruction
   }
-  strarr_free(&str_arr);
   ast_free(&ast);
   return vm->status;
 }
