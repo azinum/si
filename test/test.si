@@ -1,9 +1,8 @@
 #!/usr/local/bin/si
-
 // test.si
+
+// import "test/misc.si"
 
 fn add(a, b) {
   a + b
 }
-
-return add(2, 3)

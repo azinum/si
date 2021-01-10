@@ -63,6 +63,8 @@ enum Token_types {
   T_COUNT
 };
 
+extern const char* token_desc[];
+
 #define TOKEN_DECL "let"
 #define TOKEN_RETURN "return"
 #define TOKEN_IF "if"
@@ -81,8 +83,10 @@ struct Token {
   int line;
   union {
     double number;
-    int integer;
+    int integer;  // NOTE(lucas): Unused
   } value;
 };
+
+void print_token(struct Token token);
 
 #endif

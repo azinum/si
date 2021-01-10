@@ -98,6 +98,14 @@ static int base_printf(struct VM_state* vm) {
           i++;
           break;
         }
+        case '?': {
+          if (arg->type == T_FUNCTION) {
+            struct Scope* scope = &arg->value.func.scope;
+            print_state(vm, scope, 0);
+          }
+          i++;
+          break;
+        }
         default:
           object_print_raw(arg);
           break;

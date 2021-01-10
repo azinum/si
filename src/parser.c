@@ -481,7 +481,7 @@ int postfix_expr(struct Parser* p) {
         p->ast = orig_branch;
         struct Token num_args_token = (struct Token) {
           .type = T_NUMBER,
-          .value.integer = num_args
+          .value.number = num_args
         };
         ast_add_node(p->ast, num_args_token);
         break;

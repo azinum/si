@@ -417,7 +417,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           Ast args_branch = ast_get_node_at(ast, i);
           compile(vm, &args_branch, state, ins_count);
           const struct Token* num_args_token = ast_get_node_value(ast, ++i);
-          int num_args = num_args_token->value.integer;
+          int num_args = (int)num_args_token->value.number;
           instruction_add(vm, I_CALL, ins_count);
           instruction_add(vm, num_args, ins_count);
           break;

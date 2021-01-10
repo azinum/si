@@ -425,6 +425,7 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input, struct Str_a
         vm->prev_ip = vm->program_size;
       }
     }
+    // ast_print(ast);
     vm->global.addr = vm->program_size; // We're in interactive mode, move the start posiiton to the last instruction
   }
   ast_free(&ast);
