@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "error.h"
+#include "mem.h"
 #include "ast.h"
 
 struct Node {
@@ -22,7 +23,7 @@ int is_empty(const Ast ast) {
 }
 
 struct Node* create_node(Value value) {
-	struct Node* node = malloc(sizeof(struct Node));
+	struct Node* node = mmalloc(sizeof(struct Node));
 	if (!node) {
 		error("Failed to allocate new AST node\n");
 		return NULL;
@@ -75,11 +76,12 @@ int ast_add_node(Ast* ast, Value value) {
 			return ALLOC_ERR;
 	}
 	if (!(*ast)->children) {
-		(*ast)->children = malloc(sizeof(struct Node));
+		(*ast)->children = mmalloc(sizeof(struct Node));
 	}
 	else {
-		struct Node** tmp = realloc((*ast)->children, (sizeof(struct Node*)) * (*ast)->child_count + 1);
-		if (!tmp) return REALLOC_ERR;
+		struct Node** tmp = mrealloc((*ast)->children, (sizeof(struct Node*) * (*ast)->child_count), (sizeof(struct Node*)) * (*ast)->child_count + 1);
+		if (!tmp)
+      return REALLOC_ERR;
 		(*ast)->children = tmp;
 	}
 	(*ast)->children[(*ast)->child_count++] = new_node;
@@ -112,7 +114,7 @@ int ast_remove_node_at(Ast* ast, int index) {
 	int child_count = ast_child_count(ast);
 	assert(index < child_count);
 	Ast node_to_remove = ast_get_node_at(ast, index);
-	ast_free(&node_to_remove);	// Remove the subtree(s) from this node - if there are any
+	ast_free(&node_to_remove);	// NOTE(lucas): Removes the subtree(s) from this node - if there are any
 	(*ast)->children[index] = NULL;
 	for (int i = index; i < child_count - 1; i++) {
 		(*ast)->children[i] = (*ast)->children[i + 1];
@@ -160,10 +162,10 @@ void ast_free(Ast* ast) {
 	for (unsigned long i = 0; i < (*ast)->child_count; i++)
 		ast_free(&(*ast)->children[i]);
 
-	free((*ast)->children);
+	mfree((*ast)->children, sizeof(struct Node));
 	(*ast)->children = NULL;
 	(*ast)->child_count = 0;
-	free(*ast);
+	mfree(*ast, sizeof(struct Node));
 	*ast = NULL;
 	assert(is_empty(*ast));
 }
