@@ -449,8 +449,8 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
             instruction_add(vm, op, ins_count);
             break;
           }
-          assert(0);
           compile_error2(token, "%s\n", "Invalid instruction");
+          assert(0);
           return vm->status = COMPILE_ERR;
         }
       }

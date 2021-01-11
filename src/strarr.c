@@ -19,7 +19,8 @@ int strarr_append(struct Str_arr* arr, const char* str) {
   assert(arr != NULL);
   int str_length = strlen(str);
   char* str_copy = string_new_copy(str, str_length);
-  if (!arr->strings) {
+  printf("str_copy: %s\n", str_copy);
+  if (!(&arr->strings[0])) {
     arr->strings = mmalloc(sizeof(char*));
     if (!arr->strings)
       return -1;
@@ -55,9 +56,9 @@ void strarr_free(struct Str_arr* arr) {
     return;
   for (int i = 0; i < arr->count; i++) {
     int length = strlen(arr->strings[i]);
-    mfree(arr->strings[i], length);
+    string_nfree(arr->strings[i], length);
   }
-  mfree(arr->strings, arr->count);
+  mfree(arr->strings, sizeof(char*) * arr->count);
   arr->strings = NULL;
   arr->count = 0;
 }

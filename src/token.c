@@ -38,6 +38,7 @@ const char* token_desc[T_COUNT] = {
   "{",
   "}",
   ";",
+  ":",
   ",",
 
   "identifier",

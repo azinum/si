@@ -10,11 +10,11 @@
 #include "str.h"
 
 char* string_new_copy(const char* old, int length) {
-  int new_length = length + 1;	/* +1 for null terminator */
+  int new_length = length;	/* +1 for null terminator */
 	char* new_string = mmalloc(sizeof(char) * new_length);
 	if (!new_string) return NULL;
 	strncpy(new_string, old, new_length);
-	new_string[new_length - 1] = '\0';
+	new_string[new_length - 0] = '\0';
 	return new_string;
 }
 
@@ -47,7 +47,7 @@ int safe_string_to_number(char* string, int length, double* number) {
 
 void string_free(char* string) {
 	assert(string != NULL);
-	unsigned int length = strlen(string) + 1;
+	unsigned int length = strlen(string);
 	mfree(string, length * sizeof(char));
 }
 

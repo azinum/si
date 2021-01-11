@@ -1,8 +1,10 @@
 #!/usr/local/bin/si
 // test.si
 
-// import "test/misc.si"
 
-fn add(a, b) {
+let a = 12
+let b = 13
+
+if a {
   a + b
 }

@@ -426,6 +426,11 @@ int statements(struct Parser* p) {
 
 // { identifier }
 int postfix_expr(struct Parser* p) {
+#if 0
+  Ast* orig_branch = p->ast;
+  Ast expr_branch = ast_get_last(orig_branch);
+  p->ast = &expr_branch;
+#endif
   struct Token token = get_token(p->lexer);
   switch (token.type) {
     case T_IDENTIFIER:
@@ -456,6 +461,11 @@ int postfix_expr(struct Parser* p) {
       return p->status = PARSE_ERR;
     }
   }
+  token = get_token(p->lexer);
+  if (token.type == T_COLON) {
+    next_token(p->lexer);
+  }
+
   // identifier '(' args ')'
   // (expr) '(' args ')'
   for (;;) {
@@ -491,6 +501,7 @@ int postfix_expr(struct Parser* p) {
     }
   }
 done:
+  // p->ast = orig_branch;
   return NO_ERR;
 }
 
@@ -498,6 +509,10 @@ int simple_expr(struct Parser* p) {
   struct Token token = get_token(p->lexer);
   switch (token.type) {
     case T_SEMICOLON:
+      next_token(p->lexer);
+      break;
+
+    case T_COLON:
       next_token(p->lexer);
       break;
 
