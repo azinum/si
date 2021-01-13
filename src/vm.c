@@ -116,7 +116,7 @@ int equal_types(const struct Object* a, const struct Object* b) {
 
 
 int execute(struct VM_state* vm, struct Function* func) {
-#if defined(USE_JUMPTABLE)
+#if !defined(NO_JUMPTABLE)
 #include "jumptable.h"
 #endif
   Instruction* ip = &vm->program[func->addr];
