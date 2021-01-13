@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #if defined(TRACK_MEMORY)
 
@@ -93,6 +94,7 @@ void* mrealloc(void* pointer, const unsigned int old_size, const unsigned int ne
 }
 
 void mfree(void* pointer, const unsigned int size) {
+  assert(pointer);
   if (!pointer)
     return;
   free(pointer);
