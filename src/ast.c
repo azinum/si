@@ -24,7 +24,6 @@ int is_empty(const Ast ast) {
 
 struct Node* create_node(Value value) {
 	struct Node* node = mmalloc(sizeof(struct Node));
-	// struct Node* node = malloc(sizeof(struct Node));
 	if (!node) {
 		error("Failed to allocate new AST node\n");
 		return NULL;
@@ -77,11 +76,9 @@ int ast_add_node(Ast* ast, Value value) {
 			return ALLOC_ERR;
 	}
 	if (!(*ast)->children) {
-		// (*ast)->children = malloc(sizeof(struct Node*));
     (*ast)->children = mmalloc(sizeof(struct Node*));
 	}
 	else {
-		// struct Node** tmp = realloc((*ast)->children, sizeof(struct Node*) * ((*ast)->child_count + 1));
     struct Node** tmp = mrealloc((*ast)->children, (sizeof(struct Node*) * (*ast)->child_count), (sizeof(struct Node*)) * ((*ast)->child_count + 1));
 		if (!tmp)
       return REALLOC_ERR;
@@ -183,11 +180,9 @@ void ast_free(Ast* ast) {
 
   if ((*ast)->children) {
     mfree((*ast)->children, sizeof(struct Node*) * (*ast)->child_count);
-    // free((*ast)->children);
     (*ast)->children = NULL;
     (*ast)->child_count = 0;
   }
-  // free(*ast);
   if (*ast) {
     mfree(*ast, sizeof(struct Node));
     *ast = NULL;
