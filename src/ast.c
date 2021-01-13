@@ -9,9 +9,9 @@
 #include "ast.h"
 
 struct Node {
-	struct Node** children;
-	int child_count;
-	Value value;
+  struct Node** children;
+  int child_count;
+  Value value;
 };
 
 static int is_empty(const Ast ast);
@@ -72,17 +72,15 @@ int ast_add_node(Ast* ast, Value value) {
 		return ALLOC_ERR;
 
 	if (is_empty(*ast)) {
-		*ast = create_node((struct Token) {});	// Create root node
+		*ast = create_node((struct Token) {});
 		if (!(*ast))
 			return ALLOC_ERR;
 	}
 	if (!(*ast)->children) {
-		// (*ast)->children = mmalloc(sizeof(struct Node*));
-		(*ast)->children = malloc(sizeof(struct Node*));
+		(*ast)->children = malloc(sizeof(struct Node*)); // mmalloc(sizeof(struct Node*));
 	}
 	else {
-		// struct Node** tmp = mrealloc((*ast)->children, (sizeof(struct Node*) * (*ast)->child_count), (sizeof(struct Node*)) * (*ast)->child_count + 1);
-		struct Node** tmp = realloc((*ast)->children, (sizeof(struct Node*)) * (*ast)->child_count + 1);
+		struct Node** tmp = realloc((*ast)->children, sizeof(struct Node*) * ((*ast)->child_count + 1)); // mrealloc((*ast)->children, (sizeof(struct Node*) * (*ast)->child_count), (sizeof(struct Node*)) * (*ast)->child_count + 1);
 		if (!tmp)
       return REALLOC_ERR;
 		(*ast)->children = tmp;
@@ -133,6 +131,21 @@ int ast_child_count(const Ast* ast) {
 	return (*ast)->child_count;
 }
 
+int ast_child_count_total(const Ast* ast) {
+  assert(ast != NULL);
+  if (!(*ast)) {
+    return 0;
+  }
+  if (!(*ast)->child_count) {
+    return 1;
+  }
+  int count = 0;
+  for (int i = 0; i < (*ast)->child_count; i++) {
+    count += ast_child_count_total(&(*ast)->children[i]);
+  }
+  return count;
+}
+
 Ast* ast_get_node(Ast* ast, int index) {
 	assert(ast != NULL);
 	if (index >= 0 && index < ast_child_count(ast)) {
@@ -167,10 +180,11 @@ void ast_free(Ast* ast) {
   }
 
 	// mfree((*ast)->children, sizeof(struct Node*) * (*ast)->child_count);
-	free((*ast)->children);
+  free((*ast)->children);
 	(*ast)->children = NULL;
   (*ast)->child_count = 0;
-	free(*ast); // mfree(*ast, sizeof(struct Node));
-	*ast = NULL;
+  free(*ast);
+  // mfree(*ast, sizeof(struct Node));
+  *ast = NULL;
 	assert(is_empty(*ast));
 }

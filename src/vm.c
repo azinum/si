@@ -415,7 +415,7 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input, struct Str_a
   assert(vm != NULL);
   Ast ast = ast_create();
   if (parser_parse(input, str_arr, filename, &ast) == NO_ERR) {
-#if 0
+#if 1
     compile_from_tree(vm, &ast);
     if (vm->status == NO_ERR) {
       if (vm->prev_ip != vm->program_size) {  // Has program changed since last vm execution? 
@@ -427,7 +427,7 @@ int vm_exec(struct VM_state* vm, const char* filename, char* input, struct Str_a
       }
     }
 #else
-    // ast_print(ast);
+    ast_print(ast);
 #endif
     vm->global.addr = vm->program_size; // We're in interactive mode, move the start posiiton to the last instruction
   }
@@ -459,9 +459,9 @@ void vm_state_free(struct VM_state* vm) {
   if (vm->heap_allocated)
     mfree(vm, sizeof(struct VM_state));
   vm->heap_allocated = 0;
-  if (memory_alloc_count() != 0 || memory_alloc_total() != 0) {
+  if (memory_alloc_total() != 0) {
     si_error("Memory leak!\n");
     memory_print_info();
   }
-  assert(!memory_alloc_count() && !memory_alloc_total());
+  assert(!memory_alloc_total());
 }

@@ -37,9 +37,9 @@ build_debug:
 build_minimal:
 	$(CC) $(FLAGS) $(FLAGS_MINIMAL_BUILD)
 
-debug_profile:
-	$(CC) $(FLAGS) $(FLAGS_LOCAL) -g
-	valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --leak-resolution=med --track-origins=yes si
+debug_mem:
+	$(CC) $(FLAGS) $(FLAGS_LOCAL) -g -O2
+	valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --leak-resolution=med --track-origins=yes ./$(BUILD_DIR_DEBUG)/$(PROGRAM_NAME)
 
 minimal: build_minimal run
 

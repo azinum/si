@@ -1,3 +1,3 @@
-
+- FIX BUG: AST memory leaks!
 - Rework build files
 - Make it easier to build modules/libraries

@@ -1,10 +1,9 @@
 #!/usr/local/bin/si
 // test.si
 
-
 let a = 12
 let b = 13
 
-if a {
-  a + b
+if a + b {
+  "OK"
 }

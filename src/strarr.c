@@ -19,7 +19,6 @@ int strarr_append(struct Str_arr* arr, const char* str) {
   assert(arr != NULL);
   int str_length = strlen(str);
   char* str_copy = string_new_copy(str, str_length);
-  printf("str_copy: %s\n", str_copy);
   if (!(&arr->strings[0])) {
     arr->strings = mmalloc(sizeof(char*));
     if (!arr->strings)
