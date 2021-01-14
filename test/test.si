@@ -1,9 +1,6 @@
 #!/usr/local/bin/si
 // test.si
 
-let a = 12
-let b = 13
-
-if a + b {
-  "OK"  
+fn add(a, b) {
+  a + b
 }

@@ -94,7 +94,7 @@ void* mrealloc(void* pointer, const unsigned int old_size, const unsigned int ne
 }
 
 void mfree(void* pointer, const unsigned int size) {
-  assert(pointer);
+  // assert(pointer);
   if (!pointer)
     return;
   free(pointer);
