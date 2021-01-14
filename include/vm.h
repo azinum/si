@@ -37,6 +37,7 @@
   INS(T, NOT) \
 \
   INS(T, ASSIGN) \
+  INS(T, LOCAL_ASSIGN) \
   INS(T, PUSHK) \
   INS(T, POP) \
   INS(T, PUSH_VAR) \

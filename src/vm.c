@@ -40,6 +40,7 @@ static const char* ins_descriptions[INSTRUCTION_COUNT] = {
   "not",
 
   "assign",
+  "local_assign",
   "pushk",
   "pop",
   "pushvar",
@@ -145,7 +146,25 @@ int execute(struct VM_state* vm, struct Function* func) {
         stack_pop(vm);
         vmbreak;
       }
-
+      vmcase(I_LOCAL_ASSIGN) {
+        int local_addr = *(ip++);
+        int arg_count = func->argc;
+        assert(local_addr < arg_count);
+        struct Object* local = stack_get(vm, vm->stack_bp - arg_count + (local_addr));
+        assert(local);
+        const struct Object* top = stack_gettop(vm);
+        if (!top) {
+          vmbreak;
+        }
+#if 1
+        printf("I_LOCAL_ASSIGN: %i, func argc: %i, local: ", local_addr, arg_count);
+        object_print(local);
+        printf("\n");
+#endif
+        *local = *top;
+        stack_pop(vm);
+        vmbreak;
+      }
       vmcase(I_PUSHK) {
         int constant = *(ip++);
         stack_pushk(vm, &func->scope, constant);

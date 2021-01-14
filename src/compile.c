@@ -41,6 +41,7 @@ static int instruction_add(struct VM_state* vm, Instruction instruction, unsigne
 static int func_state_init(struct Func_state* state, struct Function* global, int in_global_scope);
 static void func_state_free(struct Func_state* state);
 static const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier);
+static const int* local_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier);
 static int patchblock(struct VM_state* vm, int block_size);
 static int compile_ifstatement(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
 static int compile_whileloop(struct VM_state* vm, Ast* cond, Ast* block, struct Func_state* state, unsigned int* ins_count);
@@ -95,6 +96,11 @@ const int* variable_lookup(struct VM_state* vm, struct Func_state* state, const 
       return found;
   }
   found = ht_lookup(&global_scope->var_locations, identifier);
+  return found;
+}
+
+const int* local_lookup(struct VM_state* vm, struct Func_state* state, const char* identifier) {
+  const int* found = ht_lookup(&state->args, identifier);
   return found;
 }
 
@@ -358,11 +364,19 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
 
         // { assign, identifier }
         case T_ASSIGN: {
+          int assign_instruction = I_ASSIGN;
           struct Token* identifier_token = ast_get_node_value(ast, ++i);
           assert(identifier_token != NULL);
           char* identifier = string_new_copy(identifier_token->string, identifier_token->length);
           Instruction location = -1;
-          const int* found = variable_lookup(vm, state, identifier);
+          const int* found = NULL;
+          found = local_lookup(vm, state, identifier);
+          if (found) {
+            assign_instruction = I_LOCAL_ASSIGN;
+          }
+          else {
+            found = variable_lookup(vm, state, identifier);
+          }
           string_free(identifier);
           if (!found) {
             compile_error2(identifier_token, "%s\n", "No such variable");
@@ -370,7 +384,7 @@ int compile(struct VM_state* vm, Ast* ast, struct Func_state* state, unsigned in
           }
           location = *found;
           assert(location >= 0);
-          instruction_add(vm, I_ASSIGN, ins_count);
+          instruction_add(vm, assign_instruction, ins_count);
           instruction_add(vm, location, ins_count);
           break;
         }
@@ -477,6 +491,7 @@ int compile_from_tree(struct VM_state* vm, Ast* ast) {
 unsigned int compile_get_ins_arg_count(Instruction instruction) {
   switch (instruction) {
     case I_ASSIGN:
+    case I_LOCAL_ASSIGN:
     case I_PUSHK:
     case I_PUSH_VAR:
     case I_IF:
