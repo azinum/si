@@ -5,8 +5,8 @@ load "./libsi_gfx"
 fn main {
   let x = 25
   let y = 25
-  let x_speed = 0.06
-  let y_speed = 0.02
+  let x_speed = 0.06 * 50
+  let y_speed = 0.02 * 50
 
   gfx_createwindow("Graphics Test", 800, 600)
   print_mem()
@@ -24,7 +24,7 @@ fn main {
     if y > 600 { y_speed = 0-y_speed }
     if y < 0 { y_speed = 0-y_speed }
 
-    gfx_drawrect(x, y, 64, 64, 255, 100, 80)
+    gfx_drawrect(x, y, 42, 42, 255, 100, 80)
     gfx_swapbuffers()
   }
   gfx_destroywindow()

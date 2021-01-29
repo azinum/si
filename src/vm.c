@@ -150,14 +150,14 @@ int execute(struct VM_state* vm, struct Function* func) {
         int local_addr = *(ip++);
         int arg_count = func->argc;
         assert(local_addr < arg_count);
-        struct Object* local = stack_get(vm, vm->stack_bp - arg_count + (local_addr));
+        struct Object* local = stack_get(vm, vm->stack_bp - (arg_count + local_addr - 1));
         assert(local);
         const struct Object* top = stack_gettop(vm);
         if (!top) {
           vmbreak;
         }
-#if 1
-        printf("I_LOCAL_ASSIGN: %i, func argc: %i, local: ", local_addr, arg_count);
+#if 0
+        printf("I_LOCAL_ASSIGN: %i, func argc: %i, bp: %i, stack_top: %i, local: ", local_addr, arg_count, vm->stack_bp, vm->stack_top);
         object_print(local);
         printf("\n");
 #endif

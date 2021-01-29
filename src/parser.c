@@ -455,6 +455,11 @@ int postfix_expr(struct Parser* p) {
       break;
     }
 
+    case T_EOF: {
+      // TODO(lucas): Memory leak when we get here...
+      return NO_ERR;
+    }
+
     default: {
       parseerror("Unexpected symbol\n");
       next_token(p->lexer);

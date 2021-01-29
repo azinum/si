@@ -78,7 +78,7 @@ static int libsi_gfx_createwindow(struct VM_state* vm) {
     si_error("%s\n", SDL_GetError());
     return 0;
   }
-  if (!(renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED))) {
+  if (!(renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC))) {
     si_error("%s\n", SDL_GetError());
     return 0;
   }
