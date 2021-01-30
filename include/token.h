@@ -7,6 +7,7 @@ enum Token_types {
   T_UNKNOWN = 0,
 
   T_ADD,
+  T_MINUS,
   T_SUB,
   T_MULT,
   T_DIV,

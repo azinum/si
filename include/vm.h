@@ -16,6 +16,7 @@
 
 #define INSTRUCTIONS(T) \
   INS(T, UNKNOWN) \
+  INS(T, MINUS) \
   INS(T, ADD) \
   INS(T, SUB) \
   INS(T, MULT) \

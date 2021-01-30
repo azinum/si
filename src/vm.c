@@ -339,6 +339,10 @@ int execute(struct VM_state* vm, struct Function* func) {
         OP_ARITH(||);
         vmbreak;
 
+      vmcase(I_MINUS)
+        UNOP_ARITH(-);
+        vmbreak;
+
       vmcase(I_NOT)
         UNOP_ARITH(!);
         vmbreak;

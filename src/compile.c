@@ -210,6 +210,7 @@ int store_variable(struct VM_state* vm, struct Func_state* state, struct Token v
 int token_to_op(struct Token token) {
   switch (token.type) {
     OP_CASE(ADD);
+    OP_CASE(MINUS);
     OP_CASE(SUB);
     OP_CASE(MULT);
     OP_CASE(DIV);

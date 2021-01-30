@@ -85,6 +85,8 @@ int get_binop(struct Token token) {
 }
 
 int get_uop(struct Token token) {
+  if (token.type == T_SUB)
+    return T_MINUS;
   if ((token.type > T_NOBINOP && token.type < T_NOUNOP) || token.type == T_SUB)
     return token.type;
   return T_NOUNOP;  // This is not a unary operator
@@ -550,6 +552,7 @@ int expr(struct Parser* p, int priority) {
   struct Token uop_token = get_token(p->lexer);
   int uop = get_uop(uop_token);
   if (uop != T_NOUNOP) {
+    uop_token.type = uop;
     next_token(p->lexer); // Skip operator token
     expr(p, UNARY_PRIORITY);
     ast_add_node(p->ast, uop_token);
