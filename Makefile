@@ -2,7 +2,7 @@
 
 include config.mk
 
-all: prepare local run
+all: prepare compile run
 
 clean:
 	rm -drf build/*
@@ -13,7 +13,7 @@ prepare:
 	@mkdir -p $(BUILD_DIR_RELEASE)
 	@mkdir -p $(BUILD_DIR_LIB)
 
-local:
+compile:
 	$(CC) $(FLAGS) $(FLAGS_LOCAL)
 
 install:

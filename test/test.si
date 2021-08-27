@@ -1,16 +1,7 @@
 #!/usr/local/bin/si
 // test.si
 
-fn test(a) {
-  if a > 5 {
-    a = 10
-  }
-  if a <= 5 {
-    a = 0
-  }
-  a
+fn add(a, b) {
+  a + b
 }
-
-test(7)
-
 

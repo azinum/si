@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "common.h"
 #include "error.h"
 #include "str.h"
 #include "mem.h"
@@ -20,6 +21,7 @@
 static const char* ins_descriptions[INSTRUCTION_COUNT] = {
   "unknown",
   "add",
+  "minus",
   "sub",
   "mult",
   "div",
@@ -419,6 +421,7 @@ int vm_init(struct VM_state* vm) {
   vm->heap_allocated = 0;
   lib_load(vm, libbase());
   lib_load(vm, libmath());
+  si_store_number(vm, "pi", PI32);
   return vm->status;
 }
 

@@ -19,9 +19,9 @@ INSTALL_TOP=/usr/local
 
 INSTALL_BIN=$(INSTALL_TOP)/bin
 
-LIBS=-lreadline -ldl
+LIBS=-lreadline -ldl -lm
 
-LIBS_RELEASE=-lreadline -ldl
+LIBS_RELEASE=-lreadline -ldl -lm
 
 FLAGS=$(SOURCE_DIR)/*.c -Iinclude -Wall -rdynamic
 
